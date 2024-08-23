@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:math';
 
 class AfterScan extends StatefulWidget {
   final String vehicleNumber;
@@ -25,15 +24,12 @@ class _AfterScanState extends State<AfterScan> {
   void initState() {
     super.initState();
     fetchData();
-    dueOutTime =
-        formatDateTime(DateTime.now()); // Set the current date and time
+    dueOutTime = formatDateTime(DateTime.now()); // Set the current date and time
   }
 
   Future<void> fetchData() async {
-    // Replace with your Firestore collection path
     User? currentUser = FirebaseAuth.instance.currentUser;
-    String phoneNumber = currentUser?.phoneNumber ??
-        'unknown'; // Replace this with the actual user's phone number
+    String phoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
     DocumentSnapshot doc = await FirebaseFirestore.instance
         .collection('loginUsers')
@@ -49,14 +45,18 @@ class _AfterScanState extends State<AfterScan> {
       setState(() {
         dueInTime = formatDateTime(dateTime);
         dueInRate = doc['price'] ?? '';
-        timeGiven = doc['selectedTime'] ?? '';
+        timeGiven = extractMinutes(doc['selectedTime'] ?? '');
 
         calculateFinalAmount(dateTime);
       });
     } else {
-      // Handle the case where the document does not exist
       print("Document does not exist");
     }
+  }
+
+  String extractMinutes(String timeString) {
+    // Extract numeric value from "20 minutes" or "30 minutes" etc.
+    return timeString.split(" ")[0]; // This will return "20" or "30"
   }
 
   String formatDateTime(DateTime dateTime) {
@@ -67,7 +67,7 @@ class _AfterScanState extends State<AfterScan> {
     DateTime dueOutDateTime = DateTime.now();
     Duration difference = dueOutDateTime.difference(dueInDateTime);
 
-    int givenTimeInMinutes = int.parse(timeGiven) ;
+    int givenTimeInMinutes = int.parse(timeGiven);
     int differenceInMinutes = difference.inMinutes;
 
     if (differenceInMinutes > givenTimeInMinutes) {
@@ -137,7 +137,7 @@ class _AfterScanState extends State<AfterScan> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 "Due In",
                 style: TextStyle(
                   fontSize: 18,
@@ -153,7 +153,7 @@ class _AfterScanState extends State<AfterScan> {
                 ),
                 child: Text(
                   widget.vehicleNumber,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -165,9 +165,9 @@ class _AfterScanState extends State<AfterScan> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.access_time, color: Colors.yellow),
+              const Icon(Icons.access_time, color: Colors.yellow),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 "Due In Time: ",
                 style: TextStyle(
                   fontSize: 16,
@@ -177,7 +177,7 @@ class _AfterScanState extends State<AfterScan> {
               ),
               Text(
                 dueInTime,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
                 ),
@@ -187,9 +187,9 @@ class _AfterScanState extends State<AfterScan> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.attach_money, color: Colors.yellow),
+              const Icon(Icons.attach_money, color: Colors.yellow),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 "Due In Rate: ",
                 style: TextStyle(
                   fontSize: 16,
@@ -199,7 +199,7 @@ class _AfterScanState extends State<AfterScan> {
               ),
               Text(
                 dueInRate,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
                 ),
@@ -209,9 +209,9 @@ class _AfterScanState extends State<AfterScan> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.access_time, color: Colors.yellow),
+              const Icon(Icons.access_time, color: Colors.yellow),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 "Time Given: ",
                 style: TextStyle(
                   fontSize: 16,
@@ -220,8 +220,8 @@ class _AfterScanState extends State<AfterScan> {
                 ),
               ),
               Text(
-                timeGiven,
-                style: TextStyle(
+                "$timeGiven minutes",
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
                 ),
@@ -254,7 +254,7 @@ class _AfterScanState extends State<AfterScan> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 "Due Out",
                 style: TextStyle(
                   fontSize: 18,
@@ -270,7 +270,7 @@ class _AfterScanState extends State<AfterScan> {
                 ),
                 child: Text(
                   widget.vehicleNumber,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -282,9 +282,9 @@ class _AfterScanState extends State<AfterScan> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.access_time, color: Colors.yellow),
+              const Icon(Icons.access_time, color: Colors.yellow),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 "Current Time: ",
                 style: TextStyle(
                   fontSize: 16,
@@ -294,7 +294,7 @@ class _AfterScanState extends State<AfterScan> {
               ),
               Text(
                 dueOutTime,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
                 ),
@@ -307,103 +307,114 @@ class _AfterScanState extends State<AfterScan> {
   }
 
   Widget buildFinalAmountContainer() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 3,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.5),
+          spreadRadius: 5,
+          blurRadius: 10,
+          offset: Offset(0, 4),
+        ),
+      ],
+      border: Border.all(
+        color: Colors.yellow.shade700,
+        width: 2,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Text(
-              "Final Calculated Amount",
-              style: TextStyle(
-                fontSize: 18,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.attach_money, color: Colors.yellow.shade700, size: 30),
+                const SizedBox(width: 8),
+                const Text(
+                  "Amount to Pay",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+            Icon(Icons.receipt_long, color: Colors.grey.shade700, size: 28),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.currency_rupee, size: 40, color: Colors.green),
+            Text(
+              finalAmount,
+              style: const TextStyle(
+                fontSize: 40,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          timeExceeded
-              ? Container(
-                  padding: const EdgeInsets.all(8),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (timeExceeded)
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 28),
+                    const SizedBox(width: 8),
+                    const Text(
+                      "Time Exceeded:",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: Colors.red.shade50,
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.red.shade200,
+                      width: 1.5,
+                    ),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.warning, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Time Exceeded by $exceededTime",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      Icon(Icons.timer_off_rounded, color: Colors.red.shade300, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          exceededTime,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.red,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                )
-              : Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Time Not Exceeded",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Total Amount: ",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              Text(
-                finalAmount,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
-      ),
-    );
-  }
-}
+      ],
+    ),
+  );
+}}
