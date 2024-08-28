@@ -20,7 +20,6 @@ class UserDash extends StatefulWidget {
 
 class _UserDashState extends State<UserDash> {
   String _keyboardType = 'numeric'; // Default value
-  // ignore: deprecated_member_use
   final BluetoothManager bluetoothManager = BluetoothManager();
 
   @override
@@ -29,16 +28,12 @@ class _UserDashState extends State<UserDash> {
     _loadKeyboardType();
   }
 
-  // Load the saved keyboard type from SharedPreferences
-
   Future<void> _loadKeyboardType() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _keyboardType = prefs.getString('keyboardType') ?? 'numeric';
     });
   }
-
-  // Save the selected keyboard type to SharedPreferences
 
   void _logout() {
     _showLogoutDialog();
@@ -67,18 +62,17 @@ class _UserDashState extends State<UserDash> {
                   children: [
                     ElevatedButton(
                       onPressed: () async {
-                        // Log out the user from Firebase Authentication
                         await FirebaseAuth.instance.signOut();
 
-                        Navigator.of(context).pop(); // Close the dialog
+                        Navigator.of(context).pop();
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const Verify()),
-                        ); // Navigate to the Verify screen
+                        );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 250, 1, 1),
+                        backgroundColor: const Color.fromARGB(255, 250, 1, 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -90,10 +84,10 @@ class _UserDashState extends State<UserDash> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pop(); // Close the dialog
+                        Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 31, 249, 2),
+                        backgroundColor: const Color.fromARGB(255, 31, 249, 2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -138,8 +132,8 @@ class _UserDashState extends State<UserDash> {
                   },
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_downward, color: Colors.black),
-                      SizedBox(width: 10),
+                      const Icon(Icons.arrow_downward, color: Colors.black),
+                      const SizedBox(width: 10),
                       Text(
                         'Due In',
                         style: GoogleFonts.nunitoSans(
@@ -166,8 +160,8 @@ class _UserDashState extends State<UserDash> {
                   },
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_upward, color: Colors.black),
-                      SizedBox(width: 10),
+                      const Icon(Icons.arrow_upward, color: Colors.black),
+                      const SizedBox(width: 10),
                       Text(
                         'Due Out',
                         style: GoogleFonts.nunitoSans(
@@ -186,198 +180,226 @@ class _UserDashState extends State<UserDash> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.yellow[600],
-        title: AnimatedTextKit(
-          animatedTexts: [
-            TyperAnimatedText(
-              'User Dashboard',
-              textStyle: GoogleFonts.nunito(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              speed: const Duration(milliseconds: 200),
-            ),
-          ],
-          isRepeatingAnimation: true,
-          repeatForever: true,
+  Widget customAppBar(BuildContext context) {
+    return Container(
+      height: 150,
+      width: 360,
+      decoration: BoxDecoration(
+        color: Colors.yellow[600],
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(50),
+          bottomRight: Radius.circular(50),
         ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: _logout,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            offset: const Offset(0, 5),
+            blurRadius: 15,
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
+      child: Stack(
+        children: [
+          Center(
+            child: AnimatedTextKit(
+              animatedTexts: [
+                TyperAnimatedText(
+                  'User Dashboard',
+                  textStyle: GoogleFonts.nunito(
+                    color: Colors.black,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
                   ),
-                  builder: (context) {
-                    return dueBottomSheet(context);
-                  },
-                );
-              },
-              child: Container(
-                height: 150,
-                width: 170,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.yellow[100]!,
-                      offset: const Offset(0, 4),
-                      blurRadius: 10,
-                    ),
-                  ],
+                  speed: const Duration(milliseconds: 200),
                 ),
-                child: Center(
-                  child: Text(
-                    'Due',
-                    style: GoogleFonts.nunitoSans(
-                      fontSize: 22,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              ],
+              isRepeatingAnimation: true,
+              repeatForever: true,
+            ),
+          ),
+          Positioned(
+            right: 20,
+            top: 60,
+            child: GestureDetector(
+              onTap: _logout,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.logout,
+                  color: Colors.white,
+                  size: 25,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          
+          customAppBar(context),
+          const SizedBox(height: 20),
+          Expanded(
+            child: Stack(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                Fix(keyboardtype: _keyboardType)));
-                  },
+                Positioned.fill(
+                  bottom: 220,
                   child: Container(
-                    height: 150,
-                    width: MediaQuery.of(context).size.width * 0.4,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.blue, Colors.green],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.yellow[100]!,
-                          offset: const Offset(0, 4),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
+                    color: const Color.fromARGB(255, 251, 250, 250),
                     child: Center(
-                      child: Text(
-                        'Fix',
-                        style: GoogleFonts.nunito(
-                          fontSize: 22,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      child: Container(
+                        height: 350,
+                        width: 350,
+                        decoration: BoxDecoration(
+                          color: Colors.yellow[100],
+                          borderRadius: BorderRadius.circular(150),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.yellow.withOpacity(0.5),
+                              offset: const Offset(0, 10),
+                              blurRadius: 30,
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
+                Padding(
+                  padding: const EdgeInsets.only(top: 70.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildContainer(
+                            context,
+                            'Due',
+                            Colors.red,
+                            () {
+                              showModalBottomSheet(
+                                context: context,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20)),
+                                ),
+                                builder: (context) {
+                                  return dueBottomSheet(context);
+                                },
+                              );
+                            },
+                          ),
+                          _buildContainer(
+                            context,
+                            'Fix',
+                            Colors.blue,
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        Fix(keyboardtype: _keyboardType)),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      _buildContainer(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                Pass(keyboardtype: _keyboardType)));
-                  },
-                  child: Container(
-                    height: 150,
-                    width: MediaQuery.of(context).size.width * 0.4,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.blue, Colors.green],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.yellow[100]!,
-                          offset: const Offset(0, 4),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
                         'Pass',
-                        style: GoogleFonts.nunito(
-                          fontSize: 22,
-                          color: const Color.fromARGB(255, 255, 255, 255),
-                          fontWeight: FontWeight.bold,
-                        ),
+                        Colors.green,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    Pass(keyboardtype: _keyboardType)),
+                          );
+                        },
                       ),
-                    ),
+                      const Spacer(),
+                      _buildSettingsButton(context),
+                    ],
                   ),
                 ),
               ],
             ),
-            SizedBox(
-              height: 20,
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Settings()));
-              },
-              child: Container(
-                height: 150,
-                width: MediaQuery.of(context).size.width * 0.4,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Colors.blue, Colors.green],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.yellow[100]!,
-                      offset: const Offset(0, 4),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    'Settings',
-                    style: GoogleFonts.nunito(
-                      fontSize: 22,
-                      color: const Color.fromARGB(255, 255, 255, 255),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContainer(
+      BuildContext context, String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 150,
+        width: MediaQuery.of(context).size.width * 0.4,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.7), color],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              offset: const Offset(0, 5),
+              blurRadius: 15,
             ),
           ],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.nunito(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsButton(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Settings()),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.yellow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+        ),
+        child: Text(
+          'Settings',
+          style: GoogleFonts.nunito(
+            color: Colors.black,
+            fontSize: 20,
+          ),
         ),
       ),
     );

@@ -25,13 +25,13 @@ class _AdduserState extends State<Adduser> {
     final Map<String, dynamic> userData = {
       'uid': phoneNumber,
       'userName': userName,
-      'CreatedAt': '${DateTime.now()}',
+      'CreatedAt': DateTime.now(),
       'isdeleted': false
     };
     final Map<String, dynamic> AdminData = {
       'uid': currentAdminId,
       'ParkingSubscribePackage': 0,
-      'CreatedAt': '${DateTime.now()}',
+      'CreatedAt': DateTime.now(),
       'Usertype': 'Admin',
       'isdeleted': false
     };

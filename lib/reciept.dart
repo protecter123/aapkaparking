@@ -1,18 +1,16 @@
-import 'dart:typed_data';
+import 'package:aapkaparking/bluetoothManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:esc_pos_utils/esc_pos_utils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 
 class Receipt extends StatefulWidget {
   final String vehicleNumber;
   final String rateType;
   final String price;
-  
 
   const Receipt({
     super.key,
@@ -30,106 +28,59 @@ class _ReceiptState extends State<Receipt> {
   String parkingLogo = '';
   String parkingName = '';
   bool isLoading = true;
-  bool _isConnected=true;
-  FlutterBluePlus bluetooth = FlutterBluePlus();
+  BluetoothManager bluetoothManager = BluetoothManager();
+
   @override
   void initState() {
     super.initState();
-    fetchParkingDetails();
+    findAdminAndFetchParkingDetails();
   }
- Future<void> printReceipt() async {
-  if (_isConnected) {
+
+  Future<void> findAdminAndFetchParkingDetails() async {
     try {
-      final profile = await CapabilityProfile.load();
-      final generator = Generator(PaperSize.mm58, profile);
-      List<int> bytes = [];
+      // Get the current user's phone number from Firebase Auth
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null || currentUser.phoneNumber == null) {
+        // Handle the case where the user is not logged in or phone number is not available
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+      String currentPhoneNumber = currentUser.phoneNumber!;
 
-      // Logo
-      //  if (parkingLogo.isNotEmpty) {
-      //   final ByteData logoBytes = await NetworkAssetBundle(Uri.parse(parkingLogo)).load("");
-      //   final Uint8List logo = logoBytes.buffer.asUint8List();
-      //   // Make sure the logo is in a supported format (e.g., PNG)
-      //   // Example code to process image if needed (conversion, resizing, etc.)
-      //   bytes += generator.imageRaster(logo); 
-      // }
+      // Reference to the AllUsers collection
+      CollectionReference allUsersRef =
+          FirebaseFirestore.instance.collection('AllUsers');
 
-      // Parking Name
-      bytes += generator.text(parkingName,
-          styles: PosStyles(
-              align: PosAlign.center,
-              bold: true,
-              height: PosTextSize.size2,
-              width: PosTextSize.size2));
+      // Fetch all admin documents
+      QuerySnapshot adminsSnapshot = await allUsersRef.get();
 
-      // Yellow Line
-      bytes += generator.hr();
+      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
+        // Reference to the Users subcollection
+        CollectionReference usersRef = adminDoc.reference.collection('Users');
 
-      // Paid Parking Text
-      bytes += generator.text('Paid Parking',
-          styles: PosStyles(
-              align: PosAlign.center,
-              bold: true,
-              height: PosTextSize.size2));
+        // Check if the current user's phone number exists in this admin's Users subcollection
+        DocumentSnapshot userDoc = await usersRef.doc(currentPhoneNumber).get();
 
-      // Date and Time
-      final formatter = DateFormat('dd-MM-yyyy, HH:mm'); // Define your DateFormat
-      bytes += generator.text(
-          'DATE: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}, Time: ${formatter.format(DateTime.now())}',
-          styles: PosStyles(
-              align: PosAlign.center,
-              bold: false));
+        if (userDoc.exists) {
+          // If the user document exists, fetch the parking details
+          setState(() {
+            // Explicitly cast adminDoc.data() to Map<String, dynamic>
+            Map<String, dynamic> adminData =
+                adminDoc.data() as Map<String, dynamic>;
 
-      // Vehicle Number
-      bytes += generator.text('Vehicle No.: ${widget.vehicleNumber}',
-          styles: PosStyles(
-              align: PosAlign.center,
-              bold: true));
+            parkingLogo = adminData['ParkingLogo'] ?? '';
+            parkingName = adminData['ParkingName'] ?? 'Parking Name';
+            isLoading = false;
+          });
 
-      // Amount
-      bytes += generator.text('Amount: ₹${widget.price}',
-          styles: PosStyles(
-              align: PosAlign.center,
-              bold: true));
+          return;
+        }
+      }
 
-      // QR Code
-      bytes += generator.qrcode(widget.vehicleNumber, size: QRSize.Size8);
-
-      // Yellow Line
-      bytes += generator.hr();
-
-      // Thank You Note
-      bytes += generator.text('Thank you, Lucky Road!',
-          styles: PosStyles(
-              align: PosAlign.center,
-              bold: true));
-
-      // Cut the paper
-      bytes += generator.cut();
-
-      // Write bytes to Bluetooth printer
-     // Uint8List byteData = Uint8List.fromList(bytes);
-
-      // Send data to the printer
-     // await bluetooth.writeBytes(byteData);
-    } catch (e) {
-      print("Error while printing receipt: $e");
-    }
-  } else {
-    print("Printer not connected");
-  }
-}
-
-  Future<void> fetchParkingDetails() async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-          .instance
-          .collection('AllUsers')
-          .doc('+919999999999')
-          .get();
-
+      // If no matching admin is found, stop loading and handle the error case
       setState(() {
-        parkingLogo = snapshot.data()?['ParkingLogo'] ?? '';
-        parkingName = snapshot.data()?['ParkingName'] ?? 'Parking Name';
         isLoading = false;
       });
     } catch (e) {
@@ -140,11 +91,42 @@ class _ReceiptState extends State<Receipt> {
     }
   }
 
+  Future<void> printReceipt() async {
+    if (bluetoothManager.isConnected()) {
+      final printer = bluetoothManager.printer;
+
+      printer.printNewLine();
+      printer.printCustom('Receipt Details', 2, 1);
+      printer.printNewLine();
+
+      printer.printCustom(parkingName, 3, 1);
+      printer.printNewLine();
+
+      String dateTime =
+          'DATE: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}, Time: ${formatter.format(DateTime.now())}';
+      printer.printCustom(dateTime, 1, 1);
+      printer.printNewLine();
+
+      printer.printCustom('Vehicle No.: ${widget.vehicleNumber}', 2, 1);
+      printer.printCustom('Amount: ₹${widget.price}', 2, 1);
+      printer.printNewLine();
+
+      printer.printCustom('QR Code: ${widget.vehicleNumber}', 1, 1);
+      printer.printNewLine();
+
+      printer.printCustom('Thank you, Lucky Road!', 1, 1);
+      printer.printNewLine();
+      printer.paperCut();
+    } else {
+      print('No printer connected');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.yellow, // Yellow AppBar
+        backgroundColor: Colors.yellow,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -159,7 +141,10 @@ class _ReceiptState extends State<Receipt> {
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.yellow,))
+          ? const Center(
+              child: CircularProgressIndicator(
+              color: Colors.yellow,
+            ))
           : LayoutBuilder(
               builder: (context, constraints) {
                 return Center(
@@ -171,7 +156,6 @@ class _ReceiptState extends State<Receipt> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Logo and Parking Area Name
                           Column(
                             children: [
                               Image.network(
@@ -189,12 +173,10 @@ class _ReceiptState extends State<Receipt> {
                               ),
                             ],
                           ),
-                          // Yellow Line
                           Container(
                             height: 2,
                             color: Colors.yellow,
                           ),
-                          // Paid Parking Text
                           Text(
                             'Paid Parking',
                             style: GoogleFonts.nunito(
@@ -203,7 +185,6 @@ class _ReceiptState extends State<Receipt> {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          // Date
                           Text(
                             'DATE: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}, Time: ${formatter.format(DateTime.now())}',
                             style: const TextStyle(
@@ -212,7 +193,6 @@ class _ReceiptState extends State<Receipt> {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          // Vehicle Number and Rate
                           Column(
                             children: [
                               Text(
@@ -234,46 +214,22 @@ class _ReceiptState extends State<Receipt> {
                               ),
                             ],
                           ),
-                          // QR Code
                           QrImageView(
                             data: widget.vehicleNumber,
                             size: constraints.maxHeight * 0.3,
                             backgroundColor: Colors.white,
                           ),
-                          // Yellow Line
                           Container(
                             height: 2,
                             color: Colors.yellow,
                           ),
-                          // Thank You and Lucky Road
                           const Text(
-                            'Thank you , Lucky Road!',
+                            'Thank you, Lucky Road!',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
-                          ),
-                          // Generate Receipt Button
-                          ElevatedButton(
-                            onPressed: () {
-                              printReceipt();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.yellow,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 100, vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Text(
-                              'Print Receipt',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
-                              ),
-                            ),
                           ),
                         ],
                       ),

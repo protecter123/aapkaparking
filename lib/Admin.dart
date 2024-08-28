@@ -2,7 +2,9 @@ import 'package:aapkaparking/Add%20pricing.dart';
 import 'package:aapkaparking/Add%20vehicle.dart';
 import 'package:aapkaparking/Adduser.dart';
 import 'package:aapkaparking/Edit%20vehicle.dart';
+import 'package:aapkaparking/colection.dart';
 import 'package:aapkaparking/verify.dart';
+import 'package:aapkaparking/viewUser.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -181,6 +183,26 @@ class _AdminPageState extends State<AdminPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const EditVehicle()),
+                );
+              },
+            ),
+            _buildCard(
+              'Edit Users',
+              'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Viewuser()),
+                );
+              },
+            ),
+            _buildCard(
+              'Collection',
+              'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Collection()),
                 );
               },
             ),

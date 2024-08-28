@@ -1,7 +1,8 @@
 import 'package:aapkaparking/bluetoothShowScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Add Google Fonts for Nunito
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -15,10 +16,10 @@ class _SettingsState extends State<Settings>
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   String _keyboardType = 'numeric';
+
   @override
   void initState() {
     super.initState();
-    // Initialize animation controller and scale animation
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -48,7 +49,6 @@ class _SettingsState extends State<Settings>
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        // Local variable to track the current selection
         String selectedKeyboardType = _keyboardType;
 
         return StatefulBuilder(
@@ -149,7 +149,7 @@ class _SettingsState extends State<Settings>
 
   @override
   void dispose() {
-    _animationController.dispose(); // Dispose the animation controller
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -157,65 +157,74 @@ class _SettingsState extends State<Settings>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.yellow, // Yellow AppBar background
-        centerTitle: true, // Center the title
+        backgroundColor: Colors.yellow,
+        centerTitle: true,
         title: Text(
           'Settings',
           style: GoogleFonts.nunito(
             color: Colors.black,
             fontWeight: FontWeight.bold,
             fontSize: 20,
-          ), // Nunito font for title
+          ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start, // Align buttons to the start
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: Center(  // Center the Row
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,  // Even spacing between buttons
           children: [
             GestureDetector(
-              onTapDown: (_) =>
-                  _animationController.forward(), // Scale up on tap down
-              onTapUp: (_) =>
-                  _animationController.reverse(), // Scale down on tap up
+              onTapDown: (_) => _animationController.forward(),
+              onTapUp: (_) => _animationController.reverse(),
               onTap: _showSettingsDialog,
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
+                  height: 180, // Increase the height
+                  width: 150, // Set a fixed width
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.yellow,
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: [Colors.yellow.shade600, Colors.yellow.shade400],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         offset: Offset(0, 4),
-                        blurRadius: 4,
+                        blurRadius: 8,
                         spreadRadius: 1,
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
                   margin: const EdgeInsets.only(bottom: 20.0),
-                  child: Center(
-                    child: Text(
-                      'Keyboard Setting',
-                      style: GoogleFonts.nunito(
+                  child: Column(  // Icon above and text below
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FaIcon(
+                        FontAwesomeIcons.keyboard,
                         color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        size: 50, // Increase icon size
                       ),
-                    ),
+                      const SizedBox(height: 15),
+                      Text(
+                        'Keyboard Setting',
+                        textAlign: TextAlign.center,  // Center text
+                        style: GoogleFonts.nunito(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
             GestureDetector(
-              onTapDown: (_) =>
-                  _animationController.forward(), // Scale up on tap down
-              onTapUp: (_) =>
-                  _animationController.reverse(), // Scale down on tap up
+              onTapDown: (_) => _animationController.forward(),
+              onTapUp: (_) => _animationController.reverse(),
               onTap: () {
                 Navigator.push(
                   context,
@@ -225,29 +234,45 @@ class _SettingsState extends State<Settings>
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
+                  height: 180, // Increase the height
+                  width: 150, // Set a fixed width
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.yellow,
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: [Colors.yellow.shade600, Colors.yellow.shade400],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         offset: Offset(0, 4),
-                        blurRadius: 4,
+                        blurRadius: 8,
                         spreadRadius: 1,
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
                   margin: const EdgeInsets.only(bottom: 20.0),
-                  child: Center(
-                    child: Text(
-                      'Connect Printer',
-                      style: GoogleFonts.nunito(
+                  child: Column(  // Icon above and text below
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    const  FaIcon(
+                        FontAwesomeIcons.print,
                         color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        size: 50, // Increase icon size
                       ),
-                    ),
+                      const SizedBox(height: 15),
+                      Text(
+                        'Connect Printer',
+                        textAlign: TextAlign.center,  // Center text
+                        style: GoogleFonts.nunito(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

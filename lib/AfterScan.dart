@@ -1,11 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:aapkaparking/bluetoothManager.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AfterScan extends StatefulWidget {
   final String vehicleNumber;
+  
 
-  const AfterScan({super.key, required this.vehicleNumber});
+  const AfterScan({super.key, required this.vehicleNumber, });
 
   @override
   State<AfterScan> createState() => _AfterScanState();
@@ -19,14 +22,17 @@ class _AfterScanState extends State<AfterScan> {
   bool timeExceeded = false;
   String exceededTime = "";
   String finalAmount = "";
-
+  BluetoothManager bluetoothManager = BluetoothManager();
   @override
   void initState() {
     super.initState();
     fetchData();
-    dueOutTime = formatDateTime(DateTime.now()); // Set the current date and time
+    dueOutTime = formatDateTime(DateTime.now());
+   Future.delayed(Duration(seconds: 2), () {
+   
+  }); // Set the current date and time
   }
-
+  
   Future<void> fetchData() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     String phoneNumber = currentUser?.phoneNumber ?? 'unknown';
@@ -49,14 +55,16 @@ class _AfterScanState extends State<AfterScan> {
 
         calculateFinalAmount(dateTime);
       });
+
+      // After fetching all details, start printing the receipt
+      await printReceipt();
     } else {
       print("Document does not exist");
     }
   }
 
   String extractMinutes(String timeString) {
-    // Extract numeric value from "20 minutes" or "30 minutes" etc.
-    return timeString.split(" ")[0]; // This will return "20" or "30"
+    return timeString.split(" ")[0];
   }
 
   String formatDateTime(DateTime dateTime) {
@@ -73,8 +81,7 @@ class _AfterScanState extends State<AfterScan> {
     if (differenceInMinutes > givenTimeInMinutes) {
       timeExceeded = true;
       int exceededMinutes = differenceInMinutes - givenTimeInMinutes;
-      exceededTime =
-          "${(exceededMinutes / 60).floor()} hours and ${exceededMinutes % 60} minutes";
+      exceededTime = "${(exceededMinutes / 60).floor()} hours and ${exceededMinutes % 60} minutes";
 
       int dueInRateValue = int.parse(dueInRate);
       int additionalCharges = (exceededMinutes / 60).floor() * dueInRateValue;
@@ -86,6 +93,49 @@ class _AfterScanState extends State<AfterScan> {
 
     setState(() {});
   }
+
+  Future<void> printReceipt() async {
+  if (bluetoothManager.isConnected()) {
+    final printer = bluetoothManager.printer;
+
+    // Printing Receipt Header
+    printer.printNewLine();
+    printer.printCustom('Receipt Details', 2, 1); // 2: Font size, 1: Center aligned
+    printer.printNewLine();
+
+    // Printing Due In details
+    printer.printCustom("Due In", 1, 0); // 1: Normal font size, 0: Left aligned
+    printer.printNewLine();
+    printer.printCustom("Vehicle No.: ${widget.vehicleNumber}", 1, 0);
+    printer.printCustom("Due In Time: $dueInTime", 1, 0);
+    printer.printCustom("Due In Rate: ₹$dueInRate", 1, 0);
+    printer.printCustom("Time Given: $timeGiven minutes", 1, 0);
+    printer.printNewLine();
+
+    // Printing Due Out details
+    printer.printCustom("Due Out", 1, 0); // 1: Normal font size, 0: Left aligned
+    printer.printNewLine();
+    printer.printCustom("Current Time: $dueOutTime", 1, 0);
+    printer.printNewLine();
+
+    // Printing Final Amount
+    printer.printCustom("Amount to Pay", 2, 1); // 2: Font size, 1: Center aligned
+    printer.printNewLine();
+    printer.printCustom("₹$finalAmount", 2, 1); // Centered and larger font for the final amount
+    if (timeExceeded) {
+      printer.printNewLine();
+      printer.printCustom("Time Exceeded: $exceededTime", 1, 0);
+    }
+    printer.printNewLine();
+
+    // Printing Footer
+    printer.printCustom('Thank you, Lucky Road!', 1, 1);
+    printer.printNewLine();
+    printer.paperCut(); // Cut the paper after printing
+  } else {
+    print('No printer connected');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -307,114 +357,79 @@ class _AfterScanState extends State<AfterScan> {
   }
 
   Widget buildFinalAmountContainer() {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.5),
-          spreadRadius: 5,
-          blurRadius: 10,
-          offset: Offset(0, 4),
-        ),
-      ],
-      border: Border.all(
-        color: Colors.yellow.shade700,
-        width: 2,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 3,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Amount to Pay",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Icon(Icons.attach_money, color: Colors.yellow),
+              const SizedBox(width: 8),
+              const Text(
+                "Final Amount: ",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                "₹$finalAmount",
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+          if (timeExceeded) ...[
+            const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.attach_money, color: Colors.yellow.shade700, size: 30),
+                const Icon(Icons.error, color: Colors.red),
                 const SizedBox(width: 8),
                 const Text(
-                  "Amount to Pay",
+                  "Time Exceeded: ",
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
                 ),
-              ],
-            ),
-            Icon(Icons.receipt_long, color: Colors.grey.shade700, size: 28),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.currency_rupee, size: 40, color: Colors.green),
-            Text(
-              finalAmount,
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (timeExceeded)
-          Padding(
-            padding: const EdgeInsets.only(top: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 28),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Time Exceeded:",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.red.shade200,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.timer_off_rounded, color: Colors.red.shade300, size: 28),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          exceededTime,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ),
-                    ],
+                Text(
+                  exceededTime,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.red,
                   ),
                 ),
               ],
             ),
-          ),
-      ],
-    ),
-  );
-}}
+          ],
+        ],
+      ),
+    );
+  }
+}
