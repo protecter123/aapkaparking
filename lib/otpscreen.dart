@@ -16,7 +16,7 @@ class Loader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 40,
-      width: 90,
+      width: 160,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -139,7 +139,7 @@ class OtpScreenState extends State<OtpScreen>
 
           // Check in the Users collection
           CollectionReference users =
-              FirebaseFirestore.instance.collection('loginUsers');
+              FirebaseFirestore.instance.collection('LoginUsers');
           DocumentSnapshot userDoc = await users.doc(phoneNumber).get();
 
           setState(() {
@@ -271,7 +271,7 @@ class OtpScreenState extends State<OtpScreen>
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 47.0, right: 0, top: 15),
+                                left: 40.0, right: 0, top: 15),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -327,7 +327,7 @@ class OtpScreenState extends State<OtpScreen>
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(bottom: 28.0),
+                                  padding: const EdgeInsets.only(bottom: 10.0),
                                   child: IconButton(
                                     onPressed: () {
                                       _otpController.text = '';
@@ -337,12 +337,15 @@ class OtpScreenState extends State<OtpScreen>
                                       color: clearenable
                                           ? Color.fromARGB(255, 157, 255, 0)
                                           : Colors.transparent,
-                                      size: 35,
+                                      size: 25,
                                     ),
                                   ),
                                 )
                               ],
                             ),
+                          ),
+                          SizedBox(
+                            height: 15,
                           ),
                           Center(
                             child: Row(
@@ -350,24 +353,36 @@ class OtpScreenState extends State<OtpScreen>
                               children: [
                                 Text(
                                   'Resend OTP in $_secondsRemaining seconds',
-                                  style: const TextStyle(
-                                      fontSize: 18, color: Colors.black),
+                                  style: TextStyle(
+                                    fontSize:
+                                        // ignore: deprecated_member_use
+                                        MediaQuery.of(context).textScaleFactor *
+                                            11, // Responsive font size
+                                    color: Colors.black,
+                                  ),
                                 ),
+                                SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.02), // Responsive spacing
                                 if (_showResendButton)
                                   TextButton(
                                     onPressed: _resendOTP,
-                                    child: const Text(
+                                    child: Text(
                                       'Resend OTP',
                                       style: TextStyle(
-                                          color:
-                                              Color.fromARGB(255, 255, 70, 64)),
+                                        color: Color.fromARGB(255, 255, 70, 64),
+                                        fontSize: MediaQuery.of(context)
+                                                // ignore: deprecated_member_use
+                                                .textScaleFactor *
+                                            9, // Responsive font size
+                                      ),
                                     ),
                                   ),
                               ],
                             ),
                           ),
                           SizedBox(
-                            height: 4,
+                            height: 10,
                           ),
                           Center(
                             child: Stack(
@@ -376,14 +391,14 @@ class OtpScreenState extends State<OtpScreen>
                                   onPressed: buttonenable ? _verifyOTP : null,
                                   style: ButtonStyle(
                                     backgroundColor:
-                                        MaterialStateProperty.all<Color>(
+                                        WidgetStateProperty.all<Color>(
                                       buttonenable
                                           ? Color.fromARGB(255, 255, 255, 0)
                                           : Colors.grey,
                                     ),
-                                    fixedSize: MaterialStateProperty.all<Size>(
+                                    fixedSize: WidgetStateProperty.all<Size>(
                                         Size(270, 55)),
-                                    shape: MaterialStateProperty.all<
+                                    shape: WidgetStateProperty.all<
                                         RoundedRectangleBorder>(
                                       const RoundedRectangleBorder(
                                         borderRadius: BorderRadius
@@ -403,7 +418,7 @@ class OtpScreenState extends State<OtpScreen>
                                 if (_isloading)
                                   const Padding(
                                     padding:
-                                        EdgeInsets.only(left: 90.0, top: 5),
+                                        EdgeInsets.only(left: 70.0, top: 5),
                                     child: Loader(),
                                   ),
                               ],

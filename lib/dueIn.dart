@@ -1,6 +1,7 @@
 import 'package:aapkaparking/dueInRate.dart';
 import 'package:aapkaparking/fixrate.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +17,8 @@ class Due extends StatefulWidget {
 }
 
 class _DueState extends State<Due> {
-   // Replace with the current user's phone number
- 
+  // Replace with the current user's phone number
+
   String? adminPhoneNumber;
   CollectionReference? vehiclesCollection;
 
@@ -32,7 +33,8 @@ class _DueState extends State<Due> {
     String currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
     try {
       // Reference to the AllUsers collection
-      CollectionReference allUsersRef = FirebaseFirestore.instance.collection('AllUsers');
+      CollectionReference allUsersRef =
+          FirebaseFirestore.instance.collection('AllUsers');
 
       // Fetch all admin documents
       QuerySnapshot adminsSnapshot = await allUsersRef.get();
@@ -42,7 +44,8 @@ class _DueState extends State<Due> {
         CollectionReference usersRef = adminDoc.reference.collection('Users');
 
         // Check if the current user's phone number exists in this admin's Users subcollection
-        DocumentSnapshot userDoc = await usersRef.doc(currentUserPhoneNumber).get();
+        DocumentSnapshot userDoc =
+            await usersRef.doc(currentUserPhoneNumber).get();
 
         if (userDoc.exists) {
           // Set admin phone number and update the vehiclesCollection reference
@@ -73,20 +76,13 @@ class _DueState extends State<Due> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.yellow[600],
-        title: AnimatedTextKit(
-          animatedTexts: [
-            TyperAnimatedText(
-              'All Vehicles',
-              textStyle: GoogleFonts.nunito(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              speed: const Duration(milliseconds: 200),
-            ),
-          ],
-          isRepeatingAnimation: true,
-          repeatForever: true,
+        title: Text(
+          'All Vehicles',
+          style: GoogleFonts.nunito(
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -102,7 +98,9 @@ class _DueState extends State<Due> {
               stream: vehiclesCollection!.snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: Colors.yellow));
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.yellow),
+                  );
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text('No vehicle images found.'));
@@ -121,7 +119,8 @@ class _DueState extends State<Due> {
                   itemBuilder: (context, index) {
                     var doc = docs[index];
                     var imageUrl = doc['vehicleImage'];
-                    var vehicleName = capitalize(doc['vehicleName'] ?? 'Unknown');
+                    var vehicleName =
+                        capitalize(doc['vehicleName'] ?? 'Unknown');
 
                     return GestureDetector(
                       onTap: () {
@@ -137,58 +136,65 @@ class _DueState extends State<Due> {
                       },
                       child: Card(
                         elevation: 10.0,
-                        color: const Color.fromARGB(255, 248, 246, 225), // 3D effect
+                        color: const Color.fromARGB(
+                            255, 248, 246, 225), // 3D effect
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Column(
                           children: [
                             Container(
-                              height: 134, // Reduce height for a better layout
+                              height: 130,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Stack(
                                 children: [
-                                  // Asset Image as Placeholder
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: Image.asset(
-                                      'assets/animations/placeholder.png', // Replace with your asset image path
+                                      'assets/animations/placeholder.png',
                                       fit: BoxFit.cover,
-                                      height: 134, // Same height as the container
-                                      width: double.infinity, // Fill the container's width
+                                      height: 134,
+                                      width: double.infinity,
                                     ),
                                   ),
-                                  // CachedNetworkImage with Loader
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: CachedNetworkImage(
                                       imageUrl: imageUrl,
                                       fit: BoxFit.cover,
-                                      height: 134, // Same height as the container
-                                      width: double.infinity, // Fill the container's width
+                                      height: 134,
+                                      width: double.infinity,
                                       placeholder: (context, url) => Container(
                                         alignment: Alignment.center,
-                                        color: Colors.transparent, // Transparent background over asset image
+                                        color: Colors.transparent,
                                         child: const CircularProgressIndicator(
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.yellow),
                                         ),
                                       ),
-                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
+                              padding: const EdgeInsets.all(2.0),
+                              child: AutoSizeText(
                                 vehicleName,
                                 style: GoogleFonts.nunito(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 20,
+                                  fontSize: 17,
                                 ),
+                                maxLines: 1, // Ensure single line
+                                minFontSize: 12,
+                                maxFontSize:
+                                    17, // Minimum font size to shrink to
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

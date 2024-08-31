@@ -20,17 +20,16 @@ class AddVehicle extends StatefulWidget {
 class _AddVehicleState extends State<AddVehicle> {
   final TextEditingController vehicleNameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  XFile? _image;
-
-  void _pickImage(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      final compressedImage = await _compressImage(File(pickedFile.path));
-      setState(() {
-        _image = XFile(compressedImage.path);
-      });
-    }
-  }
+  File? _image;
+  // void _pickImage(ImageSource source) async {
+  //   final pickedFile = await _picker.pickImage(source: source);
+  //   if (pickedFile != null) {
+  //     final compressedImage = await _compressImage(File(pickedFile.path));
+  //     setState(() {
+  //       _image = XFile(compressedImage.path);
+  //     });
+  //   }
+  // }
 
   Future<XFile> _compressImage(File file) async {
     final tempDir = await getTemporaryDirectory();
@@ -44,81 +43,47 @@ class _AddVehicleState extends State<AddVehicle> {
     return compressedImage!;
   }
 
-  void _showImageSourceBottomSheet() {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(20),
-      ),
-    ),
-    builder: (context) {
-      return Container(
-        height: 300,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Choose Image Source',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+  void _getImage() async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Camera'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final pickedFile =
+                      await _picker.pickImage(source: ImageSource.camera);
+                  setState(() {
+                    if (pickedFile != null) {
+                      _image = File(pickedFile.path);
+                    }
+                  });
+                },
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.camera);
-                  },
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.blue,
-                        child: Icon(
-                          Icons.camera_alt,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('Camera'),
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.green,
-                        child: Icon(
-                          Icons.photo_album,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('Gallery'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final pickedFile =
+                      await _picker.pickImage(source: ImageSource.gallery);
+                  setState(() {
+                    if (pickedFile != null) {
+                      _image = File(pickedFile.path);
+                    }
+                  });
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _saveVehicleDetails() async {
     if (_image == null || vehicleNameController.text.isEmpty) {
@@ -256,24 +221,46 @@ class _AddVehicleState extends State<AddVehicle> {
                 ),
               ),
               Positioned(
-                top: 130,
-                left: MediaQuery.of(context).size.width / 2 - 50,
-                child: GestureDetector(
-                  onTap: _showImageSourceBottomSheet,
-                  child: AnimatedScale(
-                    scale: 1.0,
-                    duration: const Duration(milliseconds: 100),
-                    child: CircleAvatar(
-                      radius: 50,
+                top: 100,
+                left: 140,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
                       backgroundColor: Colors.yellow.shade700,
-                      backgroundImage:
-                          _image != null ? FileImage(File(_image!.path)) : null,
-                      child: _image == null
-                          ? const Icon(Icons.add_a_photo,
-                              size: 50, color: Colors.black)
-                          : null,
+                      child: GestureDetector(
+                        onTap: () {
+                          _getImage;
+                        },
+                        child: CircleAvatar(
+                          radius: 55,
+                          backgroundImage:
+                              _image != null ? FileImage(_image!) : null,
+                          child: _image == null
+                              ? const Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 60,
+                                )
+                              : null,
+                        ),
+                      ),
                     ),
-                  ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: ElevatedButton(
+                        onPressed: _getImage,
+                        style: ElevatedButton.styleFrom(
+                          shape: CircleBorder(),
+                          backgroundColor: Colors.yellow.shade700,
+                          padding: EdgeInsets.all(8), // Button color
+                        ),
+                        child:
+                            const Icon(Icons.camera_alt, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Positioned(
@@ -328,8 +315,8 @@ class _AddVehicleState extends State<AddVehicle> {
                                         const BorderSide(color: Colors.yellow),
                                   ),
                                   hintText: 'Enter vehicle name',
-                                  hintStyle:
-                                      const TextStyle(color: Colors.black, fontSize: 19),
+                                  hintStyle: const TextStyle(
+                                      color: Colors.black, fontSize: 19),
                                   prefixIcon: const Icon(Icons.directions_car,
                                       color: Colors.black),
                                 ),

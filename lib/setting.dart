@@ -1,17 +1,18 @@
 import 'package:aapkaparking/bluetoothShowScreen.dart';
+import 'package:aapkaparking/users.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class Settings extends StatefulWidget {
-  const Settings({super.key});
+class Setting extends StatefulWidget {
+  const Setting({super.key});
 
   @override
-  State<Settings> createState() => _SettingsState();
+  State<Setting> createState() => _SettingsState();
 }
 
-class _SettingsState extends State<Settings>
+class _SettingsState extends State<Setting>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -167,10 +168,23 @@ class _SettingsState extends State<Settings>
             fontSize: 20,
           ),
         ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) =>
+                    UserDash(), // Replace with your UserScreen widget
+              ),
+            );
+          },
+        ),
       ),
-      body: Center(  // Center the Row
+      body: Center(
+        // Center the Row
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,  // Even spacing between buttons
+          mainAxisAlignment:
+              MainAxisAlignment.spaceEvenly, // Even spacing between buttons
           children: [
             GestureDetector(
               onTapDown: (_) => _animationController.forward(),
@@ -199,7 +213,8 @@ class _SettingsState extends State<Settings>
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
                   margin: const EdgeInsets.only(bottom: 20.0),
-                  child: Column(  // Icon above and text below
+                  child: Column(
+                    // Icon above and text below
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FaIcon(
@@ -210,7 +225,7 @@ class _SettingsState extends State<Settings>
                       const SizedBox(height: 15),
                       Text(
                         'Keyboard Setting',
-                        textAlign: TextAlign.center,  // Center text
+                        textAlign: TextAlign.center, // Center text
                         style: GoogleFonts.nunito(
                           color: Colors.black,
                           fontSize: 16,
@@ -254,10 +269,11 @@ class _SettingsState extends State<Settings>
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
                   margin: const EdgeInsets.only(bottom: 20.0),
-                  child: Column(  // Icon above and text below
+                  child: Column(
+                    // Icon above and text below
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                    const  FaIcon(
+                      const FaIcon(
                         FontAwesomeIcons.print,
                         color: Colors.black,
                         size: 50, // Increase icon size
@@ -265,7 +281,7 @@ class _SettingsState extends State<Settings>
                       const SizedBox(height: 15),
                       Text(
                         'Connect Printer',
-                        textAlign: TextAlign.center,  // Center text
+                        textAlign: TextAlign.center, // Center text
                         style: GoogleFonts.nunito(
                           color: Colors.black,
                           fontSize: 16,

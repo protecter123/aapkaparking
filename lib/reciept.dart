@@ -11,12 +11,14 @@ class Receipt extends StatefulWidget {
   final String vehicleNumber;
   final String rateType;
   final String price;
+  final String page;
 
   const Receipt({
     super.key,
     required this.vehicleNumber,
     required this.rateType,
     required this.price,
+    required this.page,
   });
 
   @override

@@ -1,4 +1,3 @@
-
 import 'package:aapkaparking/bluetoothManager.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,9 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AfterScan extends StatefulWidget {
   final String vehicleNumber;
-  
 
-  const AfterScan({super.key, required this.vehicleNumber, });
+  const AfterScan({super.key, required this.vehicleNumber});
 
   @override
   State<AfterScan> createState() => _AfterScanState();
@@ -23,43 +21,70 @@ class _AfterScanState extends State<AfterScan> {
   String exceededTime = "";
   String finalAmount = "";
   BluetoothManager bluetoothManager = BluetoothManager();
+
   @override
   void initState() {
     super.initState();
     fetchData();
     dueOutTime = formatDateTime(DateTime.now());
-   Future.delayed(Duration(seconds: 2), () {
-   
-  }); // Set the current date and time
   }
-  
+
   Future<void> fetchData() async {
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    String phoneNumber = currentUser?.phoneNumber ?? 'unknown';
+    try {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      String phoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
-    DocumentSnapshot doc = await FirebaseFirestore.instance
-        .collection('loginUsers')
-        .doc(phoneNumber)
-        .collection('DueInDetails')
-        .doc(widget.vehicleNumber)
-        .get();
+      // Perform the query to find documents with the matching vehicle number
+      QuerySnapshot<Map<String, dynamic>> querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('LoginUsers')
+              .doc(phoneNumber)
+              .collection('DueInDetails')
+              .doc(DateTime.now().year.toString())
+              .collection(DateTime.now().month.toString())
+              .where('vehicleNumber', isEqualTo: widget.vehicleNumber)
+              .get();
 
-    if (doc.exists) {
-      Timestamp timestamp = doc['timestamp'];
-      DateTime dateTime = timestamp.toDate();
+      if (querySnapshot.docs.isNotEmpty) {
+        // Get the current time
+        DateTime now = DateTime.now();
 
-      setState(() {
-        dueInTime = formatDateTime(dateTime);
-        dueInRate = doc['price'] ?? '';
-        timeGiven = extractMinutes(doc['selectedTime'] ?? '');
+        // Sort documents by the absolute difference between their timestamp and the current time
+        querySnapshot.docs.sort((a, b) {
+          DateTime timeA = (a.data()['timestamp'] as Timestamp).toDate();
+          DateTime timeB = (b.data()['timestamp'] as Timestamp).toDate();
 
-        calculateFinalAmount(dateTime);
-      });
+          // Calculate the difference in time between the document's timestamp and now
+          int differenceA = (now.difference(timeA)).abs().inMilliseconds;
+          int differenceB = (now.difference(timeB)).abs().inMilliseconds;
 
-      // After fetching all details, start printing the receipt
-      await printReceipt();
-    } else {
-      print("Document does not exist");
+          return differenceA
+              .compareTo(differenceB); // Smallest difference first
+        });
+
+        // Select the document with the smallest difference (closest to now)
+        QueryDocumentSnapshot<Map<String, dynamic>> doc =
+            querySnapshot.docs.first;
+        Map<String, dynamic> data = doc.data();
+
+        Timestamp timestamp = data['timestamp'] as Timestamp;
+        DateTime dateTime = timestamp.toDate();
+
+        setState(() {
+          dueInTime = formatDateTime(dateTime);
+          dueInRate = data['price']?.toString() ?? '';
+          timeGiven = extractMinutes(data['selectedTime']?.toString() ?? '');
+
+          calculateFinalAmount(dateTime);
+        });
+
+        // After fetching all details, start printing the receipt
+        await printReceipt();
+      } else {
+        print("No documents found for the given vehicle number.");
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
     }
   }
 
@@ -81,7 +106,8 @@ class _AfterScanState extends State<AfterScan> {
     if (differenceInMinutes > givenTimeInMinutes) {
       timeExceeded = true;
       int exceededMinutes = differenceInMinutes - givenTimeInMinutes;
-      exceededTime = "${(exceededMinutes / 60).floor()} hours and ${exceededMinutes % 60} minutes";
+      exceededTime =
+          "${(exceededMinutes / 60).floor()} hours and ${exceededMinutes % 60} minutes";
 
       int dueInRateValue = int.parse(dueInRate);
       int additionalCharges = (exceededMinutes / 60).floor() * dueInRateValue;
@@ -95,47 +121,52 @@ class _AfterScanState extends State<AfterScan> {
   }
 
   Future<void> printReceipt() async {
-  if (bluetoothManager.isConnected()) {
-    final printer = bluetoothManager.printer;
+    if (bluetoothManager.isConnected()) {
+      final printer = bluetoothManager.printer;
 
-    // Printing Receipt Header
-    printer.printNewLine();
-    printer.printCustom('Receipt Details', 2, 1); // 2: Font size, 1: Center aligned
-    printer.printNewLine();
-
-    // Printing Due In details
-    printer.printCustom("Due In", 1, 0); // 1: Normal font size, 0: Left aligned
-    printer.printNewLine();
-    printer.printCustom("Vehicle No.: ${widget.vehicleNumber}", 1, 0);
-    printer.printCustom("Due In Time: $dueInTime", 1, 0);
-    printer.printCustom("Due In Rate: ₹$dueInRate", 1, 0);
-    printer.printCustom("Time Given: $timeGiven minutes", 1, 0);
-    printer.printNewLine();
-
-    // Printing Due Out details
-    printer.printCustom("Due Out", 1, 0); // 1: Normal font size, 0: Left aligned
-    printer.printNewLine();
-    printer.printCustom("Current Time: $dueOutTime", 1, 0);
-    printer.printNewLine();
-
-    // Printing Final Amount
-    printer.printCustom("Amount to Pay", 2, 1); // 2: Font size, 1: Center aligned
-    printer.printNewLine();
-    printer.printCustom("₹$finalAmount", 2, 1); // Centered and larger font for the final amount
-    if (timeExceeded) {
+      // Printing Receipt Header
       printer.printNewLine();
-      printer.printCustom("Time Exceeded: $exceededTime", 1, 0);
-    }
-    printer.printNewLine();
+      printer.printCustom(
+          'Receipt Details', 2, 1); // 2: Font size, 1: Center aligned
+      printer.printNewLine();
 
-    // Printing Footer
-    printer.printCustom('Thank you, Lucky Road!', 1, 1);
-    printer.printNewLine();
-    printer.paperCut(); // Cut the paper after printing
-  } else {
-    print('No printer connected');
+      // Printing Due In details
+      printer.printCustom(
+          "Due In", 1, 0); // 1: Normal font size, 0: Left aligned
+      printer.printNewLine();
+      printer.printCustom("Vehicle No.: ${widget.vehicleNumber}", 1, 0);
+      printer.printCustom("Due In Time: $dueInTime", 1, 0);
+      printer.printCustom("Due In Rate: ₹$dueInRate", 1, 0);
+      printer.printCustom("Time Given: $timeGiven minutes", 1, 0);
+      printer.printNewLine();
+
+      // Printing Due Out details
+      printer.printCustom(
+          "Due Out", 1, 0); // 1: Normal font size, 0: Left aligned
+      printer.printNewLine();
+      printer.printCustom("Current Time: $dueOutTime", 1, 0);
+      printer.printNewLine();
+
+      // Printing Final Amount
+      printer.printCustom(
+          "Amount to Pay", 2, 1); // 2: Font size, 1: Center aligned
+      printer.printNewLine();
+      printer.printCustom("₹$finalAmount", 2,
+          1); // Centered and larger font for the final amount
+      if (timeExceeded) {
+        printer.printNewLine();
+        printer.printCustom("Time Exceeded: $exceededTime", 1, 0);
+      }
+      printer.printNewLine();
+
+      // Printing Footer
+      printer.printCustom('Thank you, Lucky Road!', 1, 1);
+      printer.printNewLine();
+      printer.paperCut(); // Cut the paper after printing
+    } else {
+      print('No printer connected');
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +257,9 @@ class _AfterScanState extends State<AfterScan> {
                 ),
               ),
               Text(
-                dueInTime,
+                dueInTime.isNotEmpty
+                    ? dueInTime
+                    : 'Loading...', // Default text while loading
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
@@ -248,7 +281,9 @@ class _AfterScanState extends State<AfterScan> {
                 ),
               ),
               Text(
-                dueInRate,
+                dueInRate.isNotEmpty
+                    ? dueInRate
+                    : 'Loading...', // Default text while loading
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
@@ -270,7 +305,9 @@ class _AfterScanState extends State<AfterScan> {
                 ),
               ),
               Text(
-                "$timeGiven minutes",
+                timeGiven.isNotEmpty
+                    ? "$timeGiven minutes"
+                    : 'Loading...', // Default text while loading
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
@@ -343,7 +380,9 @@ class _AfterScanState extends State<AfterScan> {
                 ),
               ),
               Text(
-                dueOutTime,
+                dueOutTime.isNotEmpty
+                    ? dueOutTime
+                    : 'Loading...', // Default text while loading
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,

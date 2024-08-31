@@ -12,12 +12,13 @@ class Viewuser extends StatefulWidget {
 
 class _ViewuserState extends State<Viewuser> {
   String? currentUserPhoneNumber;
-   @override
+  @override
   void initState() {
     super.initState();
     _fetchCurrentUserPhoneNumber();
   }
-    void _fetchCurrentUserPhoneNumber() {
+
+  void _fetchCurrentUserPhoneNumber() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
@@ -25,7 +26,7 @@ class _ViewuserState extends State<Viewuser> {
       });
     }
   }
-   // Replace with the actual phone number
+  // Replace with the actual phone number
 
   // Method to delete a user document from Firestore
   void _deleteUser(String docId) async {
@@ -56,8 +57,18 @@ class _ViewuserState extends State<Viewuser> {
   // Helper method to get month name from month number
   String _monthName(int monthNumber) {
     const List<String> months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return months[monthNumber - 1];
   }
@@ -111,7 +122,8 @@ class _ViewuserState extends State<Viewuser> {
 
               return Card(
                 elevation: 5,
-                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                margin:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -120,7 +132,8 @@ class _ViewuserState extends State<Viewuser> {
                   title: Text(
                     userName,
                     style: GoogleFonts.nunito(
-                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textStyle: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                   subtitle: Column(
@@ -128,16 +141,18 @@ class _ViewuserState extends State<Viewuser> {
                     children: [
                       const SizedBox(height: 5),
                       Text(
-                        'UID: $uid',
+                        'Phone no.: $uid',
                         style: GoogleFonts.nunito(
-                          textStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+                          textStyle:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        'Created At: ${_formatTimestamp(createdAt)}',
+                        'Joined At: ${_formatTimestamp(createdAt)}',
                         style: GoogleFonts.nunito(
-                          textStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+                          textStyle:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ),
                     ],

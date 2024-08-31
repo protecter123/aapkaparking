@@ -1,4 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,21 +20,61 @@ class _PassrateState extends State<Passrate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
-
+  String adminPhoneNumber ='';
+  String currentUserPhoneNumber ='';
   Future<void> fetchPricingDetails() async {
-    var snapshot = await FirebaseFirestore.instance
-        .collection('AllUsers')
-        .doc('+919999999999')
-        .collection('Vehicles')
-        .where('vehicleImage', isEqualTo: widget.imgUrl)
-        .get();
+    User? currentUser = FirebaseAuth.instance.currentUser;
+     currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
-    if (snapshot.docs.isNotEmpty) {
+    try {
+      // Reference to the AllUsers collection
+      CollectionReference allUsersRef =
+          FirebaseFirestore.instance.collection('AllUsers');
+
+      // Fetch all admin documents
+      QuerySnapshot adminsSnapshot = await allUsersRef.get();
+
+      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
+        // Reference to the Users subcollection
+        CollectionReference usersRef = adminDoc.reference.collection('Users');
+
+        // Check if the current user's phone number exists in this admin's Users subcollection
+        DocumentSnapshot userDoc =
+            await usersRef.doc(currentUserPhoneNumber).get();
+
+        if (userDoc.exists) {
+          // Set admin phone number and update the vehiclesCollection reference
+           adminPhoneNumber =
+              adminDoc.id; // Admin phone number or document ID
+          CollectionReference vehiclesCollection =
+              adminDoc.reference.collection('Vehicles');
+
+          // Fetch pricing details based on the vehicle image URL
+          var snapshot = await vehiclesCollection
+              .where('vehicleImage', isEqualTo: widget.imgUrl)
+              .get();
+
+          if (snapshot.docs.isNotEmpty) {
+            setState(() {
+              pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
+            });
+          }
+          return; // Exit the loop once the correct admin is found
+        }
+      }
+
+      // Handle the case where no matching admin is found
       setState(() {
-        pricingData = snapshot.docs.first.data();
+        pricingData = null;
+      });
+    } catch (e) {
+      print('Error fetching pricing details: $e');
+      setState(() {
+        pricingData = null;
       });
     }
   }
+
 
   @override
   void initState() {
@@ -42,21 +83,54 @@ class _PassrateState extends State<Passrate> {
   }
 
   void _generateReceipt() {
-    if (_selectedContainerIndex != null &&
-        _controller.text.isNotEmpty &&
-        pricingData != null) {
-      var selectedRate = _selectedContainerIndex == 0
-          ? '1 Month Pass'
-          : _selectedContainerIndex == 1
-              ? '2 Month Pass'
-              : '3 Month Pass';
+  if (_selectedContainerIndex != null &&
+      _controller.text.isNotEmpty &&
+      pricingData != null) {
+    
+    var selectedRate = _selectedContainerIndex == 0
+        ? '1 Month Pass'
+        : _selectedContainerIndex == 1
+            ? '2 Month Pass'
+            : '3 Month Pass';
 
-      var price = _selectedContainerIndex == 0
-          ? pricingData!['PassPrice']
-          : _selectedContainerIndex == 1
-              ? (int.tryParse(pricingData!['PassPrice'])! * 2).toString()
-              : (int.tryParse(pricingData!['PassPrice'])! * 3).toString();
+    // Calculate the price based on the selected option
+    var price = _selectedContainerIndex == 0
+        ? pricingData!['PassPrice']
+        : _selectedContainerIndex == 1
+            ? (int.tryParse(pricingData!['PassPrice'])! * 2).toString()
+            : (int.tryParse(pricingData!['PassPrice'])! * 3).toString();
 
+    try {
+      CollectionReference usersRef = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(adminPhoneNumber)
+          .collection('Users')
+          .doc(currentUserPhoneNumber)
+          .collection('MoneyCollection');
+
+      DocumentReference passDocRef = usersRef.doc('Pass');
+
+      // Run a transaction to safely update the total money field
+      FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot snapshot = await transaction.get(passDocRef);
+
+        if (snapshot.exists) {
+          // Convert the existing total money from string to integer
+          int existingTotal = int.tryParse(snapshot['totalMoney'] ?? '0') ?? 0;
+          int newTotal = existingTotal + int.tryParse(price)!;
+
+          print('Existing Total: $existingTotal, New Total: $newTotal');
+
+          // Convert new total back to string before saving
+          transaction.update(passDocRef, {'totalMoney': newTotal.toString()});
+        } else {
+          // If the document doesn't exist, create it with the initial amount
+          print('Creating document with initial total: $price');
+          transaction.set(passDocRef, {'totalMoney': price});
+        }
+      });
+
+      // Navigate to the receipt screen
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -64,11 +138,19 @@ class _PassrateState extends State<Passrate> {
             vehicleNumber: _controller.text,
             rateType: selectedRate,
             price: price,
+            page: 'Pass',
           ),
         ),
       );
+    } catch (e) {
+      print('Error updating total money: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update total money. Please try again.')),
+      );
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

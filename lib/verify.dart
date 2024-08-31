@@ -5,13 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 
-
 class Loader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 50,
-      width: 90,
+      width: 180,
       color: Colors.yellow.shade700,
       child: const Center(
         child: CircularProgressIndicator(
@@ -51,9 +50,8 @@ class VerifyState extends State<Verify> {
     try {
       // Check if the phone number is already in the 'users' collection
       final userDoc = await FirebaseFirestore.instance
-          .collection('loginUsers')
+          .collection('LoginUsers')
           .doc(phoneNumber)
-          
           .get();
       final userDoc2 = await FirebaseFirestore.instance
           .collection('AllUsers')
@@ -107,14 +105,14 @@ class VerifyState extends State<Verify> {
           isScrollControlled: true,
           builder: (context) => Container(
             padding: const EdgeInsets.all(16),
-            decoration:const BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
             ),
-            child:const Column(
+            child: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.error, color: Colors.red, size: 30),
@@ -140,7 +138,7 @@ class VerifyState extends State<Verify> {
         isScrollControlled: true,
         builder: (context) => Container(
           padding: const EdgeInsets.all(16),
-          decoration:const BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20),
@@ -150,11 +148,11 @@ class VerifyState extends State<Verify> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            const  Icon(Icons.error, color: Colors.red, size: 30),
+              const Icon(Icons.error, color: Colors.red, size: 30),
               SizedBox(height: 8),
               Text(
                 'Error occurred: $e',
-                style:const TextStyle(color: Colors.black, fontSize: 16),
+                style: const TextStyle(color: Colors.black, fontSize: 16),
               ),
               SizedBox(height: 16),
             ],
@@ -167,12 +165,12 @@ class VerifyState extends State<Verify> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value:const SystemUiOverlayStyle(
+      value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark, // Dark icons
         statusBarBrightness: Brightness.light, // For iOS
       ),
-      child: Scaffold (
+      child: Scaffold(
         backgroundColor: Color.fromARGB(255, 247, 249, 229),
         appBar: AnimatedAppBar(title: 'Sign In'),
         body: SingleChildScrollView(
@@ -247,27 +245,45 @@ class VerifyState extends State<Verify> {
                                     controller: phonecontroller,
                                     keyboardType: TextInputType.phone,
                                     maxLength: 10,
-                                    style: const TextStyle(
-                                        color: Colors.black, fontSize: 20),
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize:
+                                          MediaQuery.of(context).size.width *
+                                              0.05, // Responsive font size
+                                    ),
                                     decoration: InputDecoration(
                                       counterText: '',
                                       border: InputBorder.none,
                                       hintText: 'Enter mobile number',
-                                      hintStyle: TextStyle(color: Colors.brown,fontSize: 20),
+                                      hintStyle: TextStyle(
+                                        color: Colors.brown,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.045, // Responsive font size
+                                      ),
                                       prefixIcon: Padding(
                                         padding:
                                             const EdgeInsets.only(right: 10.0),
-                                        child: Text(
-                                          '$countryCode |',
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            color: Color.fromARGB(255, 9, 9, 9),
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            '$countryCode |',
+                                            style: TextStyle(
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.05, // Responsive font size
+                                              color: const Color.fromARGB(
+                                                  255, 9, 9, 9),
+                                            ),
                                           ),
                                         ),
                                       ),
                                       prefixIconConstraints:
                                           const BoxConstraints(
-                                              minWidth: 0, minHeight: 0),
+                                        minWidth: 0,
+                                        minHeight: 0,
+                                      ),
                                     ),
                                     onChanged: (value) {
                                       setState(() {
@@ -308,7 +324,7 @@ class VerifyState extends State<Verify> {
                                 });
                               },
                               child: Padding(
-                                padding: const EdgeInsets.only(right:8.0),
+                                padding: const EdgeInsets.only(right: 8.0),
                                 child: CircleAvatar(
                                   backgroundColor: clear
                                       ? !_isValid
@@ -328,7 +344,8 @@ class VerifyState extends State<Verify> {
                                             ? const Color.fromARGB(
                                                 255, 250, 20, 4)
                                             : _iscompleted
-                                                ? Color.fromARGB(255, 27, 130, 1)
+                                                ? Color.fromARGB(
+                                                    255, 27, 130, 1)
                                                 : Color.fromARGB(
                                                     255, 207, 206, 206)
                                         : const Color.fromARGB(0, 255, 193, 7),
@@ -424,7 +441,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(
-     const SystemUiOverlayStyle(
+      const SystemUiOverlayStyle(
         statusBarColor:
             Color.fromARGB(243, 0, 0, 0), // Make the status bar transparent
         statusBarIconBrightness:
@@ -462,7 +479,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value:const SystemUiOverlayStyle(
+        value: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark, // Dark icons
           statusBarBrightness: Brightness.light, // For iOS
@@ -473,6 +490,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
             return AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
+              automaticallyImplyLeading: false,
               flexibleSpace: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

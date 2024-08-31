@@ -1,6 +1,7 @@
 import 'package:aapkaparking/Add%20pricing.dart';
 import 'package:aapkaparking/Add%20vehicle.dart';
 import 'package:aapkaparking/Adduser.dart';
+import 'package:aapkaparking/Adduser2.dart';
 import 'package:aapkaparking/Edit%20vehicle.dart';
 import 'package:aapkaparking/colection.dart';
 import 'package:aapkaparking/verify.dart';
@@ -152,7 +153,7 @@ class _AdminPageState extends State<AdminPage> {
               () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const Adduser()),
+                  MaterialPageRoute(builder: (context) => const Adduser2()),
                 );
               },
             ),
@@ -198,7 +199,7 @@ class _AdminPageState extends State<AdminPage> {
             ),
             _buildCard(
               'Collection',
-              'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
+              'https://lottie.host/8f2db930-c350-4c79-b123-fcb736cdf900/hcex28AduM.json',
               () {
                 Navigator.push(
                   context,

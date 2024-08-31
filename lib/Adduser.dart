@@ -22,7 +22,7 @@ class _AdduserState extends State<Adduser> {
     final String currentAdminId =
         FirebaseAuth.instance.currentUser?.phoneNumber ?? '';
     final String userName = nameController.text.trim();
-    final Map<String, dynamic> userData = {
+    final Map<String, dynamic> UserData = {
       'uid': phoneNumber,
       'userName': userName,
       'CreatedAt': DateTime.now(),
@@ -51,9 +51,9 @@ class _AdduserState extends State<Adduser> {
           .doc(currentAdminId)
           .set(AdminData);
       await FirebaseFirestore.instance
-          .collection('loginUsers')
+          .collection('LoginUsers')
           .doc(phoneNumber)
-          .set(userData);
+          .set(UserData);
 
       // Save user data in current admin's "Users" collection
       await FirebaseFirestore.instance
@@ -61,7 +61,7 @@ class _AdduserState extends State<Adduser> {
           .doc(currentAdminId)
           .collection('Users')
           .doc(phoneNumber)
-          .set(userData);
+          .set(UserData);
 
       // Show success dialog
       _showSuccessDialog();

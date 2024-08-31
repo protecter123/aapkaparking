@@ -13,25 +13,64 @@ class Duerate extends StatefulWidget {
   const Duerate({super.key, required this.imgUrl, required this.keyboardtype});
 
   @override
-  _FixirateState createState() => _FixirateState();
+  _DuerateState createState() => _DuerateState();
 }
 
-class _FixirateState extends State<Duerate> {
+class _DuerateState extends State<Duerate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
-
+  String adminPhoneNumber ='';
+   String currentUserPhoneNumber = '';
   Future<void> fetchPricingDetails() async {
-    var snapshot = await FirebaseFirestore.instance
-        .collection('AllUsers')
-        .doc('+919999999999')
-        .collection('Vehicles')
-        .where('vehicleImage', isEqualTo: widget.imgUrl)
-        .get();
+    User? currentUser = FirebaseAuth.instance.currentUser;
+     currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+     
+    try {
+      // Reference to the AllUsers collection
+      CollectionReference allUsersRef =
+          FirebaseFirestore.instance.collection('AllUsers');
 
-    if (snapshot.docs.isNotEmpty) {
+      // Fetch all admin documents
+      QuerySnapshot adminsSnapshot = await allUsersRef.get();
+
+      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
+        // Reference to the Users subcollection
+        CollectionReference usersRef = adminDoc.reference.collection('Users');
+
+        // Check if the current user's phone number exists in this admin's Users subcollection
+        DocumentSnapshot userDoc =
+            await usersRef.doc(currentUserPhoneNumber).get();
+
+        if (userDoc.exists) {
+          // Set admin phone number and update the vehiclesCollection reference
+           adminPhoneNumber =
+              adminDoc.id; // Admin phone number or document ID
+          CollectionReference vehiclesCollection =
+              adminDoc.reference.collection('Vehicles');
+
+          // Fetch pricing details based on the vehicle image URL
+          var snapshot = await vehiclesCollection
+              .where('vehicleImage', isEqualTo: widget.imgUrl)
+              .get();
+
+          if (snapshot.docs.isNotEmpty) {
+            setState(() {
+              pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
+            });
+          }
+          return; // Exit the loop once the correct admin is found
+        }
+      }
+
+      // Handle the case where no matching admin is found
       setState(() {
-        pricingData = snapshot.docs.first.data();
+        pricingData = null;
+      });
+    } catch (e) {
+      print('Error fetching pricing details: $e');
+      setState(() {
+        pricingData = null;
       });
     }
   }
@@ -42,15 +81,16 @@ class _FixirateState extends State<Duerate> {
     fetchPricingDetails();
   }
 
-  void _generateReceipt() async {
+ void _generateReceipt() async {
   if (_selectedContainerIndex != null &&
       _controller.text.isNotEmpty &&
       pricingData != null) {
+      
     var selectedRate = _selectedContainerIndex == 0
-        ? '30 Minutes'
+        ? '30'
         : _selectedContainerIndex == 1
-            ? '60 Minutes'
-            : '120 Minutes';
+            ? '60'
+            :'90';
 
     var price = _selectedContainerIndex == 0
         ? pricingData!['Pricing30Minutes']
@@ -64,17 +104,56 @@ class _FixirateState extends State<Duerate> {
 
     // Creating a reference to the DueInDetails collection under the user's document
     CollectionReference dueInCollection = FirebaseFirestore.instance
-        .collection('loginUsers')
+        .collection('LoginUsers')
         .doc(phoneNumber)
-        .collection('DueInDetails');
+        .collection('DueInDetails')
+        .doc(DateTime.now().year.toString())
+        .collection(DateTime.now().month.toString());
 
     // Creating a document using the vehicle number as the document ID
-    await dueInCollection.doc(_controller.text).set({
+    await dueInCollection.doc(DateTime.now().toString()).set({
       'vehicleNumber': _controller.text,
       'selectedTime': selectedRate,
       'price': price,
       'timestamp': DateTime.now(), // Exact time of the transaction
     });
+
+    try {
+      CollectionReference usersRef = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(adminPhoneNumber)
+          .collection('Users')
+          .doc(currentUserPhoneNumber)
+          .collection('MoneyCollection');
+
+      DocumentReference passDocRef = usersRef.doc('Due');
+
+      // Run a transaction to safely update the total money field
+      FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot snapshot = await transaction.get(passDocRef);
+
+        if (snapshot.exists) {
+          // Convert the existing total money from string to integer
+          int existingTotal = int.tryParse(snapshot['totalMoney'] ?? '0') ?? 0;
+          int newTotal = existingTotal + int.tryParse(price)!;
+
+          print('Existing Total: $existingTotal, New Total: $newTotal'); // Debugging statement
+
+          // Convert new total back to string before saving
+          transaction.update(passDocRef, {'totalMoney': newTotal.toString()});
+        } else {
+          // If the document doesn't exist, create it with the initial amount
+          print('Creating document with initial total: $price'); // Debugging statement
+          transaction.set(passDocRef, {'totalMoney': price});
+        }
+      });
+
+    } catch (e) {
+      print('Error updating total money: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update total money. Please try again.')),
+      );
+    }
 
     // Navigate to the Receipt screen
     Navigator.push(
@@ -84,11 +163,14 @@ class _FixirateState extends State<Duerate> {
           vehicleNumber: _controller.text,
           rateType: selectedRate,
           price: price,
+          page: 'dueIn',
         ),
       ),
     );
   }
 }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,32 +210,35 @@ class _FixirateState extends State<Duerate> {
                           _buildPricingContainer(
                             context,
                             '30 Minutes',
-                            int.tryParse(
-                                pricingData!['Pricing30Minutes'] ?? '0'),
+                            int.tryParse(pricingData!['Pricing30Minutes']
+                                    .toString()) ??
+                                0,
                             0,
                           ),
                           const SizedBox(height: 16),
                           _buildPricingContainer(
                             context,
                             '60 Minutes',
-                            int.tryParse(pricingData!['Pricing1Hour'] ?? '0'),
+                            int.tryParse(
+                                    pricingData!['Pricing1Hour'].toString()) ??
+                                0,
                             1,
                           ),
                           const SizedBox(height: 16),
                           _buildPricingContainer(
                             context,
                             '120 Minutes',
-                            int.tryParse(
-                                pricingData!['Pricing120Minutes'] ?? '0'),
+                            int.tryParse(pricingData!['Pricing120Minutes']
+                                    .toString()) ??
+                                0,
                             2,
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
-                      width: MediaQuery.of(context).size.width -
-                          48, // Decreases the width by 10 pixels
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 48,
                       child: TextField(
                         controller: _controller,
                         keyboardType: widget.keyboardtype == 'numeric'
@@ -189,8 +274,7 @@ class _FixirateState extends State<Duerate> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Container(
-                          width:MediaQuery.of(context).size.width -
-                          48,
+                          width: MediaQuery.of(context).size.width - 48,
                           height: 70,
                           alignment: Alignment.center,
                           child: Text(
@@ -212,7 +296,7 @@ class _FixirateState extends State<Duerate> {
   }
 
   Widget _buildPricingContainer(
-      BuildContext context, String timing, int? price, int index) {
+      BuildContext context, String timing, int price, int index) {
     bool isSelected = _selectedContainerIndex == index;
 
     return GestureDetector(
@@ -265,7 +349,7 @@ class _FixirateState extends State<Duerate> {
             Padding(
               padding: const EdgeInsets.only(top: 30.0, left: 50),
               child: Text(
-                '₹ ${price ?? 0}',
+                '₹ $price',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -273,7 +357,7 @@ class _FixirateState extends State<Duerate> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 50.0),
+              padding: const EdgeInsets.only(top: 50.0),
               child: Lottie.asset('assets/animations/line.json', repeat: false),
             ),
           ],
