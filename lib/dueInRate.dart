@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'reciept.dart';
 
@@ -20,12 +21,12 @@ class _DuerateState extends State<Duerate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
-  String adminPhoneNumber ='';
-   String currentUserPhoneNumber = '';
+  String adminPhoneNumber = '';
+  String currentUserPhoneNumber = '';
   Future<void> fetchPricingDetails() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
-     currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
-     
+    currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+
     try {
       // Reference to the AllUsers collection
       CollectionReference allUsersRef =
@@ -44,8 +45,7 @@ class _DuerateState extends State<Duerate> {
 
         if (userDoc.exists) {
           // Set admin phone number and update the vehiclesCollection reference
-           adminPhoneNumber =
-              adminDoc.id; // Admin phone number or document ID
+          adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
           CollectionReference vehiclesCollection =
               adminDoc.reference.collection('Vehicles');
 
@@ -81,95 +81,108 @@ class _DuerateState extends State<Duerate> {
     fetchPricingDetails();
   }
 
- void _generateReceipt() async {
-  if (_selectedContainerIndex != null &&
-      _controller.text.isNotEmpty &&
-      pricingData != null) {
-      
-    var selectedRate = _selectedContainerIndex == 0
-        ? '30'
-        : _selectedContainerIndex == 1
-            ? '60'
-            :'90';
+  void _generateReceipt() async {
+    if (_selectedContainerIndex != null &&
+        _controller.text.isNotEmpty &&
+        pricingData != null) {
+      var selectedRate = _selectedContainerIndex == 0
+          ? '30'
+          : _selectedContainerIndex == 1
+              ? '60'
+              : '90';
 
-    var price = _selectedContainerIndex == 0
-        ? pricingData!['Pricing30Minutes']
-        : _selectedContainerIndex == 1
-            ? pricingData!['Pricing1Hour']
-            : pricingData!['Pricing120Minutes'];
+      var price = _selectedContainerIndex == 0
+          ? pricingData!['Pricing30Minutes']
+          : _selectedContainerIndex == 1
+              ? pricingData!['Pricing1Hour']
+              : pricingData!['Pricing120Minutes'];
 
-    // Getting the current user's phone number
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    String phoneNumber = currentUser?.phoneNumber ?? 'unknown';
+      // Getting the current user's phone number
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      String phoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
-    // Creating a reference to the DueInDetails collection under the user's document
-    CollectionReference dueInCollection = FirebaseFirestore.instance
-        .collection('LoginUsers')
-        .doc(phoneNumber)
-        .collection('DueInDetails')
-        .doc(DateTime.now().year.toString())
-        .collection(DateTime.now().month.toString());
+      // Creating a reference to the DueInDetails collection under the user's document
+      CollectionReference dueInCollection = FirebaseFirestore.instance
+          .collection('LoginUsers')
+          .doc(phoneNumber)
+          .collection('DueInDetails')
+          .doc(DateTime.now().year.toString())
+          .collection(DateTime.now().month.toString());
 
-    // Creating a document using the vehicle number as the document ID
-    await dueInCollection.doc(DateTime.now().toString()).set({
-      'vehicleNumber': _controller.text,
-      'selectedTime': selectedRate,
-      'price': price,
-      'timestamp': DateTime.now(), // Exact time of the transaction
-    });
-
-    try {
-      CollectionReference usersRef = FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(adminPhoneNumber)
-          .collection('Users')
-          .doc(currentUserPhoneNumber)
-          .collection('MoneyCollection');
-
-      DocumentReference passDocRef = usersRef.doc('Due');
-
-      // Run a transaction to safely update the total money field
-      FirebaseFirestore.instance.runTransaction((transaction) async {
-        DocumentSnapshot snapshot = await transaction.get(passDocRef);
-
-        if (snapshot.exists) {
-          // Convert the existing total money from string to integer
-          int existingTotal = int.tryParse(snapshot['totalMoney'] ?? '0') ?? 0;
-          int newTotal = existingTotal + int.tryParse(price)!;
-
-          print('Existing Total: $existingTotal, New Total: $newTotal'); // Debugging statement
-
-          // Convert new total back to string before saving
-          transaction.update(passDocRef, {'totalMoney': newTotal.toString()});
-        } else {
-          // If the document doesn't exist, create it with the initial amount
-          print('Creating document with initial total: $price'); // Debugging statement
-          transaction.set(passDocRef, {'totalMoney': price});
-        }
+      // Creating a document using the current time as the document ID
+      await dueInCollection.doc(DateTime.now().toString()).set({
+        'vehicleNumber': _controller.text,
+        'selectedTime': selectedRate,
+        'price': price,
+        'timestamp': DateTime.now(), // Exact time of the transaction
       });
 
-    } catch (e) {
-      print('Error updating total money: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update total money. Please try again.')),
+      try {
+        CollectionReference usersRef = FirebaseFirestore.instance
+            .collection('AllUsers')
+            .doc(adminPhoneNumber)
+            .collection('Users')
+            .doc(currentUserPhoneNumber)
+            .collection('MoneyCollection');
+
+        DocumentReference passDocRef =
+            usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+
+        // Run a transaction to safely update the DueMoney field
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          DocumentSnapshot snapshot = await transaction.get(passDocRef);
+
+          if (snapshot.exists) {
+            // Cast data to Map<String, dynamic>
+            Map<String, dynamic>? data =
+                snapshot.data() as Map<String, dynamic>?;
+
+            if (data != null && data.containsKey('dueMoney')) {
+              // Convert the existing total money from string to integer
+              int existingTotal = int.tryParse(data['dueMoney'] ?? '0') ?? 0;
+              int newTotal = existingTotal + int.tryParse(price)!;
+
+              print(
+                  'Existing Total: $existingTotal, New Total: $newTotal'); // Debugging statement
+
+              // Convert new total back to string before saving
+              transaction.update(passDocRef, {'dueMoney': newTotal.toString()});
+            } else {
+              // If DueMoney field does not exist, create or update it with the initial amount
+              print(
+                  'Creating document with initial total: $price'); // Debugging statement
+              transaction.set(
+                  passDocRef, {'dueMoney': price}, SetOptions(merge: true));
+            }
+          } else {
+            // If the document doesn't exist, create it with the initial amount
+            print(
+                'Creating document with initial total: $price'); // Debugging statement
+            transaction.set(passDocRef, {'dueMoney': price});
+          }
+        });
+      } catch (e) {
+        print('Error updating total money: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to update total money. Please try again.')),
+        );
+      }
+
+      // Navigate to the Receipt screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Receipt(
+            vehicleNumber: _controller.text,
+            rateType: selectedRate,
+            price: price,
+            page: 'dueIn',
+          ),
+        ),
       );
     }
-
-    // Navigate to the Receipt screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Receipt(
-          vehicleNumber: _controller.text,
-          rateType: selectedRate,
-          price: price,
-          page: 'dueIn',
-        ),
-      ),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {

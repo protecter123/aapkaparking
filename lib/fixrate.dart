@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'reciept.dart';
 
@@ -20,11 +21,11 @@ class _FixirateState extends State<Fixirate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
-  String adminPhoneNumber='';
-   String currentUserPhoneNumber='';
+  String adminPhoneNumber = '';
+  String currentUserPhoneNumber = '';
   Future<void> fetchPricingDetails() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
-     currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+    currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
     try {
       // Reference to the AllUsers collection
@@ -44,8 +45,7 @@ class _FixirateState extends State<Fixirate> {
 
         if (userDoc.exists) {
           // Set admin phone number and update the vehiclesCollection reference
-           adminPhoneNumber =
-              adminDoc.id; // Admin phone number or document ID
+          adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
           CollectionReference vehiclesCollection =
               adminDoc.reference.collection('Vehicles');
 
@@ -75,84 +75,96 @@ class _FixirateState extends State<Fixirate> {
     }
   }
 
-
   @override
   void initState() {
     super.initState();
     fetchPricingDetails();
   }
 
- void _generateReceipt() async {
-  if (_selectedContainerIndex != null &&
-      _controller.text.isNotEmpty &&
-      pricingData != null) {
-    var selectedRate = _selectedContainerIndex == 0
-        ? '30 Minutes'
-        : _selectedContainerIndex == 1
-            ? '60 Minutes'
-            : '120 Minutes';
+  void _generateReceipt() async {
+    if (_selectedContainerIndex != null &&
+        _controller.text.isNotEmpty &&
+        pricingData != null) {
+      var selectedRate = _selectedContainerIndex == 0
+          ? '30 Minutes'
+          : _selectedContainerIndex == 1
+              ? '60 Minutes'
+              : '120 Minutes';
 
-    var price = _selectedContainerIndex == 0
-        ? pricingData!['Pricing30Minutes']
-        : _selectedContainerIndex == 1
-            ? pricingData!['Pricing1Hour']
-            : pricingData!['Pricing120Minutes'];
+      var price = _selectedContainerIndex == 0
+          ? pricingData!['Pricing30Minutes']
+          : _selectedContainerIndex == 1
+              ? pricingData!['Pricing1Hour']
+              : pricingData!['Pricing120Minutes'];
 
-    // Convert price to double
-    double priceAsDouble = double.tryParse(price.toString()) ?? 0.0;
+      // Convert price to double
+      double priceAsDouble = double.tryParse(price.toString()) ?? 0.0;
 
-    // Firestore update logic
-    try {
-      CollectionReference usersRef = FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(adminPhoneNumber)
-          .collection('Users')
-          .doc(currentUserPhoneNumber)
-          .collection('MoneyCollection');
+      // Firestore update logic
+      try {
+        CollectionReference usersRef = FirebaseFirestore.instance
+            .collection('AllUsers')
+            .doc(adminPhoneNumber)
+            .collection('Users')
+            .doc(currentUserPhoneNumber)
+            .collection('MoneyCollection');
 
-      DocumentReference fixDocRef = usersRef.doc('Fix');
+        DocumentReference fixDocRef =
+            usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
-      // Run a transaction to safely update the total money field
-      FirebaseFirestore.instance.runTransaction((transaction) async {
-        DocumentSnapshot snapshot = await transaction.get(fixDocRef);
+        // Run a transaction to safely update the fixMoney field
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          DocumentSnapshot snapshot = await transaction.get(fixDocRef);
 
-        if (snapshot.exists) {
-          // Convert the existing total money from string to double
-          double existingTotal = double.tryParse(snapshot['totalMoney'] ?? '0.0') ?? 0.0;
-          double newTotal = existingTotal + priceAsDouble;
+          if (snapshot.exists) {
+            // Cast data to Map<String, dynamic>
+            Map<String, dynamic>? data =
+                snapshot.data() as Map<String, dynamic>?;
 
-          print('Existing Total: $existingTotal, New Total: $newTotal');
+            if (data != null && data.containsKey('fixMoney')) {
+              // Convert the existing fixMoney from string to double
+              double existingTotal =
+                  double.tryParse(data['fixMoney'] ?? '0.0') ?? 0.0;
+              double newTotal = existingTotal + priceAsDouble;
 
-          // Convert new total back to string before saving
-          transaction.update(fixDocRef, {'totalMoney': newTotal.toString()});
-        } else {
-          // If the document doesn't exist, create it with the initial amount
-          print('Creating document with initial total: $priceAsDouble');
-          transaction.set(fixDocRef, {'totalMoney': priceAsDouble.toString()});
-        }
-      });
+              print('Existing Total: $existingTotal, New Total: $newTotal');
 
-      // Navigate to the receipt screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Receipt(
-            vehicleNumber: _controller.text,
-            rateType: selectedRate,
-            price: (priceAsDouble).toString(),
-            page: 'Fix',
+              // Update only the 'fixMoney' field without disturbing other fields
+              transaction.update(fixDocRef, {'fixMoney': newTotal.toString()});
+            } else {
+              // If fixMoney field does not exist, create it or update it with the initial amount
+              print('Creating document with initial total: $priceAsDouble');
+              transaction.set(fixDocRef, {'fixMoney': priceAsDouble.toString()},
+                  SetOptions(merge: true));
+            }
+          } else {
+            // If the document doesn't exist, create it with the initial amount
+            print('Creating document with initial total: $priceAsDouble');
+            transaction.set(fixDocRef, {'fixMoney': priceAsDouble.toString()});
+          }
+        });
+
+        // Navigate to the receipt screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Receipt(
+              vehicleNumber: _controller.text,
+              rateType: selectedRate,
+              price: priceAsDouble.toString(),
+              page: 'Fix',
+            ),
           ),
-        ),
-      );
-    } catch (e) {
-      print('Error updating total money: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update total money. Please try again.')),
-      );
+        );
+      } catch (e) {
+        print('Error updating total money: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to update total money. Please try again.')),
+        );
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -254,8 +266,7 @@ class _FixirateState extends State<Fixirate> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Container(
-                          width:MediaQuery.of(context).size.width -
-                          48,
+                          width: MediaQuery.of(context).size.width - 48,
                           height: 70,
                           alignment: Alignment.center,
                           child: Text(

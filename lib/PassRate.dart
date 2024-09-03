@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'reciept.dart';
 
@@ -20,11 +21,11 @@ class _PassrateState extends State<Passrate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
-  String adminPhoneNumber ='';
-  String currentUserPhoneNumber ='';
+  String adminPhoneNumber = '';
+  String currentUserPhoneNumber = '';
   Future<void> fetchPricingDetails() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
-     currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+    currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
     try {
       // Reference to the AllUsers collection
@@ -44,8 +45,7 @@ class _PassrateState extends State<Passrate> {
 
         if (userDoc.exists) {
           // Set admin phone number and update the vehiclesCollection reference
-           adminPhoneNumber =
-              adminDoc.id; // Admin phone number or document ID
+          adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
           CollectionReference vehiclesCollection =
               adminDoc.reference.collection('Vehicles');
 
@@ -75,88 +75,102 @@ class _PassrateState extends State<Passrate> {
     }
   }
 
-
   @override
   void initState() {
     super.initState();
     fetchPricingDetails();
   }
 
-  void _generateReceipt() {
-  if (_selectedContainerIndex != null &&
-      _controller.text.isNotEmpty &&
-      pricingData != null) {
-    
-    var selectedRate = _selectedContainerIndex == 0
-        ? '1 Month Pass'
-        : _selectedContainerIndex == 1
-            ? '2 Month Pass'
-            : '3 Month Pass';
+  void _generateReceipt() async {
+    if (_selectedContainerIndex != null &&
+        _controller.text.isNotEmpty &&
+        pricingData != null) {
+      var selectedRate = _selectedContainerIndex == 0
+          ? '1 Month Pass'
+          : _selectedContainerIndex == 1
+              ? '2 Month Pass'
+              : '3 Month Pass';
 
-    // Calculate the price based on the selected option
-    var price = _selectedContainerIndex == 0
-        ? pricingData!['PassPrice']
-        : _selectedContainerIndex == 1
-            ? (int.tryParse(pricingData!['PassPrice'])! * 2).toString()
-            : (int.tryParse(pricingData!['PassPrice'])! * 3).toString();
+      // Calculate the price based on the selected option
+      var price = _selectedContainerIndex == 0
+          ? pricingData!['PassPrice']
+          : _selectedContainerIndex == 1
+              ? (int.tryParse(pricingData!['PassPrice'])! * 2).toString()
+              : (int.tryParse(pricingData!['PassPrice'])! * 3).toString();
 
-    try {
-      CollectionReference usersRef = FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(adminPhoneNumber)
-          .collection('Users')
-          .doc(currentUserPhoneNumber)
-          .collection('MoneyCollection');
+      // Convert price to integer
+      int priceAsInt = int.tryParse(price) ?? 0;
 
-      DocumentReference passDocRef = usersRef.doc('Pass');
+      try {
+        CollectionReference usersRef = FirebaseFirestore.instance
+            .collection('AllUsers')
+            .doc(adminPhoneNumber)
+            .collection('Users')
+            .doc(currentUserPhoneNumber)
+            .collection('MoneyCollection');
 
-      // Run a transaction to safely update the total money field
-      FirebaseFirestore.instance.runTransaction((transaction) async {
-        DocumentSnapshot snapshot = await transaction.get(passDocRef);
+        DocumentReference passDocRef =
+            usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
-        if (snapshot.exists) {
-          // Convert the existing total money from string to integer
-          int existingTotal = int.tryParse(snapshot['totalMoney'] ?? '0') ?? 0;
-          int newTotal = existingTotal + int.tryParse(price)!;
+        // Run a transaction to safely update the passMoney field
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          DocumentSnapshot snapshot = await transaction.get(passDocRef);
 
-          print('Existing Total: $existingTotal, New Total: $newTotal');
+          if (snapshot.exists) {
+            // Cast data to Map<String, dynamic>
+            Map<String, dynamic>? data =
+                snapshot.data() as Map<String, dynamic>?;
 
-          // Convert new total back to string before saving
-          transaction.update(passDocRef, {'totalMoney': newTotal.toString()});
-        } else {
-          // If the document doesn't exist, create it with the initial amount
-          print('Creating document with initial total: $price');
-          transaction.set(passDocRef, {'totalMoney': price});
-        }
-      });
+            if (data != null && data.containsKey('passMoney')) {
+              // Convert the existing passMoney from string to integer
+              int existingTotal = int.tryParse(data['passMoney'] ?? '0') ?? 0;
+              int newTotal = existingTotal + priceAsInt;
 
-      // Navigate to the receipt screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Receipt(
-            vehicleNumber: _controller.text,
-            rateType: selectedRate,
-            price: price,
-            page: 'Pass',
+              print('Existing Total: $existingTotal, New Total: $newTotal');
+
+              // Update only the 'passMoney' field without disturbing other fields
+              transaction
+                  .update(passDocRef, {'passMoney': newTotal.toString()});
+            } else {
+              // If passMoney field does not exist, create it or update it with the initial amount
+              print('Creating document with initial total: $price');
+              transaction.set(
+                  passDocRef, {'passMoney': price}, SetOptions(merge: true));
+            }
+          } else {
+            // If the document doesn't exist, create it with the initial amount
+            print('Creating document with initial total: $price');
+            transaction.set(passDocRef, {'passMoney': price});
+          }
+        });
+
+        // Navigate to the receipt screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Receipt(
+              vehicleNumber: _controller.text,
+              rateType: selectedRate,
+              price: price,
+              page: 'Pass',
+            ),
           ),
-        ),
-      );
-    } catch (e) {
-      print('Error updating total money: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update total money. Please try again.')),
-      );
+        );
+      } catch (e) {
+        print('Error updating total money: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed to update total money. Please try again.')),
+        );
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:AnimatedTextKit(
+        title: AnimatedTextKit(
           animatedTexts: [
             TyperAnimatedText(
               'Parking Rates',
@@ -252,8 +266,7 @@ class _PassrateState extends State<Passrate> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Container(
-                          width: MediaQuery.of(context).size.width -
-                          48,
+                          width: MediaQuery.of(context).size.width - 48,
                           height: 70,
                           alignment: Alignment.center,
                           child: Text(

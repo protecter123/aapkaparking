@@ -1,12 +1,13 @@
 import 'dart:io';
+import 'dart:ui';
+import 'package:aapkaparking/Admin.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:path/path.dart' as path;
 import 'package:lottie/lottie.dart';
 
@@ -21,27 +22,6 @@ class _AddVehicleState extends State<AddVehicle> {
   final TextEditingController vehicleNameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? _image;
-  // void _pickImage(ImageSource source) async {
-  //   final pickedFile = await _picker.pickImage(source: source);
-  //   if (pickedFile != null) {
-  //     final compressedImage = await _compressImage(File(pickedFile.path));
-  //     setState(() {
-  //       _image = XFile(compressedImage.path);
-  //     });
-  //   }
-  // }
-
-  Future<XFile> _compressImage(File file) async {
-    final tempDir = await getTemporaryDirectory();
-    final targetPath = path.join(tempDir.path, path.basename(file.path));
-
-    final compressedImage = await FlutterImageCompress.compressAndGetFile(
-      file.absolute.path,
-      targetPath,
-      quality: 80,
-    );
-    return compressedImage!;
-  }
 
   void _getImage() async {
     await showModalBottomSheet(
@@ -200,179 +180,257 @@ class _AddVehicleState extends State<AddVehicle> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: Stack(
-            children: [
-              CustomPaint(
-                size: Size(MediaQuery.of(context).size.width, 180),
-                painter: InvertedTrianglePainter(),
-              ),
-              Positioned(
-                top: 50, // Positioning the back icon
-                left: 16,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Icon(Icons.arrow_back,
-                      size: 30, color: Colors.black),
-                ),
-              ),
-              Positioned(
-                top: 100,
-                left: 140,
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.yellow.shade700,
-                      child: GestureDetector(
-                        onTap: () {
-                          _getImage;
-                        },
-                        child: CircleAvatar(
-                          radius: 55,
-                          backgroundImage:
-                              _image != null ? FileImage(_image!) : null,
-                          child: _image == null
-                              ? const Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                  size: 60,
-                                )
-                              : null,
-                        ),
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+      body: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return Stack(
+              children: [
+                Positioned(
+                  top: 30,
+                  left: 20,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.orange.shade300,
+                          Colors.yellow.shade200
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      shape: BoxShape.circle,
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: ElevatedButton(
-                        onPressed: _getImage,
-                        style: ElevatedButton.styleFrom(
-                          shape: CircleBorder(),
-                          backgroundColor: Colors.yellow.shade700,
-                          padding: EdgeInsets.all(8), // Button color
-                        ),
-                        child:
-                            const Icon(Icons.camera_alt, color: Colors.white),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 30.0,
+                        sigmaY: 30.0,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 190,
-                left: 0,
-                right: 0,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 300,
-                      child: Lottie.network(
-                          'https://lottie.host/8b8345db-830e-4916-ac30-ba1a117bb50e/vL4ghnwtfM.json',
-                          fit: BoxFit.contain,
-                          height: 300,
-                          width: 300),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 70.0, top: 20),
                       child: Container(
-                        height: 500,
-                        decoration: BoxDecoration(
-                          color: Colors.yellow.shade100.withOpacity(0.5),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20),
-                            bottomLeft: Radius.zero,
-                            bottomRight: Radius.zero,
-                          ),
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              Text(
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 80,
+                  left: 80,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 243, 255, 77),
+                          Color.fromARGB(255, 251, 230, 190)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 30.0,
+                        sigmaY: 30.0,
+                      ),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(
+                        height: 250,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: Text(
                                 'Add Vehicle',
-                                style: GoogleFonts.nunito(
-                                  fontSize: 24,
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize:
+                                      constraints.maxWidth > 600 ? 50 : 40,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(
-                                height: 50,
-                              ),
-                              TextField(
-                                controller: vehicleNameController,
-                                style: const TextStyle(
-                                    color: Colors.black, fontSize: 20),
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide:
-                                        const BorderSide(color: Colors.yellow),
-                                  ),
-                                  hintText: 'Enter vehicle name',
-                                  hintStyle: const TextStyle(
-                                      color: Colors.black, fontSize: 19),
-                                  prefixIcon: const Icon(Icons.directions_car,
-                                      color: Colors.black),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: Text(
+                                'Name',
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize:
+                                      constraints.maxWidth > 600 ? 50 : 40,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 20),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: _saveVehicleDetails,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.yellow.shade700,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Save Vehicle Details',
-                                    style: TextStyle(
-                                        color: Colors.black, fontSize: 18),
-                                  ),
-                                ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 40,
+                      ),
+                      //
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundColor:
+                                const Color.fromARGB(255, 13, 13, 13),
+                            child: GestureDetector(
+                              onTap: () {
+                                _getImage;
+                              },
+                              child: CircleAvatar(
+                                backgroundColor:
+                                    const Color.fromARGB(255, 225, 215, 206),
+                                radius: 55,
+                                backgroundImage:
+                                    _image != null ? FileImage(_image!) : null,
+                                child: _image == null
+                                    ? const Icon(
+                                        Icons.person,
+                                        color: Color.fromARGB(255, 5, 5, 5),
+                                        size: 60,
+                                      )
+                                    : null,
                               ),
-                            ],
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: ElevatedButton(
+                              onPressed: _getImage,
+                              style: ElevatedButton.styleFrom(
+                                shape: CircleBorder(),
+                                backgroundColor:
+                                    const Color.fromARGB(255, 8, 8, 8),
+                                padding: EdgeInsets.all(8), // Button color
+                              ),
+                              child: const Icon(Icons.camera_alt,
+                                  color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                              child: Text(
+                            'Add vehicle name',
+                            style: GoogleFonts.notoSansHanunoo(
+                                color: Color.fromARGB(255, 29, 29, 29)),
+                          )),
+                          TextField(
+                            controller: vehicleNameController,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 20),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(0), // Sharp edges
+                                borderSide: const BorderSide(
+                                    color: Colors.black,
+                                    width: 2), // 2 px black border
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(0), // Sharp edges
+                                borderSide: const BorderSide(
+                                    color: Colors.black,
+                                    width: 2), // 2 px black border
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(0), // Sharp edges
+                                borderSide: const BorderSide(
+                                    color: Colors.black,
+                                    width: 2), // 2 px black border
+                              ),
+                              hintText: 'e.g. Taxi,bike',
+                              hintStyle: GoogleFonts.notoSansHanunoo(
+                                color: Colors.grey,
+                                fontSize: 19,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _saveVehicleDetails,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black, // Full black color
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(0), // Sharp corners
+                            ),
+                            elevation: 10, // Elevation for the 3D effect
+                            shadowColor: Colors.black
+                                .withOpacity(0.5), // Shadow for 3D effect
+                          ),
+                          child: const Text(
+                            'SAVE VEHICLE DETAILS', // Updated button text
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18), // White text color
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
+                Positioned(
+                    top: 40,
+                    left: -10,
+                    child: IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const AdminPage(), // Replace with your UserScreen widget
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          size: 30,
+                          color: Colors.black,
+                        ))),
+              ],
+            );
+          })),
     );
   }
-}
-
-class InvertedTrianglePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint = Paint()
-      ..color = Colors.yellow.shade700
-      ..style = PaintingStyle.fill;
-
-    var path = Path()
-      ..moveTo(size.width / 2, size.height)
-      ..lineTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

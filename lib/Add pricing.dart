@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:aapkaparking/Admin.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -83,8 +86,7 @@ class _AddPriceState extends State<AddPrice> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Lottie.asset(
-                      'assets/animations/complete.json'),
+                  Lottie.asset('assets/animations/complete.json'),
                   const SizedBox(height: 20),
                   const Text(
                     'Pricing added successfully!',
@@ -145,238 +147,373 @@ class _AddPriceState extends State<AddPrice> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 253, 253, 252),
-      appBar: AppBar(
-        title: Text(
-          'Add Pricing',
-          style: GoogleFonts.nunito(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.yellow,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(30),
-          ),
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+      body: Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return Stack(
+              children: [
+                Positioned(
+                  top: 30,
+                  left: 20,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.orange.shade300,
+                          Colors.yellow.shade200
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 30.0,
+                        sigmaY: 30.0,
+                      ),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 80,
+                  left: 80,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 243, 255, 77),
+                          Color.fromARGB(255, 251, 230, 190)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 30.0,
+                        sigmaY: 30.0,
+                      ),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          height: 180,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 10.0),
+                                child: Text(
+                                  'Add vehicle',
+                                  style: GoogleFonts.playfairDisplay(
+                                    fontSize:
+                                        constraints.maxWidth > 600 ? 50 : 40,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 10.0),
+                                child: Text(
+                                  'Pricing',
+                                  style: GoogleFonts.playfairDisplay(
+                                    fontSize:
+                                        constraints.maxWidth > 600 ? 50 : 40,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Column(
+                          children: [
+                            _buildVehicleSelector(),
+                            const SizedBox(height: 10),
+                            _buildTextField(
+                                'Pricing of 30 minutes',
+                                'Add price for 30 min',
+                                _pricing30MinController),
+                            const SizedBox(height: 10),
+                            _buildTextField(
+                                'Pricing of 60 minutes',
+                                'Add price for 60 min',
+                                _pricing1HourController),
+                            const SizedBox(height: 10),
+                            _buildTextField(
+                                'Pricing of 120 minutes',
+                                'Add price for 120 min',
+                                _pricing120MinController),
+                            const SizedBox(height: 10),
+                            _buildTextField('Pass Price', 'Add price for pass',
+                                _passPriceController),
+                            const SizedBox(height: 32),
+                            _build3DButton(context, 'Submit', _savePricingData),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                    top: 40,
+                    left: -0,
+                    child: IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const AdminPage(), // Replace with your UserScreen widget
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          size: 30,
+                          color: Colors.black,
+                        ))),
+              ],
+            );
+          })),
+    );
+  }
+
+  Widget _buildVehicleSelector() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Vehicle name',
+        style: GoogleFonts.notoSansHanunoo(
+          color: const Color.fromARGB(255, 29, 29, 29),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+      GestureDetector(
+        onTap: () async {
+          final selectedVehicle = await _showVehicleDialog();
+          if (selectedVehicle != null) {
+            setState(() {
+              _selectedVehicleName = selectedVehicle;
+            });
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(0), // Sharp rectangle
+            border: Border.all(
+              color: Colors.black,
+              width: 2.0, // 2 px black border
+            ),
+          ),
+          child: Row(
             children: [
-              Lottie.asset('assets/animations/Addpricing.json'),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.yellow.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      offset: const Offset(5, 5),
-                      blurRadius: 10,
-                    ),
-                    BoxShadow(
-                      color: Colors.white.withOpacity(0.7),
-                      offset: const Offset(-5, -5),
-                      blurRadius: 10,
-                    ),
-                  ],
+              Expanded(
+                child: Text(
+                  _selectedVehicleName ?? 'Choose an option',
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
                 ),
-                child: Column(
-                  children: [
-                    _buildVehicleSelector(),
-                    const SizedBox(height: 16),
-                    _buildTextField('Pricing of 30 minutes', Icons.timer,
-                        _pricing30MinController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Pricing of 1 hour', Icons.access_time,
-                        _pricing1HourController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Pricing of 120 minutes', Icons.watch_later,
-                        _pricing120MinController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Pass Price', Icons.monetization_on,
-                        _passPriceController),
-                    const SizedBox(height: 32),
-                    _build3DButton(context, 'Submit', _savePricingData),
-                  ],
-                ),
+              ),
+              const Icon(
+                Icons.arrow_drop_down,
+                color: Colors.black,
+                size: 24,
               ),
             ],
           ),
         ),
       ),
-    );
-  }
+    ],
+  );
+}
 
-  Widget _buildVehicleSelector() {
-    return GestureDetector(
-      onTap: () async {
-        final selectedVehicle = await _showVehicleDialog();
-        if (selectedVehicle != null) {
-          setState(() {
-            _selectedVehicleName = selectedVehicle;
-          });
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
-        decoration: BoxDecoration(
-          color: Colors.yellow.shade100,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.directions_car, color: Colors.black),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                _selectedVehicleName ?? 'Choose Vehicle',
-                style: const TextStyle(color: Colors.black, fontSize: 16),
-              ),
+Future<String?> _showVehicleDialog() async {
+  return showDialog<String>(
+    context: context,
+    builder: (BuildContext context) {
+      String? selectedVehicle = _selectedVehicleName;
+
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [const Color.fromARGB(255, 225, 215, 206),const Color.fromARGB(255, 225, 215, 206)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            const Icon(Icons.arrow_drop_down, color: Colors.black),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<String?> _showVehicleDialog() async {
-    return showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        String? selectedVehicle = _selectedVehicleName;
-
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFFF9C4), Color(0xFFFFF176)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
               ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 20), // Space below close button
+                  const Text(
+                    'Select Vehicle',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 20), // Space below close button
-                    const Text(
-                      'Select Vehicle',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: _vehicleNames.map((String vehicle) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(0, 255, 255, 255), // White background
+                              borderRadius: BorderRadius.circular(0), // Sharp rectangle
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 2.0, // 2 px black border
+                              ),
+                            ),
+                            child: CheckboxListTile(
+                              title: Text(
+                                vehicle,
+                                style: const TextStyle(color: Colors.black),
+                              ),
+                              value: selectedVehicle == vehicle,
+                              activeColor: Colors.black,
+                              checkColor: Colors.black,
+                              onChanged: (bool? value) {
+                                if (value == true) {
+                                  selectedVehicle = vehicle;
+                                  Navigator.pop(context, selectedVehicle);
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: _vehicleNames.map((String vehicle) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(vertical: 8.0),
-                              decoration: BoxDecoration(
-                                color: Colors.yellow.shade100,
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(color: Colors.black),
-                              ),
-                              child: CheckboxListTile(
-                                title: Text(vehicle,
-                                    style:
-                                        const TextStyle(color: Colors.black)),
-                                value: selectedVehicle == vehicle,
-                                activeColor: Colors.black,
-                                checkColor: Colors.black,
-                                onChanged: (bool? value) {
-                                  if (value == true) {
-                                    selectedVehicle = vehicle;
-                                    Navigator.pop(context, selectedVehicle);
-                                  }
-                                },
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+  Widget _buildTextField(
+      String hint, String hinttext, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+            child: Text(
+          hinttext,
+          style: GoogleFonts.notoSansHanunoo(
+              color: Color.fromARGB(255, 29, 29, 29)),
+        )),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.notoSansHanunoo(
+              // Applying Google Font
+              textStyle: const TextStyle(
+                color: Colors.grey, // Hint text color
+              ),
+            ),
+
+            // Background color
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(0), // Sharp edges
+              borderSide: const BorderSide(
+                color: Colors.black, // Border color
+                width: 2.0, // Border width
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(0), // Sharp edges
+              borderSide: const BorderSide(
+                color: Colors.black, // Border color
+                width: 2.0, // Border width
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(0), // Sharp edges
+              borderSide: const BorderSide(
+                color: Colors.black, // Border color
+                width: 2.0, // Border width
+              ),
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTextField(
-      String hint, IconData icon, TextEditingController controller) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.black),
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.black),
-        filled: true,
-        fillColor: Colors.yellow.shade100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.black),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.black),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.black),
-        ),
-      ),
+      ],
     );
   }
 
   Widget _build3DButton(
       BuildContext context, String text, VoidCallback onPressed) {
     return Container(
-      width: double.infinity,
+      width: double.infinity, // Full width
       height: 50,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [Colors.yellow, Colors.orange],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        borderRadius: BorderRadius.circular(0), // Sharp corners
+        color: Colors.black, // Full black button
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(0.7), // Darker shadow for 3D effect
             offset: const Offset(5, 5),
             blurRadius: 10,
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withOpacity(0.2), // Light shadow for 3D effect
             offset: const Offset(-5, -5),
             blurRadius: 10,
           ),
@@ -384,11 +521,11 @@ class _AddPriceState extends State<AddPrice> {
       ),
       child: TextButton(
         onPressed: onPressed,
-        child: Text(
-          text,
-          style: const TextStyle(
+        child: const Text(
+          "ADD PRICING", // Text updated to "ADD PRICING"
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white, // Text color in white
             fontSize: 18,
           ),
         ),

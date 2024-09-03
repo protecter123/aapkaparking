@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:aapkaparking/Admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -123,7 +124,7 @@ class _AdduserState extends State<Adduser2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor:const Color.fromARGB(255, 225, 215, 206),
+        backgroundColor: const Color.fromARGB(255, 225, 215, 206),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: LayoutBuilder(
@@ -131,6 +132,7 @@ class _AdduserState extends State<Adduser2> {
               return Stack(
                 children: [
                   // Orange and yellow splash with blur effect at the top left corner
+
                   Positioned(
                     top: 30,
                     left: 20,
@@ -150,23 +152,54 @@ class _AdduserState extends State<Adduser2> {
                       ),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(
-                          sigmaX: 10.0,
-                          sigmaY: 10.0,
+                          sigmaX: 30.0,
+                          sigmaY: 30.0,
                         ),
                         child: Container(
-                          decoration:const BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.transparent,
                           ),
                         ),
                       ),
                     ),
                   ),
+                  Positioned(
+                    top: 80,
+                    left: 70,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color.fromARGB(255, 243, 255, 77),
+                            Color.fromARGB(255, 251, 230, 190)
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(
+                          sigmaX: 30.0,
+                          sigmaY: 30.0,
+                        ),
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.transparent,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                   SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Title and Name
-                      const  SizedBox(
+                        const SizedBox(
                           height: 270,
                         ),
                         Row(
@@ -205,112 +238,135 @@ class _AdduserState extends State<Adduser2> {
                             ),
                           ],
                         ),
-                      const  SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         // TextFields
                         SizedBox(
                           width: double.infinity,
-                          child: TextField(
-                            controller: nameController,
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 20),
-                            decoration: InputDecoration(
-                              counterText: '',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(0),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
-                                  width: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                  child: Text(
+                                'User name',
+                                style: GoogleFonts.notoSansHanunoo(
+                                    color: Colors.grey),
+                              )),
+                              TextField(
+                                controller: nameController,
+                                style: const TextStyle(
+                                    color: Colors.black, fontSize: 20),
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                    borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                    borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                    borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  hintText: 'Enter user name',
+                                  hintStyle: GoogleFonts.notoSansHanunoo(
+                                      color: Colors.grey, fontSize: 14),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
                                 ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _buttonEnabled = value.isNotEmpty &&
+                                        phoneController.text.length == 10;
+                                  });
+                                },
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(0),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
-                                  width: 2,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(0),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
-                                  width: 2,
-                                ),
-                              ),
-                              hintText: 'Enter user name',
-                              hintStyle:  GoogleFonts.notoSansHanunoo(
-                                  color: Colors.grey, fontSize: 14),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                _buttonEnabled = value.isNotEmpty &&
-                                    phoneController.text.length == 10;
-                              });
-                            },
+                            ],
                           ),
                         ),
                         const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
-                          child: TextField(
-                            controller: phoneController,
-                            keyboardType: TextInputType.phone,
-                            maxLength: 10,
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 20),
-                            decoration: InputDecoration(
-                              counterText: '',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(0),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
-                                  width: 2,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(0),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
-                                  width: 2,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(0),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
-                                  width: 2,
-                                ),
-                              ),
-                              hintText: 'Enter phone number',
-                              hintStyle: GoogleFonts.notoSansHanunoo(
-                                  color: Colors.grey, fontSize: 14),
-                              prefixIcon: const Padding(
-                                padding: EdgeInsets.only(right: 5.0, left: 10),
-                                child: Text(
-                                  '+91 |',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: Color.fromARGB(255, 11, 11, 11),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                  child: Text(
+                                'Phone number',
+                                style: GoogleFonts.notoSansHanunoo(
+                                    color: Colors.grey),
+                              )),
+                              TextField(
+                                controller: phoneController,
+                                keyboardType: TextInputType.phone,
+                                maxLength: 10,
+                                style: const TextStyle(
+                                    color: Colors.black, fontSize: 20),
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                    borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
                                   ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                    borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                    borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  hintText: 'Enter phone number',
+                                  hintStyle: GoogleFonts.notoSansHanunoo(
+                                      color: Colors.grey, fontSize: 14),
+                                  prefixIcon: const Padding(
+                                    padding:
+                                        EdgeInsets.only(right: 5.0, left: 10),
+                                    child: Text(
+                                      '+91 |',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Color.fromARGB(255, 11, 11, 11),
+                                      ),
+                                    ),
+                                  ),
+                                  prefixIconConstraints: const BoxConstraints(
+                                      minWidth: 0, minHeight: 0),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
                                 ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _buttonEnabled = value.length == 10 &&
+                                        nameController.text.isNotEmpty;
+                                  });
+                                },
                               ),
-                              prefixIconConstraints: const BoxConstraints(
-                                  minWidth: 0, minHeight: 0),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                _buttonEnabled = value.length == 10 &&
-                                    nameController.text.isNotEmpty;
-                              });
-                            },
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 80),
                         GestureDetector(
                           onTap: _buttonEnabled ? saveUser : null,
                           child: Container(
@@ -336,7 +392,7 @@ class _AdduserState extends State<Adduser2> {
                                 ),
                               ],
                             ),
-                            child:  Center(
+                            child: Center(
                               child: Text(
                                 'ADD USER',
                                 style: GoogleFonts.notoSansHanunoo(
@@ -352,6 +408,23 @@ class _AdduserState extends State<Adduser2> {
                       ],
                     ),
                   ),
+                  Positioned(
+                      top: 40,
+                      left: -14,
+                      child: IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const AdminPage(), // Replace with your UserScreen widget
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            size: 30,
+                            color: Colors.black,
+                          ))),
                 ],
               );
             },

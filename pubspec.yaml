@@ -36,6 +36,7 @@ dependencies:
   fluttertoast: ^8.2.8
   font_awesome_flutter: ^10.7.0
   auto_size_text: ^3.0.0
+  gradient_line_graph: ^1.0.0
   
  
   
