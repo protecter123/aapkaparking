@@ -28,7 +28,9 @@ class _AfterScanState extends State<AfterScan> {
     fetchData();
     dueOutTime = formatDateTime(DateTime.now());
   }
-
+ void saveData (){
+  
+ }
   Future<void> fetchData() async {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;

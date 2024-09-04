@@ -8,6 +8,7 @@ import 'package:aapkaparking/viewUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -21,72 +22,71 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   double _totalAmount = 0.0;
- @override
+  @override
   void initState() {
     super.initState();
     _fetchTotalAmount();
   }
 
+ 
 
- Future<void> _fetchTotalAmount() async {
-  try {
-    // Getting the current user's phone number from Firebase Auth
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      print('No user is currently signed in.');
-      return;
-    }
-
-    String currentUserPhone = currentUser.phoneNumber ?? '';
-    if (currentUserPhone.isEmpty) {
-      print('Current user phone number is not available.');
-      return;
-    }
-
-    // Getting today's date in yyyy-MM-dd format
-    String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    // Firestore path to the user's collection
-    CollectionReference usersRef = FirebaseFirestore.instance
-        .collection('AllUsers')
-        .doc(currentUserPhone)
-        .collection('Users');
-
-    double total = 0.0;
-
-    // Get all documents in the 'Users' collection
-    QuerySnapshot usersSnapshot = await usersRef.get();
-
-    for (QueryDocumentSnapshot userDoc in usersSnapshot.docs) {
-      // Check if the MoneyCollection sub-collection exists
-      CollectionReference moneyCollectionRef = usersRef
-          .doc(userDoc.id)
-          .collection('MoneyCollection');
-
-      DocumentSnapshot snapshot = await moneyCollectionRef.doc(todayDate).get();
-
-      if (snapshot.exists) {
-        // Sum up all integer values in the document
-        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-
-        data.forEach((key, value) {
-          int? intValue = int.tryParse(value.toString());
-          if (intValue != null) {
-            total += intValue.toDouble();
-          }
-        });
+  Future<void> _fetchTotalAmount() async {
+    try {
+      // Getting the current user's phone number from Firebase Auth
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        print('No user is currently signed in.');
+        return;
       }
+
+      String currentUserPhone = currentUser.phoneNumber ?? '';
+      if (currentUserPhone.isEmpty) {
+        print('Current user phone number is not available.');
+        return;
+      }
+
+      // Getting today's date in yyyy-MM-dd format
+      String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      // Firestore path to the user's collection
+      CollectionReference usersRef = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(currentUserPhone)
+          .collection('Users');
+
+      double total = 0.0;
+
+      // Get all documents in the 'Users' collection
+      QuerySnapshot usersSnapshot = await usersRef.get();
+
+      for (QueryDocumentSnapshot userDoc in usersSnapshot.docs) {
+        // Check if the MoneyCollection sub-collection exists
+        CollectionReference moneyCollectionRef =
+            usersRef.doc(userDoc.id).collection('MoneyCollection');
+
+        DocumentSnapshot snapshot =
+            await moneyCollectionRef.doc(todayDate).get();
+
+        if (snapshot.exists) {
+          // Sum up all integer values in the document
+          Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+          data.forEach((key, value) {
+            int? intValue = int.tryParse(value.toString());
+            if (intValue != null) {
+              total += intValue.toDouble();
+            }
+          });
+        }
+      }
+
+      setState(() {
+        _totalAmount = total; // Update the state with the total amount
+      });
+    } catch (e) {
+      print('Error fetching total amount: $e');
     }
-
-    setState(() {
-      _totalAmount = total; // Update the state with the total amount
-    });
-
-  } catch (e) {
-    print('Error fetching total amount: $e');
   }
-}
-
 
   void _logout() {
     _showLogoutDialog();
@@ -97,17 +97,18 @@ class _AdminPageState extends State<AdminPage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          backgroundColor: Color.fromARGB(255, 247, 235, 217),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                 Text(
                   'Are you sure you want to logout?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -126,14 +127,14 @@ class _AdminPageState extends State<AdminPage> {
                         ); // Navigate to the Verify screen
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 250, 1, 1),
+                        backgroundColor: Color.fromARGB(0, 250, 1, 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: const Text(
                         'Yes',
-                        style: TextStyle(color: Colors.black, fontSize: 18),
+                        style: TextStyle(color: Color.fromARGB(255, 40, 40, 40), fontSize: 18),
                       ),
                     ),
                     ElevatedButton(
@@ -141,14 +142,14 @@ class _AdminPageState extends State<AdminPage> {
                         Navigator.of(context).pop(); // Close the dialog
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 31, 249, 2),
+                        backgroundColor: Color.fromARGB(255, 124, 244, 109),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: const Text(
                         'No',
-                        style: TextStyle(color: Colors.black, fontSize: 18),
+                        style: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 18),
                       ),
                     ),
                   ],
@@ -164,6 +165,7 @@ class _AdminPageState extends State<AdminPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 223, 221, 221),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(70.0),
         child: AppBar(
@@ -175,17 +177,18 @@ class _AdminPageState extends State<AdminPage> {
               bottomRight: Radius.circular(00),
             ),
           ),
-          elevation: 10,
+          elevation: 1,
           leading: const SizedBox(), // Empty widget to keep title centered
           actions: [
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: _logout,
+              color: Colors.green,
             ),
           ],
           title: Text(
             'Admin Dashboard',
-            style: GoogleFonts.baskervville(
+            style: GoogleFonts.ubuntu(
               fontSize: 26,
               fontWeight: FontWeight.bold,
             ),
@@ -199,9 +202,9 @@ class _AdminPageState extends State<AdminPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 120,
+              height: 150,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(2),
                 color: Colors.yellow[50], // Light yellow background color
                 boxShadow: [
                   BoxShadow(
@@ -211,59 +214,111 @@ class _AdminPageState extends State<AdminPage> {
                     offset: Offset(0, 3), // Changes position of shadow
                   ),
                 ],
+                image: const DecorationImage(
+                  image: AssetImage(
+                      'assets/animations/Adminback.jpg'), // Background image asset
+                  fit: BoxFit.cover,
+                ),
               ),
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Flexible(
-                    child: Text(
-                      'Today\'s Collection',
-                      style: GoogleFonts.pangolin(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis, // Prevents overflow
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  Flexible(
-                    child: Align(
-                      alignment: Alignment.bottomRight,
-                      child: FittedBox(
-                        fit: BoxFit
-                            .scaleDown, // Ensures the text scales down if needed
-                        child: Text(
-                          '₹ ${_totalAmount.toStringAsFixed(1)}',
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                          textAlign:
-                              TextAlign.right, // Aligns text to the right
-                          overflow: TextOverflow.ellipsis, // Prevents overflow
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Today\'s Revenue',
+                        style: GoogleFonts.libreBaskerville(
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(
+                              255, 2, 2, 2), // Adjust color based on background
                         ),
+                        overflow: TextOverflow.ellipsis, // Prevents overflow
+                      ),
+                      const CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Colors.transparent,
+                        backgroundImage: AssetImage(
+                            'assets/animations/Rupee-Sign-Money-PNG.png'), // Circle avatar with image
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ), // Pushes content to the bottom
+                  Container(
+                    width: 400,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        color: Color.fromARGB(140, 255, 255, 255),
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 18.0, right: 18),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '₹ ${_totalAmount.toStringAsFixed(1)}',
+                            style: const TextStyle(
+                              fontSize: 28, // Larger font size for emphasis
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromARGB(255, 8, 8,
+                                  8), // Colorful text for total amount
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_month, // Colorful icon
+                                color: const Color.fromARGB(255, 7, 7, 7),
+                                size: 16,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                DateFormat('dd-MMM').format(DateTime
+                                    .now()), // Formats the date as dd-MMM
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromARGB(255, 1, 1, 1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(
-                height: 50), // Add spacing between the container and grid
+            SizedBox(
+              height: 10,
+            ),
+            SizedBox(
+              height: 1,
+              child: Container(
+                height: 2,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ), // Add spacing between the container and grid
             Flexible(
               child: Padding(
                 padding: const EdgeInsets.all(1.0),
                 child: GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 20.0,
-                  mainAxisSpacing: 30.0,
-                  childAspectRatio: 1.1, // Adjust to make the cards taller
+                  mainAxisSpacing: 20.0,
+                  childAspectRatio: 1, // Adjust to make the cards taller
                   children: [
                     _buildCard(
-                        title: 'Add New User',
+                        title: 'Add User',
+                        imagePath: 'assets/animations/brownback.jpg',
                         animationUrl:
                             'https://lottie.host/c5ea2a75-47eb-4000-805f-6c0708125ab7/rBQrP2Y1ea.json',
                         onTap: () {
@@ -273,9 +328,10 @@ class _AdminPageState extends State<AdminPage> {
                                 builder: (context) => const Adduser2()),
                           );
                         },
-                        backgroundColor: Color.fromARGB(255, 253, 218, 216)),
+                        backgroundColor: Color.fromARGB(255, 254, 171, 167)),
                     _buildCard(
                         title: 'Add Vehicle',
+                        imagePath: 'assets/animations/brownback.jpg',
                         animationUrl:
                             'https://lottie.host/142ea5df-9cc2-4a58-ad4d-ecc235a58c40/wrjztJKkxO.json',
                         onTap: () {
@@ -285,9 +341,10 @@ class _AdminPageState extends State<AdminPage> {
                                 builder: (context) => const AddVehicle()),
                           );
                         },
-                        backgroundColor: Color.fromARGB(255, 249, 245, 207)),
+                        backgroundColor: Color.fromARGB(255, 251, 241, 153)),
                     _buildCard(
                         title: 'Add Pricing',
+                        imagePath: 'assets/animations/brownback.jpg',
                         animationUrl:
                             'https://lottie.host/98de12b2-ac8e-45c7-9097-8215c4ed6e8e/lOrOs3Tnye.json',
                         onTap: () {
@@ -297,11 +354,12 @@ class _AdminPageState extends State<AdminPage> {
                                 builder: (context) => const AddPrice()),
                           );
                         },
-                        backgroundColor: Color.fromARGB(255, 181, 246, 184)),
+                        backgroundColor: Color.fromARGB(255, 151, 253, 156)),
                     _buildCard(
                         title: 'View Vehicles',
+                        imagePath: 'assets/animations/brownback.jpg',
                         animationUrl:
-                            'https://lottie.host/596b4cbe-85d9-4831-b674-7758a14c49c7/eInVdgYkqk.json',
+                            'https://lottie.host/c024d909-3db9-4bc2-8aff-b3b4be0c6c5c/iUF7xCnkzl.json',
                         onTap: () {
                           Navigator.push(
                             context,
@@ -309,9 +367,10 @@ class _AdminPageState extends State<AdminPage> {
                                 builder: (context) => const EditVehicle()),
                           );
                         },
-                        backgroundColor: Color.fromARGB(255, 199, 228, 252)),
+                        backgroundColor: Color.fromARGB(255, 144, 205, 255)),
                     _buildCard(
                         title: 'Edit Users',
+                        imagePath: 'assets/animations/brownback.jpg',
                         animationUrl:
                             'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
                         onTap: () {
@@ -321,11 +380,12 @@ class _AdminPageState extends State<AdminPage> {
                                 builder: (context) => const Viewuser()),
                           );
                         },
-                        backgroundColor: Color.fromARGB(255, 217, 206, 251)),
+                        backgroundColor: Color.fromARGB(255, 168, 141, 249)),
                     _buildCard(
                         title: 'Collection',
+                        imagePath: 'assets/animations/brownback.jpg',
                         animationUrl:
-                            'https://lottie.host/8f2db930-c350-4c79-b123-fcb736cdf900/hcex28AduM.json',
+                            'https://lottie.host/464e74ce-b867-41f5-8035-7904f651eb79/unGc97LCpv.json',
                         onTap: () {
                           Navigator.push(
                             context,
@@ -333,7 +393,7 @@ class _AdminPageState extends State<AdminPage> {
                                 builder: (context) => const Collection()),
                           );
                         },
-                        backgroundColor: Color.fromARGB(255, 255, 230, 215)),
+                        backgroundColor: Color.fromARGB(255, 253, 178, 132)),
                   ],
                 ),
               ),
@@ -349,13 +409,18 @@ class _AdminPageState extends State<AdminPage> {
     required String animationUrl,
     required VoidCallback onTap,
     required Color backgroundColor,
+    required String imagePath, // Image path argument
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(4),
           color: backgroundColor, // Custom background color
+          image: DecorationImage(
+            image: AssetImage(imagePath), // Set image as background
+            fit: BoxFit.cover, // Ensure the image covers the entire container
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.5),
@@ -375,24 +440,26 @@ class _AdminPageState extends State<AdminPage> {
           children: [
             Positioned(
               top: 10,
-              left: 20,
+              left: 43,
               child: Container(
-                height: 76, // Smaller size for the animation
-                width: 76,
+                height: 90, // Smaller size for the animation
+                width: 90,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color.fromARGB(0, 0, 0, 0), width: 1),
+                  border: Border.all(
+                      color: const Color.fromARGB(0, 0, 0, 0), width: 1),
                   color: Colors.transparent,
                 ),
                 child: ClipOval(
-                  child: Lottie.network(animationUrl, fit: BoxFit.cover),
+                  child: Lottie.network(animationUrl,
+                      fit: BoxFit.cover, repeat: false),
                 ),
               ),
             ),
             Positioned(
               bottom: 20,
-              left: 21,
-              right: 20,
+              left: 0,
+              right: 0,
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return ConstrainedBox(
@@ -400,15 +467,24 @@ class _AdminPageState extends State<AdminPage> {
                       maxWidth: constraints.maxWidth,
                     ),
                     child: FittedBox(
-                      alignment: Alignment.bottomLeft,
+                      alignment: Alignment.center,
                       fit: BoxFit
                           .scaleDown, // Ensures the text scales down if needed
-                      child: Text(
-                        title,
-                        style: GoogleFonts.pangolin(
-                          // Cute Google Font
-                          fontSize: 18, // Fixed font size
-                          fontWeight: FontWeight.normal,
+                      child: Container(
+                        width: 140,
+                        height: 30,
+                        decoration: BoxDecoration(
+                            color: Color.fromARGB(140, 255, 255, 255),
+                            borderRadius: BorderRadius.all(Radius.circular(7))),
+                        child: Center(
+                          child: Text(
+                            title,
+                            style: GoogleFonts.lexend(
+                              // Cute Google Font
+                              fontSize: 18, // Fixed font size
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
                         ),
                       ),
                     ),

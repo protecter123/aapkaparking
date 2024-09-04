@@ -76,12 +76,16 @@ class _ViewuserState extends State<Viewuser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
         title: const Text(
           'All Users',
-          style: TextStyle(fontFamily: 'Nunito'),
+          style: TextStyle(
+              fontFamily: 'baskerville',
+              fontSize: 27,
+              fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.yellow,
+        backgroundColor: const Color.fromARGB(0, 255, 235, 59),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -120,46 +124,63 @@ class _ViewuserState extends State<Viewuser> {
               final uid = userDoc['uid'] as String;
               final createdAt = userDoc['CreatedAt'] as Timestamp;
 
-              return Card(
-                elevation: 5,
-                margin:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(10),
-                  title: Text(
-                    userName,
-                    style: GoogleFonts.nunito(
-                      textStyle: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+              return Padding(
+                padding: const EdgeInsets.all(9.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 225, 215, 206),
+                    border: Border.all(
+                      color: Colors.black, // Border color
+                      width: 1.0, // Border width
                     ),
+                    borderRadius: BorderRadius.circular(
+                        0), // Match the card's border radius
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 5),
-                      Text(
-                        'Phone no.: $uid',
+                  child: Card(
+                    elevation: 0,
+                    color: Colors.transparent,
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(10),
+                      title: Text(
+                        userName.toUpperCase(),
                         style: GoogleFonts.nunito(
-                          textStyle:
-                              const TextStyle(fontSize: 14, color: Colors.grey),
+                          textStyle: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        'Joined At: ${_formatTimestamp(createdAt)}',
-                        style: GoogleFonts.nunito(
-                          textStyle:
-                              const TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 5),
+                          Text(
+                            'Phone no.: $uid',
+                            style: GoogleFonts.nunito(
+                              textStyle: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color.fromARGB(255, 57, 57, 57)),
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Joined At: ${_formatTimestamp(createdAt)}',
+                            style: GoogleFonts.nunito(
+                              textStyle: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color.fromARGB(255, 57, 57, 57)),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteUser(userDoc.id),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _deleteUser(userDoc.id),
+                      ),
+                    ),
                   ),
                 ),
               );

@@ -413,15 +413,10 @@ class _AdduserState extends State<Adduser2> {
                       left: -14,
                       child: IconButton(
                           onPressed: () {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const AdminPage(), // Replace with your UserScreen widget
-                              ),
-                            );
+                            Navigator.of(context).pop();
                           },
                           icon: const Icon(
-                            Icons.arrow_back,
+                            Icons.chevron_left,
                             size: 30,
                             color: Colors.black,
                           ))),

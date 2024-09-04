@@ -14,7 +14,7 @@ class _EditVehicleState extends State<EditVehicle> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -24,13 +24,13 @@ class _EditVehicleState extends State<EditVehicle> {
         ),
         title: Text(
           'Vehicle List',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.baskervville(
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.yellow,
+        backgroundColor: const Color.fromARGB(0, 255, 235, 59),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -43,7 +43,10 @@ class _EditVehicleState extends State<EditVehicle> {
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator(color: Colors.yellow,));
+            return const Center(
+                child: CircularProgressIndicator(
+              color: Colors.yellow,
+            ));
           }
 
           final vehicles = snapshot.data!.docs;
@@ -74,28 +77,8 @@ class _EditVehicleState extends State<EditVehicle> {
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color.fromARGB(255, 251, 250, 246),
-                        Color.fromARGB(255, 247, 244, 223),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(color: Colors.black, width: 1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        offset: const Offset(5, 5),
-                        blurRadius: 10,
-                      ),
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.7),
-                        offset: const Offset(-5, -5),
-                        blurRadius: 10,
-                      ),
-                    ],
                   ),
                   child: Row(
                     children: [
@@ -114,7 +97,9 @@ class _EditVehicleState extends State<EditVehicle> {
                                     (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return const Center(
-                                      child: CircularProgressIndicator(color: Colors.yellow,));
+                                      child: CircularProgressIndicator(
+                                    color: Colors.yellow,
+                                  ));
                                 },
                                 errorBuilder: (context, error, stackTrace) {
                                   return const Icon(Icons.error);
@@ -187,24 +172,24 @@ class _EditVehicleState extends State<EditVehicle> {
     return input[0].toUpperCase() + input.substring(1);
   }
 
-  Widget _buildPriceRow(String label, String price, IconData icon, Color iconColor) {
-  return Row(
-    children: [
-      Icon(icon, color: iconColor),
-      const SizedBox(width: 5),
-      Flexible(
-        child: Text(
-          '$label: ₹$price',
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+  Widget _buildPriceRow(
+      String label, String price, IconData icon, Color iconColor) {
+    return Row(
+      children: [
+        Icon(icon, color: iconColor),
+        const SizedBox(width: 5),
+        Flexible(
+          child: Text(
+            '$label: ₹$price',
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-      ),
-    ],
-  );
-}
-
+      ],
+    );
+  }
 
   Widget _buildPassPriceRow(String label, String price) {
     return Container(

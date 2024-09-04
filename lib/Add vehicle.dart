@@ -290,7 +290,7 @@ class _AddVehicleState extends State<AddVehicle> {
                         ],
                       ),
                       const SizedBox(
-                        height: 40,
+                        height: 30,
                       ),
                       //
                       Stack(
@@ -336,8 +336,8 @@ class _AddVehicleState extends State<AddVehicle> {
                           ),
                         ],
                       ),
-                      SizedBox(
-                        height: 10,
+                     const SizedBox(
+                        height: 20,
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,6 +348,9 @@ class _AddVehicleState extends State<AddVehicle> {
                             style: GoogleFonts.notoSansHanunoo(
                                 color: Color.fromARGB(255, 29, 29, 29)),
                           )),
+                        const  SizedBox(
+                            height: 4,
+                          ),
                           TextField(
                             controller: vehicleNameController,
                             style: const TextStyle(
@@ -416,15 +419,10 @@ class _AddVehicleState extends State<AddVehicle> {
                     left: -10,
                     child: IconButton(
                         onPressed: () {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const AdminPage(), // Replace with your UserScreen widget
-                            ),
-                          );
+                          Navigator.of(context).pop();
                         },
                         icon: const Icon(
-                          Icons.arrow_back,
+                          Icons.chevron_left,
                           size: 30,
                           color: Colors.black,
                         ))),

@@ -294,15 +294,10 @@ class _AddPriceState extends State<AddPrice> {
                     left: -0,
                     child: IconButton(
                         onPressed: () {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const AdminPage(), // Replace with your UserScreen widget
-                            ),
-                          );
+                          Navigator.of(context).pop();
                         },
                         icon: const Icon(
-                          Icons.arrow_back,
+                          Icons.chevron_left,
                           size: 30,
                           color: Colors.black,
                         ))),
@@ -313,141 +308,151 @@ class _AddPriceState extends State<AddPrice> {
   }
 
   Widget _buildVehicleSelector() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Vehicle name',
-        style: GoogleFonts.notoSansHanunoo(
-          color: const Color.fromARGB(255, 29, 29, 29),
-        ),
-      ),
-      GestureDetector(
-        onTap: () async {
-          final selectedVehicle = await _showVehicleDialog();
-          if (selectedVehicle != null) {
-            setState(() {
-              _selectedVehicleName = selectedVehicle;
-            });
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(0), // Sharp rectangle
-            border: Border.all(
-              color: Colors.black,
-              width: 2.0, // 2 px black border
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Vehicle name',
+          style: GoogleFonts.nunitoSans(
+            color: const Color.fromARGB(255, 29, 29, 29),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  _selectedVehicleName ?? 'Choose an option',
-                  style: const TextStyle(color: Colors.grey, fontSize: 16),
-                ),
-              ),
-              const Icon(
-                Icons.arrow_drop_down,
+        ),
+        SizedBox(
+          height: 4,
+        ),
+        GestureDetector(
+          onTap: () async {
+            final selectedVehicle = await _showVehicleDialog();
+            if (selectedVehicle != null) {
+              setState(() {
+                _selectedVehicleName = selectedVehicle;
+              });
+            }
+          },
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(0), // Sharp rectangle
+              border: Border.all(
                 color: Colors.black,
-                size: 24,
+                width: 2.0, // 2 px black border
               ),
-            ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedVehicleName ?? 'Choose an option',
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                  size: 24,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
-Future<String?> _showVehicleDialog() async {
-  return showDialog<String>(
-    context: context,
-    builder: (BuildContext context) {
-      String? selectedVehicle = _selectedVehicleName;
+  Future<String?> _showVehicleDialog() async {
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        String? selectedVehicle = _selectedVehicleName;
 
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [const Color.fromARGB(255, 225, 215, 206),const Color.fromARGB(255, 225, 215, 206)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  const Color.fromARGB(255, 225, 215, 206),
+                  const Color.fromARGB(255, 225, 215, 206)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 20), // Space below close button
-                  const Text(
-                    'Select Vehicle',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                   ),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: _vehicleNames.map((String vehicle) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8.0),
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(0, 255, 255, 255), // White background
-                              borderRadius: BorderRadius.circular(0), // Sharp rectangle
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 2.0, // 2 px black border
-                              ),
-                            ),
-                            child: CheckboxListTile(
-                              title: Text(
-                                vehicle,
-                                style: const TextStyle(color: Colors.black),
-                              ),
-                              value: selectedVehicle == vehicle,
-                              activeColor: Colors.black,
-                              checkColor: Colors.black,
-                              onChanged: (bool? value) {
-                                if (value == true) {
-                                  selectedVehicle = vehicle;
-                                  Navigator.pop(context, selectedVehicle);
-                                }
-                              },
-                            ),
-                          );
-                        }).toList(),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 20), // Space below close button
+                    const Text(
+                      'Select Vehicle',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: _vehicleNames.map((String vehicle) {
+                            return Container(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(
+                                    0, 255, 255, 255), // White background
+                                borderRadius:
+                                    BorderRadius.circular(0), // Sharp rectangle
+                                border: Border.all(
+                                  color: Colors.black,
+                                  width: 2.0, // 2 px black border
+                                ),
+                              ),
+                              child: CheckboxListTile(
+                                title: Text(
+                                  vehicle,
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                                value: selectedVehicle == vehicle,
+                                activeColor: Colors.black,
+                                checkColor: Colors.black,
+                                onChanged: (bool? value) {
+                                  if (value == true) {
+                                    selectedVehicle = vehicle;
+                                    Navigator.pop(context, selectedVehicle);
+                                  }
+                                },
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
+
   Widget _buildTextField(
       String hint, String hinttext, TextEditingController controller) {
     return Column(
@@ -456,9 +461,11 @@ Future<String?> _showVehicleDialog() async {
         Container(
             child: Text(
           hinttext,
-          style: GoogleFonts.notoSansHanunoo(
-              color: Color.fromARGB(255, 29, 29, 29)),
+          style: GoogleFonts.nunitoSans(color: Color.fromARGB(255, 29, 29, 29)),
         )),
+        SizedBox(
+          height: 4,
+        ),
         TextField(
           controller: controller,
           decoration: InputDecoration(
