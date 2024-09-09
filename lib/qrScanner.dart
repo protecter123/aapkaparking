@@ -40,11 +40,68 @@ class _QrscannerState extends State<Qrscanner>
     super.dispose();
   }
 
+  void _showManualInputDialog() {
+    String vehicleNumber = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Enter Vehicle Number'),
+          content: TextField(
+            onChanged: (value) {
+              vehicleNumber = value;
+            },
+            decoration: const InputDecoration(hintText: 'Vehicle Number'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (vehicleNumber.isNotEmpty) {
+                  Navigator.of(context).pop(); // Close the dialog
+                  // Navigate to AfterScan screen with the entered vehicle number
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AfterScan(
+                        vehicleNumber: vehicleNumber,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan your QR Code'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0), // Padding for spacing
+            child: ElevatedButton(
+              onPressed: _showManualInputDialog, // Open dialog on button press
+              style: ElevatedButton.styleFrom(
+                foregroundColor: const Color.fromARGB(255, 6, 6, 6),
+                backgroundColor:  Colors.yellow // Text color
+              ),
+              child: const Text('Enter No. Manually'),
+            ),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -77,7 +134,9 @@ class _QrscannerState extends State<Qrscanner>
                   width: 250,
                   height: 250,
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color.fromARGB(255, 249, 4, 4), width: 2.0),
+                    border: Border.all(
+                        color: const Color.fromARGB(255, 249, 4, 4),
+                        width: 2.0),
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: AnimatedBuilder(
@@ -168,6 +227,3 @@ class _QrscannerState extends State<Qrscanner>
     );
   }
 }
-
-// Replace this with your AfterScan screen implementation
-

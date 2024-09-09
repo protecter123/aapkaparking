@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
 class AddPrice extends StatefulWidget {
@@ -50,23 +51,34 @@ class _AddPriceState extends State<AddPrice> {
   }
 
   Future<void> _savePricingData() async {
+    if (_pricing30MinController.text.isEmpty ||
+        _pricing1HourController.text.isEmpty ||
+        _pricing120MinController.text.isEmpty ||
+        _passPriceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please provide pricing.'),
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+        ),
+      );
+      return; // Exit the method if validation fails
+    }
+
+    // Continue with saving data...
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && _selectedVehicleName != null) {
       final userPhone = user.phoneNumber;
 
-      // Get reference to the "Vehicle" collection within the user's document in "AllUsers"
       final vehicleCollectionRef = FirebaseFirestore.instance
           .collection('AllUsers')
           .doc(userPhone)
           .collection('Vehicles');
 
-      // Query for the document where the "VehicleName" matches the selected vehicle name
       final querySnapshot = await vehicleCollectionRef
           .where('vehicleName', isEqualTo: _selectedVehicleName)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Update the pricing fields in the matched document
         final docId = querySnapshot.docs.first.id;
         await vehicleCollectionRef.doc(docId).update({
           'Pricing30Minutes': _pricing30MinController.text,
@@ -75,7 +87,6 @@ class _AddPriceState extends State<AddPrice> {
           'PassPrice': _passPriceController.text,
         });
 
-        // Show success dialog with Lottie animation
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -106,7 +117,7 @@ class _AddPriceState extends State<AddPrice> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop(); // Close the dialog
+                        Navigator.of(context).pop();
                       },
                       child: const Text(
                         'OK',
@@ -124,7 +135,6 @@ class _AddPriceState extends State<AddPrice> {
           },
         );
       } else {
-        // If no matching document is found, show custom SnackBar
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please select a valid vehicle.'),
@@ -265,21 +275,21 @@ class _AddPriceState extends State<AddPrice> {
                             _buildVehicleSelector(),
                             const SizedBox(height: 10),
                             _buildTextField(
-                                'Pricing of 30 minutes',
+                                'Add Pricing for vehicle',
                                 'Add price for 30 min',
                                 _pricing30MinController),
                             const SizedBox(height: 10),
                             _buildTextField(
-                                'Pricing of 60 minutes',
+                                'Add Pricing for vehicle',
                                 'Add price for 60 min',
                                 _pricing1HourController),
                             const SizedBox(height: 10),
                             _buildTextField(
-                                'Pricing of 120 minutes',
+                                'Add Pricing for vehicle',
                                 'Add price for 120 min',
                                 _pricing120MinController),
                             const SizedBox(height: 10),
-                            _buildTextField('Pass Price', 'Add price for pass',
+                            _buildTextField('Pass Price', 'Add pass price for vehicle',
                                 _passPriceController),
                             const SizedBox(height: 32),
                             _build3DButton(context, 'Submit', _savePricingData),
@@ -298,7 +308,7 @@ class _AddPriceState extends State<AddPrice> {
                         },
                         icon: const Icon(
                           Icons.chevron_left,
-                          size: 30,
+                          size: 37,
                           color: Colors.black,
                         ))),
               ],
@@ -411,21 +421,21 @@ class _AddPriceState extends State<AddPrice> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: _vehicleNames.map((String vehicle) {
+                            final capitalizedVehicle =
+                                toBeginningOfSentenceCase(vehicle) ?? vehicle;
                             return Container(
                               margin: const EdgeInsets.symmetric(vertical: 8.0),
                               decoration: BoxDecoration(
-                                color: const Color.fromARGB(
-                                    0, 255, 255, 255), // White background
-                                borderRadius:
-                                    BorderRadius.circular(0), // Sharp rectangle
+                                color: const Color.fromARGB(0, 255, 255, 255),
+                                borderRadius: BorderRadius.circular(0),
                                 border: Border.all(
                                   color: Colors.black,
-                                  width: 2.0, // 2 px black border
+                                  width: 2.0,
                                 ),
                               ),
                               child: CheckboxListTile(
                                 title: Text(
-                                  vehicle,
+                                  capitalizedVehicle, // Display the capitalized vehicle name
                                   style: const TextStyle(color: Colors.black),
                                 ),
                                 value: selectedVehicle == vehicle,
@@ -468,39 +478,38 @@ class _AddPriceState extends State<AddPrice> {
         ),
         TextField(
           controller: controller,
+          keyboardType:
+              TextInputType.number, // Set the keyboard type to numeric
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.notoSansHanunoo(
-              // Applying Google Font
               textStyle: const TextStyle(
-                color: Colors.grey, // Hint text color
+                color: Colors.grey,
               ),
             ),
-
-            // Background color
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(0), // Sharp edges
+              borderRadius: BorderRadius.circular(0),
               borderSide: const BorderSide(
-                color: Colors.black, // Border color
-                width: 2.0, // Border width
+                color: Colors.black,
+                width: 2.0,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(0), // Sharp edges
+              borderRadius: BorderRadius.circular(0),
               borderSide: const BorderSide(
-                color: Colors.black, // Border color
-                width: 2.0, // Border width
+                color: Colors.black,
+                width: 2.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(0), // Sharp edges
+              borderRadius: BorderRadius.circular(0),
               borderSide: const BorderSide(
-                color: Colors.black, // Border color
-                width: 2.0, // Border width
+                color: Colors.black,
+                width: 2.0,
               ),
             ),
           ),
-        ),
+        )
       ],
     );
   }

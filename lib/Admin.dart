@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:aapkaparking/Add%20pricing.dart';
 import 'package:aapkaparking/Add%20vehicle.dart';
 import 'package:aapkaparking/Adduser2.dart';
@@ -27,8 +29,6 @@ class _AdminPageState extends State<AdminPage> {
     super.initState();
     _fetchTotalAmount();
   }
-
- 
 
   Future<void> _fetchTotalAmount() async {
     try {
@@ -68,15 +68,30 @@ class _AdminPageState extends State<AdminPage> {
             await moneyCollectionRef.doc(todayDate).get();
 
         if (snapshot.exists) {
-          // Sum up all integer values in the document
+          // Retrieve the data from the document
           Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
 
-          data.forEach((key, value) {
-            int? intValue = int.tryParse(value.toString());
-            if (intValue != null) {
-              total += intValue.toDouble();
+          // Check for individual fields and add them to the total if they exist
+          if (data.containsKey('dueMoney')) {
+            int? dueMoney = int.tryParse(data['dueMoney'].toString());
+            if (dueMoney != null) {
+              total += dueMoney.toDouble();
             }
-          });
+          }
+
+          if (data.containsKey('fixMoney')) {
+            int? fixMoney = int.tryParse(data['fixMoney'].toString());
+            if (fixMoney != null) {
+              total += fixMoney.toDouble();
+            }
+          }
+
+          if (data.containsKey('passMoney')) {
+            int? passMoney = int.tryParse(data['passMoney'].toString());
+            if (passMoney != null) {
+              total += passMoney.toDouble();
+            }
+          }
         }
       }
 
@@ -106,9 +121,10 @@ class _AdminPageState extends State<AdminPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                 Text(
+                Text(
                   'Are you sure you want to logout?',
-                  style: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.nunito(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -134,7 +150,9 @@ class _AdminPageState extends State<AdminPage> {
                       ),
                       child: const Text(
                         'Yes',
-                        style: TextStyle(color: Color.fromARGB(255, 40, 40, 40), fontSize: 18),
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 40, 40, 40),
+                            fontSize: 18),
                       ),
                     ),
                     ElevatedButton(
@@ -149,7 +167,8 @@ class _AdminPageState extends State<AdminPage> {
                       ),
                       child: const Text(
                         'No',
-                        style: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 18),
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 0, 0, 0), fontSize: 18),
                       ),
                     ),
                   ],
@@ -294,17 +313,18 @@ class _AdminPageState extends State<AdminPage> {
                 ],
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
-            SizedBox(
-              height: 1,
-              child: Container(
-                height: 2,
-                color: Colors.black,
-              ),
+            const Divider(
+              color: Colors.black, // Color of the divider
+              thickness: 1,
+              indent: 0,
+              endIndent: 0, // Thickness of the divider
+              height: 1, // Space above and below the divider
             ),
-            SizedBox(
+
+            const SizedBox(
               height: 10,
             ), // Add spacing between the container and grid
             Flexible(
@@ -318,7 +338,7 @@ class _AdminPageState extends State<AdminPage> {
                   children: [
                     _buildCard(
                         title: 'Add User',
-                        imagePath: 'assets/animations/brownback.jpg',
+                        imagePath: 'assets/animations/wp2722623.png',
                         animationUrl:
                             'https://lottie.host/c5ea2a75-47eb-4000-805f-6c0708125ab7/rBQrP2Y1ea.json',
                         onTap: () {
@@ -331,7 +351,7 @@ class _AdminPageState extends State<AdminPage> {
                         backgroundColor: Color.fromARGB(255, 254, 171, 167)),
                     _buildCard(
                         title: 'Add Vehicle',
-                        imagePath: 'assets/animations/brownback.jpg',
+                        imagePath: 'assets/animations/OIP (3).jpeg',
                         animationUrl:
                             'https://lottie.host/142ea5df-9cc2-4a58-ad4d-ecc235a58c40/wrjztJKkxO.json',
                         onTap: () {
@@ -344,7 +364,7 @@ class _AdminPageState extends State<AdminPage> {
                         backgroundColor: Color.fromARGB(255, 251, 241, 153)),
                     _buildCard(
                         title: 'Add Pricing',
-                        imagePath: 'assets/animations/brownback.jpg',
+                        imagePath: 'assets/animations/1353554.webp',
                         animationUrl:
                             'https://lottie.host/98de12b2-ac8e-45c7-9097-8215c4ed6e8e/lOrOs3Tnye.json',
                         onTap: () {
@@ -357,7 +377,7 @@ class _AdminPageState extends State<AdminPage> {
                         backgroundColor: Color.fromARGB(255, 151, 253, 156)),
                     _buildCard(
                         title: 'View Vehicles',
-                        imagePath: 'assets/animations/brownback.jpg',
+                        imagePath: 'assets/animations/pngtree-best-silk-wallpaper-any-one-can-loved-it-image_590012.jpg',
                         animationUrl:
                             'https://lottie.host/c024d909-3db9-4bc2-8aff-b3b4be0c6c5c/iUF7xCnkzl.json',
                         onTap: () {
@@ -370,7 +390,7 @@ class _AdminPageState extends State<AdminPage> {
                         backgroundColor: Color.fromARGB(255, 144, 205, 255)),
                     _buildCard(
                         title: 'Edit Users',
-                        imagePath: 'assets/animations/brownback.jpg',
+                        imagePath: 'assets/animations/R.jpeg',
                         animationUrl:
                             'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
                         onTap: () {
@@ -383,7 +403,7 @@ class _AdminPageState extends State<AdminPage> {
                         backgroundColor: Color.fromARGB(255, 168, 141, 249)),
                     _buildCard(
                         title: 'Collection',
-                        imagePath: 'assets/animations/brownback.jpg',
+                        imagePath: 'assets/animations/wp2722623.png',
                         animationUrl:
                             'https://lottie.host/464e74ce-b867-41f5-8035-7904f651eb79/unGc97LCpv.json',
                         onTap: () {

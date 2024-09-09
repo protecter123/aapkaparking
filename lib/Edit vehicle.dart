@@ -45,7 +45,7 @@ class _EditVehicleState extends State<EditVehicle> {
           if (!snapshot.hasData) {
             return const Center(
                 child: CircularProgressIndicator(
-              color: Colors.yellow,
+              color: Color.fromARGB(255, 7, 7, 7),
             ));
           }
 
@@ -98,7 +98,7 @@ class _EditVehicleState extends State<EditVehicle> {
                                   if (loadingProgress == null) return child;
                                   return const Center(
                                       child: CircularProgressIndicator(
-                                    color: Colors.yellow,
+                                    color: Color.fromARGB(255, 8, 8, 8),
                                   ));
                                 },
                                 errorBuilder: (context, error, stackTrace) {
@@ -152,7 +152,7 @@ class _EditVehicleState extends State<EditVehicle> {
                         child: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.black),
                           onPressed: () {
-                            _deleteVehicle(vehicle.id);
+                            _showDeleteConfirmationDialog(vehicle.id);
                           },
                         ),
                       ),
@@ -212,6 +212,45 @@ class _EditVehicleState extends State<EditVehicle> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(String docId) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          title: const Text(
+            'Are you sure you want to delete?',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog without action
+              },
+              child: const Text(
+                'No',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteVehicle(docId); // Call the delete function
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text(
+                'Yes',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

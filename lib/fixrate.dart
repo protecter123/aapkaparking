@@ -98,7 +98,7 @@ class _FixirateState extends State<Fixirate> {
               : pricingData!['Pricing120Minutes'];
 
       // Convert price to double
-      double priceAsDouble = double.tryParse(price.toString()) ?? 0.0;
+      num priceAsDouble = num.tryParse(price.toString()) ?? 0.0;
 
       // Firestore update logic
       try {
@@ -123,9 +123,9 @@ class _FixirateState extends State<Fixirate> {
 
             if (data != null && data.containsKey('fixMoney')) {
               // Convert the existing fixMoney from string to double
-              double existingTotal =
-                  double.tryParse(data['fixMoney'] ?? '0.0') ?? 0.0;
-              double newTotal = existingTotal + priceAsDouble;
+              num existingTotal =
+                  int.tryParse(data['fixMoney'] ?? '0.0') ?? 0.0;
+              num newTotal = existingTotal + priceAsDouble;
 
               print('Existing Total: $existingTotal, New Total: $newTotal');
 

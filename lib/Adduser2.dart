@@ -200,7 +200,7 @@ class _AdduserState extends State<Adduser2> {
                       children: [
                         // Title and Name
                         const SizedBox(
-                          height: 270,
+                          height: 250,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -251,8 +251,11 @@ class _AdduserState extends State<Adduser2> {
                                   child: Text(
                                 'User name',
                                 style: GoogleFonts.notoSansHanunoo(
-                                    color: Colors.grey),
+                                    color: const Color.fromARGB(255, 5, 5, 5)),
                               )),
+                              SizedBox(
+                                height: 5,
+                              ),
                               TextField(
                                 controller: nameController,
                                 style: const TextStyle(
@@ -306,8 +309,11 @@ class _AdduserState extends State<Adduser2> {
                                   child: Text(
                                 'Phone number',
                                 style: GoogleFonts.notoSansHanunoo(
-                                    color: Colors.grey),
+                                    color: const Color.fromARGB(255, 5, 5, 5)),
                               )),
+                              SizedBox(
+                                height: 5,
+                              ),
                               TextField(
                                 controller: phoneController,
                                 keyboardType: TextInputType.phone,
@@ -368,10 +374,18 @@ class _AdduserState extends State<Adduser2> {
                         ),
                         const SizedBox(height: 80),
                         GestureDetector(
-                          onTap: _buttonEnabled ? saveUser : null,
+                          onTap: _buttonEnabled
+                              ? saveUser
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Crediantials not found,Kindy Add name and number')),
+                                  );
+                                },
                           child: Container(
                             width: double.infinity,
-                            height: 55,
+                            height: 52,
                             padding: const EdgeInsets.symmetric(
                                 vertical: 12, horizontal: 24),
                             decoration: BoxDecoration(
@@ -417,7 +431,7 @@ class _AdduserState extends State<Adduser2> {
                           },
                           icon: const Icon(
                             Icons.chevron_left,
-                            size: 30,
+                            size: 37,
                             color: Colors.black,
                           ))),
                 ],

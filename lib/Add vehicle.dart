@@ -27,36 +27,78 @@ class _AddVehicleState extends State<AddVehicle> {
     await showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                leading: Icon(Icons.camera_alt),
-                title: Text('Camera'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final pickedFile =
-                      await _picker.pickImage(source: ImageSource.camera);
-                  setState(() {
-                    if (pickedFile != null) {
-                      _image = File(pickedFile.path);
-                    }
-                  });
-                },
+        return Container(
+          height: 150, // Adjust height as needed
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final pickedFile =
+                        await _picker.pickImage(source: ImageSource.camera);
+                    setState(() {
+                      if (pickedFile != null) {
+                        _image = File(pickedFile.path);
+                      }
+                    });
+                  },
+                  child: Container(
+                    height: 150,
+                    width: 160,
+                    color: const Color.fromARGB(0, 0, 0, 0),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.camera_alt,
+                            size: 50,
+                            color: Colors.blueAccent), // Colorful icon
+                        SizedBox(height: 10),
+                        Text('Camera',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.blueAccent)), // Label
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              ListTile(
-                leading: Icon(Icons.photo_library),
-                title: Text('Gallery'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final pickedFile =
-                      await _picker.pickImage(source: ImageSource.gallery);
-                  setState(() {
-                    if (pickedFile != null) {
-                      _image = File(pickedFile.path);
-                    }
-                  });
-                },
+              Container(
+                width: 1, // Separator line width
+                color: Colors.grey, // Separator line color
+                height: 80, // Separator line height
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final pickedFile =
+                        await _picker.pickImage(source: ImageSource.gallery);
+                    setState(() {
+                      if (pickedFile != null) {
+                        _image = File(pickedFile.path);
+                      }
+                    });
+                  },
+                  child: Container(
+                    height: 150,
+                    width: 160,
+                    color: const Color.fromARGB(0, 0, 0, 0),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.photo_library,
+                            size: 50,
+                            color: Colors.greenAccent), // Colorful icon
+                        SizedBox(height: 10),
+                        Text('Gallery',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.greenAccent)), // Label
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -69,7 +111,7 @@ class _AddVehicleState extends State<AddVehicle> {
     if (_image == null || vehicleNameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide all required details')),
+        const SnackBar(content: Text('Please provide Vehicle name and Image')),
       );
       return;
     }
@@ -182,7 +224,7 @@ class _AddVehicleState extends State<AddVehicle> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       body: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(16.0),
           child: LayoutBuilder(builder: (context, constraints) {
             return Stack(
               children: [
@@ -293,50 +335,56 @@ class _AddVehicleState extends State<AddVehicle> {
                         height: 30,
                       ),
                       //
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 60,
-                            backgroundColor:
-                                const Color.fromARGB(255, 13, 13, 13),
-                            child: GestureDetector(
-                              onTap: () {
-                                _getImage;
-                              },
-                              child: CircleAvatar(
-                                backgroundColor:
-                                    const Color.fromARGB(255, 225, 215, 206),
-                                radius: 55,
-                                backgroundImage:
-                                    _image != null ? FileImage(_image!) : null,
-                                child: _image == null
-                                    ? const Icon(
-                                        Icons.person,
-                                        color: Color.fromARGB(255, 5, 5, 5),
-                                        size: 60,
-                                      )
-                                    : null,
+                      Center(
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 60,
+                              backgroundColor:
+                                  const Color.fromARGB(255, 13, 13, 13),
+                              child: GestureDetector(
+                                onTap: () {
+                                  _getImage(); // Add parentheses to call the function
+                                },
+                                child: CircleAvatar(
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 225, 215, 206),
+                                  radius: 55,
+                                  backgroundImage: _image != null
+                                      ? FileImage(_image!)
+                                      : null,
+                                  child: _image == null
+                                      ? const Icon(
+                                          Icons.person,
+                                          color: Color.fromARGB(255, 5, 5, 5),
+                                          size: 60,
+                                        )
+                                      : null,
+                                ),
                               ),
                             ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: ElevatedButton(
-                              onPressed: _getImage,
-                              style: ElevatedButton.styleFrom(
-                                shape: CircleBorder(),
-                                backgroundColor:
-                                    const Color.fromARGB(255, 8, 8, 8),
-                                padding: EdgeInsets.all(8), // Button color
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _getImage(); // Add parentheses to call the function
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  shape: CircleBorder(),
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 8, 8, 8),
+                                  padding: EdgeInsets.all(8), // Button color
+                                ),
+                                child: const Icon(Icons.camera_alt,
+                                    color: Colors.white),
                               ),
-                              child: const Icon(Icons.camera_alt,
-                                  color: Colors.white),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                     const SizedBox(
+
+                      const SizedBox(
                         height: 20,
                       ),
                       Column(
@@ -348,39 +396,42 @@ class _AddVehicleState extends State<AddVehicle> {
                             style: GoogleFonts.notoSansHanunoo(
                                 color: Color.fromARGB(255, 29, 29, 29)),
                           )),
-                        const  SizedBox(
+                          const SizedBox(
                             height: 4,
                           ),
-                          TextField(
-                            controller: vehicleNameController,
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 20),
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(0), // Sharp edges
-                                borderSide: const BorderSide(
-                                    color: Colors.black,
-                                    width: 2), // 2 px black border
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(0), // Sharp edges
-                                borderSide: const BorderSide(
-                                    color: Colors.black,
-                                    width: 2), // 2 px black border
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(0), // Sharp edges
-                                borderSide: const BorderSide(
-                                    color: Colors.black,
-                                    width: 2), // 2 px black border
-                              ),
-                              hintText: 'e.g. Taxi,bike',
-                              hintStyle: GoogleFonts.notoSansHanunoo(
-                                color: Colors.grey,
-                                fontSize: 19,
+                          SizedBox(
+                            height: 52,
+                            child: TextField(
+                              controller: vehicleNameController,
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 20),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(0), // Sharp edges
+                                  borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2), // 2 px black border
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(0), // Sharp edges
+                                  borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2), // 2 px black border
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(0), // Sharp edges
+                                  borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2), // 2 px black border
+                                ),
+                                hintText: 'Vehicle name',
+                                hintStyle: GoogleFonts.notoSansHanunoo(
+                                  color: Colors.grey,
+                                  fontSize: 19,
+                                ),
                               ),
                             ),
                           ),
@@ -390,6 +441,7 @@ class _AddVehicleState extends State<AddVehicle> {
                       const SizedBox(height: 40),
                       SizedBox(
                         width: double.infinity,
+                        height: 52,
                         child: ElevatedButton(
                           onPressed: _saveVehicleDetails,
                           style: ElevatedButton.styleFrom(
@@ -423,7 +475,7 @@ class _AddVehicleState extends State<AddVehicle> {
                         },
                         icon: const Icon(
                           Icons.chevron_left,
-                          size: 30,
+                          size: 37,
                           color: Colors.black,
                         ))),
               ],

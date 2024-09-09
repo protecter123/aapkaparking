@@ -28,7 +28,8 @@ class Loader extends StatelessWidget {
       ),
       child: const Center(
         child: CircularProgressIndicator(
-          color: Colors.white,
+          color: Color.fromARGB(255, 249, 224, 168),
+          backgroundColor: Colors.black,
           strokeWidth: 4,
         ),
       ),
@@ -71,7 +72,7 @@ class OtpScreenState extends State<OtpScreen>
     super.initState();
     startTimer();
     SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
+     const SystemUiOverlayStyle(
         statusBarColor:
             Color.fromARGB(243, 0, 0, 0), // Make the status bar transparent
         statusBarIconBrightness:
@@ -177,10 +178,7 @@ class OtpScreenState extends State<OtpScreen>
               );
             }
           } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => AnotherScreen()),
-            );
+            
           }
         } catch (e) {
           print('Error checking phone number: $e');
@@ -215,7 +213,7 @@ class OtpScreenState extends State<OtpScreen>
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
+        value:const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark, // Dark icons
           statusBarBrightness: Brightness.light, // For iOS
@@ -232,9 +230,9 @@ class OtpScreenState extends State<OtpScreen>
                     gradient: LinearGradient(
                       begin: _bgAnimation.value,
                       end: Alignment.centerRight,
-                      colors: [
-                        const Color.fromARGB(255, 246, 240, 187),
-                        const Color.fromARGB(255, 252, 250, 226),
+                      colors:const [
+                         Color.fromARGB(255, 246, 240, 187),
+                         Color.fromARGB(255, 252, 250, 226),
                         Color.fromARGB(255, 249, 249, 239),
                       ],
                     ),
@@ -314,7 +312,7 @@ class OtpScreenState extends State<OtpScreen>
                                         borderRadius: BorderRadius.circular(10),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Color.fromARGB(
+                                            color:const Color.fromARGB(
                                                     255, 126, 129, 116)
                                                 .withOpacity(0.5),
                                             blurRadius: 10,
@@ -335,7 +333,7 @@ class OtpScreenState extends State<OtpScreen>
                                     icon: Icon(
                                       buttonenable ? Icons.check : Icons.clear,
                                       color: clearenable
-                                          ? Color.fromARGB(255, 157, 255, 0)
+                                          ? const Color.fromARGB(255, 157, 255, 0)
                                           : Colors.transparent,
                                       size: 25,
                                     ),
@@ -344,7 +342,7 @@ class OtpScreenState extends State<OtpScreen>
                               ],
                             ),
                           ),
-                          SizedBox(
+                        const  SizedBox(
                             height: 15,
                           ),
                           Center(
@@ -370,7 +368,7 @@ class OtpScreenState extends State<OtpScreen>
                                     child: Text(
                                       'Resend OTP',
                                       style: TextStyle(
-                                        color: Color.fromARGB(255, 255, 70, 64),
+                                        color:const Color.fromARGB(255, 255, 70, 64),
                                         fontSize: MediaQuery.of(context)
                                                 // ignore: deprecated_member_use
                                                 .textScaleFactor *
@@ -381,7 +379,7 @@ class OtpScreenState extends State<OtpScreen>
                               ],
                             ),
                           ),
-                          SizedBox(
+                         const SizedBox(
                             height: 10,
                           ),
                           Center(
@@ -397,7 +395,7 @@ class OtpScreenState extends State<OtpScreen>
                                           : Colors.grey,
                                     ),
                                     fixedSize: WidgetStateProperty.all<Size>(
-                                        Size(270, 55)),
+                                      const  Size(270, 55)),
                                     shape: WidgetStateProperty.all<
                                         RoundedRectangleBorder>(
                                       const RoundedRectangleBorder(
@@ -418,7 +416,7 @@ class OtpScreenState extends State<OtpScreen>
                                 if (_isloading)
                                   const Padding(
                                     padding:
-                                        EdgeInsets.only(left: 70.0, top: 5),
+                                        EdgeInsets.only(left: 50.0, top: 5),
                                     child: Loader(),
                                   ),
                               ],
@@ -450,16 +448,4 @@ class OtpScreenState extends State<OtpScreen>
   }
 }
 
-class AnotherScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Another Screen'),
-      ),
-      body: Center(
-        child: Text('Welcome to Another Screen!'),
-      ),
-    );
-  }
-}
+

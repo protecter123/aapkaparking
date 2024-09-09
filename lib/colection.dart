@@ -1,6 +1,9 @@
+import 'package:aapkaparking/Expand%20collect.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class Collection extends StatefulWidget {
   const Collection({super.key});
@@ -10,51 +13,232 @@ class Collection extends StatefulWidget {
 }
 
 class _CollectionState extends State<Collection> {
-  final String currentUserPhoneNumber = '+919999999999'; // Replace with the current user's phone number
-  final String selectedUserPhoneNumber = '+917777777777'; // Replace with the selected user's phone number
+  final TextEditingController _fromDateController = TextEditingController();
+  final TextEditingController _toDateController = TextEditingController();
+  DateTime? fromDate;
+  DateTime? toDate;
 
-  Future<Map<String, dynamic>> fetchMoneyCollectionData() async {
-    // Fetch user document
-    DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore.instance
+  Future<List<Map<String, dynamic>>> fetchMoneyCollectionData(
+      {DateTime? from, DateTime? to}) async {
+    String currentUserPhoneNumber =
+        FirebaseAuth.instance.currentUser?.phoneNumber ?? '';
+
+    if (currentUserPhoneNumber.isEmpty) {
+      print("Error: User phone number is empty");
+      return [];
+    }
+
+    // Define the date format
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String todayDate = dateFormat.format(DateTime.now());
+
+    var usersCollection = FirebaseFirestore.instance
         .collection('AllUsers')
         .doc(currentUserPhoneNumber)
-        .collection('Users')
-        .doc(selectedUserPhoneNumber)
-        .get();
+        .collection('Users');
 
-    if (userDoc.exists) {
-      // Fetch totalMoney from MoneyCollection subcollection
-      Map<String, dynamic> totalMoney = {};
-      var moneyCollectionDocs = await FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(currentUserPhoneNumber)
-          .collection('Users')
-          .doc(selectedUserPhoneNumber)
-          .collection('MoneyCollection')
-          .get();
+    // Get all user documents
+    QuerySnapshot<Map<String, dynamic>> usersSnapshot =
+        await usersCollection.get();
 
-      for (var doc in moneyCollectionDocs.docs) {
-        var docData = doc.data();
-        if (docData != null) {
-          totalMoney[doc.id] = docData['totalMoney']?.toString() ?? '0';
+    List<Map<String, dynamic>> usersMoneyData = [];
+
+    for (var userDoc in usersSnapshot.docs) {
+      var userMoneyCollection =
+          usersCollection.doc(userDoc.id).collection('MoneyCollection');
+
+      int totalMoneyForUser = 0; // Total money sum for each user
+
+      if (from != null && to != null) {
+        // Convert from and to dates to 'yyyy-MM-dd' format
+        String fromDateString = dateFormat.format(from);
+        String toDateString = dateFormat.format(to);
+
+        print("Filtering by document ID from $fromDateString to $toDateString");
+
+        // Get all documents between the date range
+        QuerySnapshot<Map<String, dynamic>> moneyCollectionSnapshot =
+            await userMoneyCollection
+                .where(FieldPath.documentId,
+                    isGreaterThanOrEqualTo: fromDateString)
+                .where(FieldPath.documentId, isLessThanOrEqualTo: toDateString)
+                .get();
+
+        for (var moneyDoc in moneyCollectionSnapshot.docs) {
+          var moneyData = moneyDoc.data();
+          if (moneyData != null) {
+            // Parse and sum up each field only if present
+            int fixMoney = int.tryParse(moneyData['fixMoney'] ?? '0') ?? 0;
+            int dueMoney = int.tryParse(moneyData['dueMoney'] ?? '0') ?? 0;
+            int passMoney = int.tryParse(moneyData['passMoney'] ?? '0') ?? 0;
+
+            int sumOfFields = fixMoney + dueMoney + passMoney;
+
+            // Add the money from this document if it's greater than 0
+            if (sumOfFields > 0) {
+              totalMoneyForUser += sumOfFields;
+            }
+          }
+        }
+      } else {
+        // If no date range is provided, get today's document
+        print("Fetching document for today: $todayDate");
+        DocumentSnapshot<Map<String, dynamic>> todaySnapshot =
+            await userMoneyCollection.doc(todayDate).get();
+
+        if (todaySnapshot.exists) {
+          var moneyData = todaySnapshot.data();
+          if (moneyData != null) {
+            // Parse and sum up each field only if present
+            int fixMoney = int.tryParse(moneyData['fixMoney'] ?? '0') ?? 0;
+            int dueMoney = int.tryParse(moneyData['dueMoney'] ?? '0') ?? 0;
+            int passMoney = int.tryParse(moneyData['passMoney'] ?? '0') ?? 0;
+
+            totalMoneyForUser = fixMoney + dueMoney + passMoney;
+          }
         }
       }
 
-      return {
-        'userName': userDoc.data()?['userName'] ?? 'Unknown User',
-        'uid': userDoc.data()?['uid'] ?? 'Unknown UID',
-        ...totalMoney,
-      };
-    } else {
-      return {};
+      // Add the data for the user, regardless of whether today or filtered dates
+      if (totalMoneyForUser > 0) {
+        usersMoneyData.add({
+          'userName': userDoc.data()['userName'] ?? 'Unknown User',
+          'uid': userDoc.data()['uid'] ?? 'Unknown UID',
+          'totalMoney': totalMoneyForUser.toString(),
+        });
+      }
     }
+
+    return usersMoneyData;
+  }
+
+  void _showDateFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Select Date Range',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _buildDateField('From Date', _fromDateController, (pickedDate) {
+                  setState(() {
+                    fromDate = pickedDate;
+                  });
+                }),
+                const SizedBox(height: 10),
+                _buildDateField('To Date', _toDateController, (pickedDate) {
+                  setState(() {
+                    toDate = pickedDate;
+                  });
+                }),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _fromDateController.clear();
+                          _toDateController.clear();
+                          fromDate = null;
+                          toDate = null;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: const Text('Clear',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (fromDate != null && toDate != null) {
+                          setState(() {});
+                        }
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: const Text('Set',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDateField(String label, TextEditingController controller,
+      Function(DateTime) onDatePicked) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: controller,
+          readOnly: true,
+          decoration: InputDecoration(
+            focusColor: Colors.orange,
+            hintText: 'Select Date',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: Colors.black),
+            ),
+          ),
+          onTap: () async {
+            DateTime? pickedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime.now(),
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Colors
+                          .orange, // Header background color and selection color
+                      onPrimary: Colors.white, // Text color on the header
+                      onSurface: Colors.black, // Default text color
+                    ),
+                    dialogBackgroundColor:
+                        Colors.white, // Background color of the dialog
+                  ),
+                  child: child!,
+                );
+              },
+            );
+
+            if (pickedDate != null) {
+              controller.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+              onDatePicked(pickedDate);
+            }
+          },
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
-        backgroundColor: Colors.yellow[600],
+        backgroundColor: const Color.fromARGB(0, 0, 0, 0),
         title: Text(
           'Money Collection',
           style: GoogleFonts.nunito(
@@ -70,112 +254,167 @@ class _CollectionState extends State<Collection> {
             Navigator.of(context).pop();
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.black),
+            onPressed: _showDateFilterDialog,
+          ),
+        ],
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: fetchMoneyCollectionData(),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchMoneyCollectionData(from: fromDate, to: toDate),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Colors.yellow));
+            return const Center(
+                child: CircularProgressIndicator(
+                    color: Color.fromARGB(255, 2, 2, 2)));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No money collections found.'));
           }
 
-          var userData = snapshot.data!;
-          var userName = userData['userName'] ?? 'Unknown User';
-          var userUID = userData['uid'] ?? 'Unknown UID';
-          var fixMoney = userData['Fix'] ?? '0';
-          var dueMoney = userData['Due'] ?? '0';
-          var passMoney = userData['Pass'] ?? '0';
+          var usersMoneyData = snapshot.data!;
 
-          return Padding(
+          return ListView.builder(
             padding: const EdgeInsets.all(12.0),
-            child: Card(
-              elevation: 10.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              color: const Color.fromARGB(255, 248, 246, 225), // 3D effect
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // User Name and UID
-                    Text(
-                      userName,
-                      style: GoogleFonts.nunito(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                        color: Colors.black,
+            itemCount: usersMoneyData.length,
+            itemBuilder: (context, index) {
+              var userData = usersMoneyData[index];
+              var userName = userData['userName'];
+              var userUID = userData['uid'];
+              var totalMoney = userData['totalMoney'];
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    double containerWidth = constraints.maxWidth;
+                    double containerHeight = containerWidth * 0.46;
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Expandcollect(
+                                    userNo: userUID.toString(),
+                                  )),
+                        );
+                      },
+                      child: Container(
+                        width: containerWidth,
+                        height: containerHeight *
+                            0.8, // Reducing the height slightly
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(
+                              10.0), // Adjust padding to ensure alignment
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Row for the username with the person icon
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.person, // Person icon
+                                    color: Colors.black,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(
+                                      width:
+                                          8), // Spacing between icon and text
+                                  Expanded(
+                                    child: Text(
+                                      userName,
+                                      style: GoogleFonts.nunito(
+                                        color: Colors.black,
+                                        fontSize:
+                                            18, // Slightly reduced font size for balance
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      overflow: TextOverflow
+                                          .ellipsis, // Ensure text doesn't overflow
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              // Row for the UID with the phone icon
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.phone, // Phone icon
+                                    color: Colors.black,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'UID: $userUID',
+                                    style: GoogleFonts.nunito(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                              // Total money section
+                              _buildTotalMoneyCard('Total', totalMoney),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    Text(
-                      'UID: $userUID',
-                      style: GoogleFonts.nunito(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Money Containers
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Expanded(child: _buildMoneyCard('Fix', fixMoney, Colors.green)),
-                        const SizedBox(width: 10),
-                        Expanded(child: _buildMoneyCard('Due', dueMoney, Colors.orange)),
-                        const SizedBox(width: 10),
-                        Expanded(child: _buildMoneyCard('Pass', passMoney, Colors.blue)),
-                      ],
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget _buildMoneyCard(String title, String amount, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 8,
-            offset: const Offset(2, 4),
+  Widget _buildTotalMoneyCard(String title, String amount) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double fontSize = constraints.maxWidth * 0.06;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(91, 255, 255, 255),
+            borderRadius: BorderRadius.circular(5),
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.nunito(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.white,
-            ),
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.bold,
+                  fontSize: fontSize,
+                ),
+              ),
+              Text(
+                '₹ $amount',
+                style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.bold,
+                  fontSize: fontSize,
+                  color: Colors.green[900],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            '₹$amount',
-            style: GoogleFonts.nunito(
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
