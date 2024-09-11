@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:aapkaparking/bluetoothManager.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AfterScan extends StatefulWidget {
   final String vehicleNumber;
@@ -28,9 +32,58 @@ class _AfterScanState extends State<AfterScan> {
     fetchData();
     dueOutTime = formatDateTime(DateTime.now());
   }
- void saveData (){
-  
- }
+ void saveData() async {
+  try {
+    // Retrieve adminPhoneNumber from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? adminPhoneNumber = prefs.getString('AdminNum');
+
+    // If adminPhoneNumber is null, throw an error or handle it accordingly
+    if (adminPhoneNumber == null) {
+      print('Error: Admin phone number is missing');
+      return;
+    }
+
+    // Get the current user
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    String currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+
+    // Format today's date as yyyy-MM-dd
+    String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    // Reference to the MoneyCollection -> Today's Date -> vehicleEntry subcollection
+    CollectionReference vehicleEntryRef = FirebaseFirestore.instance
+        .collection('AllUsers')
+        .doc(adminPhoneNumber)
+        .collection('Users')
+        .doc(currentUserPhoneNumber)
+        .collection('MoneyCollection')
+        .doc(formattedDate) // Document for today's date
+        .collection('vehicleEntry');
+
+    // Generate a random document ID for this entry
+    String docId = Random().nextInt(1000000).toString();
+
+    // Data to save
+    Map<String, dynamic> dataToSave = {
+      'type': 'Due',
+      'dueInTime': dueInTime,
+      'dueOutTime': dueOutTime,
+      'dueInRate': dueInRate,
+      'timeGiven': timeGiven,
+      'exceededTime': timeExceeded ? exceededTime : '0', // If timeExceeded is false, save 0
+      'finalAmount': finalAmount,
+      'vehicleNumber':widget.vehicleNumber 
+    };
+
+    // Save the data to the vehicleEntry subcollection
+    await vehicleEntryRef.doc(docId).set(dataToSave);
+
+    print('Data saved successfully to Firestore');
+  } catch (e) {
+    print('Error saving data: $e');
+  }
+}
   Future<void> fetchData() async {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
@@ -81,6 +134,7 @@ class _AfterScanState extends State<AfterScan> {
         });
 
         // After fetching all details, start printing the receipt
+        saveData();
         await printReceipt();
       } else {
         print("No documents found for the given vehicle number.");
@@ -123,7 +177,7 @@ class _AfterScanState extends State<AfterScan> {
   }
 
   Future<void> printReceipt() async {
-    if (bluetoothManager.isConnected()) {
+    
       final printer = bluetoothManager.printer;
 
       // Printing Receipt Header
@@ -153,7 +207,7 @@ class _AfterScanState extends State<AfterScan> {
       printer.printCustom(
           "Amount to Pay", 2, 1); // 2: Font size, 1: Center aligned
       printer.printNewLine();
-      printer.printCustom("₹$finalAmount", 2,
+      printer.printCustom("Rs$finalAmount", 2,
           1); // Centered and larger font for the final amount
       if (timeExceeded) {
         printer.printNewLine();
@@ -165,9 +219,7 @@ class _AfterScanState extends State<AfterScan> {
       printer.printCustom('Thank you, Lucky Road!', 1, 1);
       printer.printNewLine();
       printer.paperCut(); // Cut the paper after printing
-    } else {
-      print('No printer connected');
-    }
+  
   }
 
   @override

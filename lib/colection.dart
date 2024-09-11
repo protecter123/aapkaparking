@@ -204,7 +204,8 @@ class _CollectionState extends State<Collection> {
             DateTime? pickedDate = await showDatePicker(
               context: context,
               initialDate: DateTime.now(),
-              firstDate: DateTime(2000),
+              firstDate: DateTime(DateTime.now().year, DateTime.now().month - 3,
+                  DateTime.now().day),
               lastDate: DateTime.now(),
               builder: (BuildContext context, Widget? child) {
                 return Theme(
@@ -238,7 +239,6 @@ class _CollectionState extends State<Collection> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(0, 0, 0, 0),
         title: Text(
           'Money Collection',
           style: GoogleFonts.nunito(
@@ -254,6 +254,7 @@ class _CollectionState extends State<Collection> {
             Navigator.of(context).pop();
           },
         ),
+        backgroundColor: Color.fromARGB(0, 238, 236, 236),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.black),

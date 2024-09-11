@@ -75,24 +75,12 @@ class _ViewuserState extends State<Viewuser> {
     return months[monthNumber - 1];
   }
 
-  void _onSearchChanged(String query, List<DocumentSnapshot> users) {
+  void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       setState(() {
         searchQuery = query.toLowerCase();
-        _filterUsers(searchQuery, users);
       });
-    });
-  }
-
-  void _filterUsers(String query, List<DocumentSnapshot> users) {
-    final searchWords =
-        query.split(' ').where((word) => word.isNotEmpty).toList();
-    setState(() {
-      filteredUsers = users.where((user) {
-        final userName = (user['userName'] as String).toLowerCase();
-        return searchWords.every((word) => userName.contains(word));
-      }).toList();
     });
   }
 
@@ -149,57 +137,77 @@ class _ViewuserState extends State<Viewuser> {
           },
         ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('AllUsers')
-            .doc(currentUserPhoneNumber)
-            .collection('Users')
-            .orderBy('CreatedAt', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search user by full name',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchController.text == ''
+                    ? IconButton(
+                        icon: const Icon(Icons.keyboard),
+                        onPressed: () {
+                          _searchController.clear();
 
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching users'));
-          }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No users found'));
-          }
-
-          final users = snapshot.data!.docs;
-          final displayedUsers = searchQuery.isEmpty ? users : filteredUsers;
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: 'Search user by full name',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('', snapshot.data!.docs);
-                        FocusScope.of(context).unfocus();
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    _onSearchChanged(value, snapshot.data!.docs);
-                  },
+                          FocusScope.of(context).unfocus();
+                        },
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                          FocusScope.of(context).unfocus();
+                        },
+                      ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
+              onChanged: (value) {
+                _onSearchChanged(value);
+              },
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('AllUsers')
+                  .doc(currentUserPhoneNumber)
+                  .collection('Users')
+                  .orderBy('CreatedAt', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error fetching users'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No users found'));
+                }
+
+                final users = snapshot.data!.docs;
+                final displayedUsers = searchQuery.isEmpty
+                    ? users
+                    : users.where((user) {
+                        final userName =
+                            (user['userName'] as String).toLowerCase();
+                        final searchWords = searchQuery
+                            .split(' ')
+                            .where((word) => word.isNotEmpty)
+                            .toList();
+                        return searchWords
+                            .every((word) => userName.contains(word));
+                      }).toList();
+
+                return ListView.builder(
                   itemCount: displayedUsers.length,
                   itemBuilder: (context, index) {
                     final userDoc = displayedUsers[index];
@@ -293,11 +301,11 @@ class _ViewuserState extends State<Viewuser> {
                       ),
                     );
                   },
-                ),
-              ),
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'reciept.dart';
 
 class Duerate extends StatefulWidget {
@@ -45,7 +46,9 @@ class _DuerateState extends State<Duerate> {
 
         if (userDoc.exists) {
           // Set admin phone number and update the vehiclesCollection reference
-          adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
+          adminPhoneNumber = adminDoc.id;
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('AdminNum', adminPhoneNumber); // Admin phone number or document ID
           CollectionReference vehiclesCollection =
               adminDoc.reference.collection('Vehicles');
 

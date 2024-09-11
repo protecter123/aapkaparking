@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'reciept.dart';
 
 class Fixirate extends StatefulWidget {
@@ -45,7 +46,9 @@ class _FixirateState extends State<Fixirate> {
 
         if (userDoc.exists) {
           // Set admin phone number and update the vehiclesCollection reference
-          adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
+          adminPhoneNumber = adminDoc.id;
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('AdminNum', adminPhoneNumber); // Admin phone number or document ID
           CollectionReference vehiclesCollection =
               adminDoc.reference.collection('Vehicles');
 
@@ -112,7 +115,7 @@ class _FixirateState extends State<Fixirate> {
         DocumentReference fixDocRef =
             usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
-        // Run a transaction to safely update the fixMoney field
+        // Run a transaction to safely update the fixMoney field and create vehicleEntry sub-collection
         await FirebaseFirestore.instance.runTransaction((transaction) async {
           DocumentSnapshot snapshot = await transaction.get(fixDocRef);
 
@@ -141,6 +144,35 @@ class _FixirateState extends State<Fixirate> {
             // If the document doesn't exist, create it with the initial amount
             print('Creating document with initial total: $priceAsDouble');
             transaction.set(fixDocRef, {'fixMoney': priceAsDouble.toString()});
+          }
+
+          // Now we handle the vehicleEntry sub-collection
+          CollectionReference vehicleEntryRef =
+              fixDocRef.collection('vehicleEntry');
+
+          // Check if a document for the vehicle number exists
+          QuerySnapshot existingVehicleEntry = await vehicleEntryRef
+              .where('vehicleNumber', isEqualTo: _controller.text)
+              .get();
+
+          if (existingVehicleEntry.docs.isEmpty) {
+            // If no document exists for this vehicle, create a new one
+            vehicleEntryRef.add({
+              'vehicleNumber': _controller.text,
+              'entryTime': DateTime.now(),
+              'entryType': 'Fix',
+              'selectedTime': selectedRate,
+              'selectedRate': price,
+            });
+          } else {
+            // If document exists, create a new document with the vehicle details
+            vehicleEntryRef.add({
+              'vehicleNumber': _controller.text,
+              'entryTime': DateTime.now(),
+              'entryType': 'Fix',
+              'selectedTime': selectedRate,
+              'selectedRate': price,
+            });
           }
         });
 

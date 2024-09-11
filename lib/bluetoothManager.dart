@@ -45,6 +45,7 @@ Future<void> disconnectPrinter() async {
   }
 
   bool isConnected() {
+     print('Disconnected from ${connectedDevice?.name}');
     return connectedDevice != null;
   }
 }

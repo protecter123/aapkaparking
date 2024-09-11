@@ -1,3 +1,5 @@
+import 'package:aapkaparking/CollectionDetail1.dart';
+import 'package:aapkaparking/CollectionDetail2.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -67,7 +69,7 @@ class _ExpandcollectState extends State<Expandcollect> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        shadowColor: Colors.grey,
+        
         backgroundColor: const Color.fromARGB(0, 255, 255, 255),
         centerTitle: true,
         title: Text(
@@ -169,11 +171,12 @@ class _ExpandcollectState extends State<Expandcollect> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildMoneyContainer('Fix', collection['fixMoney'],
-                              Colors.green, Icons.attach_money),
+                              Colors.green, Icons.attach_money,collection['date'],widget.userNo,context
+                              ),
                           _buildMoneyContainer('Due', collection['dueMoney'],
-                              Colors.red, Icons.money_off),
+                              Colors.red, Icons.money_off,collection['date'],widget.userNo,context),
                           _buildMoneyContainer('Pass', collection['passMoney'],
-                              Colors.blue, Icons.money),
+                              Colors.blue, Icons.money,collection['date'],widget.userNo,context),
                         ],
                       ),
                     ],
@@ -185,21 +188,46 @@ class _ExpandcollectState extends State<Expandcollect> {
 
   // Helper function to create colorful money containers
   Widget _buildMoneyContainer(
-      String title, dynamic amount, Color color, IconData icon) {
-    return Container(
+    String title, dynamic amount, Color color, IconData icon, String date, String usernum, BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      if (title == "Fix" || title == "Pass") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CollectionDetails1(
+              title: title,
+              date: date,
+              usernum: usernum,
+            ),
+          ),
+        );
+      }
+      else{
+         Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CollectionDetail2(
+              title: title,
+              date: date,
+              usernum: usernum,
+            ),
+          ),
+        );
+      }
+    },
+    child: Container(
       height: 80, // Slightly increased height for better spacing
       width: 100, // Increased width for better alignment
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1), // Light transparent background color
         border: Border.all(color: Colors.black), // Black border
-        borderRadius:
-            BorderRadius.circular(10), // Rounded corners for modern look
+        borderRadius: BorderRadius.circular(10), // Rounded corners for modern look
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon with color and size
           const SizedBox(height: 5), // Space between icon and text
           Text(
             title,
@@ -220,6 +248,8 @@ class _ExpandcollectState extends State<Expandcollect> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

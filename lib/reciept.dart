@@ -1,11 +1,13 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:aapkaparking/bluetoothManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:blue_thermal_printer/blue_thermal_printer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Receipt extends StatefulWidget {
   final String vehicleNumber;
@@ -39,89 +41,110 @@ class _ReceiptState extends State<Receipt> {
   }
 
   Future<void> findAdminAndFetchParkingDetails() async {
-    try {
-      // Get the current user's phone number from Firebase Auth
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null || currentUser.phoneNumber == null) {
-        // Handle the case where the user is not logged in or phone number is not available
-        setState(() {
-          isLoading = false;
-        });
-        return;
-      }
-      String currentPhoneNumber = currentUser.phoneNumber!;
+  try {
+    // Get the admin's phone number from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? adminPhoneNumber = prefs.getString('AdminNum');
 
-      // Reference to the AllUsers collection
-      CollectionReference allUsersRef =
-          FirebaseFirestore.instance.collection('AllUsers');
-
-      // Fetch all admin documents
-      QuerySnapshot adminsSnapshot = await allUsersRef.get();
-
-      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
-        // Reference to the Users subcollection
-        CollectionReference usersRef = adminDoc.reference.collection('Users');
-
-        // Check if the current user's phone number exists in this admin's Users subcollection
-        DocumentSnapshot userDoc = await usersRef.doc(currentPhoneNumber).get();
-
-        if (userDoc.exists) {
-          // If the user document exists, fetch the parking details
-          setState(() {
-            // Explicitly cast adminDoc.data() to Map<String, dynamic>
-            Map<String, dynamic> adminData =
-                adminDoc.data() as Map<String, dynamic>;
-
-            parkingLogo = adminData['ParkingLogo'] ?? '';
-            parkingName = adminData['ParkingName'] ?? 'Parking Name';
-            isLoading = false;
-          });
-
-          return;
-        }
-      }
-
-      // If no matching admin is found, stop loading and handle the error case
+    if (adminPhoneNumber == null) {
+      // Handle the case where the admin phone number is not available
       setState(() {
         isLoading = false;
       });
-    } catch (e) {
-      print('Error fetching parking details: $e');
+      return;
+    }
+
+    // Reference to the AllUsers collection
+    DocumentReference adminDocRef = FirebaseFirestore.instance.collection('AllUsers').doc(adminPhoneNumber);
+
+    // Fetch the admin document
+    DocumentSnapshot adminDoc = await adminDocRef.get();
+
+    if (adminDoc.exists) {
+      // Extract parking name and logo from the admin's document
+      Map<String, dynamic> adminData = adminDoc.data() as Map<String, dynamic>;
+
+      setState(() {
+        parkingLogo = adminData['ParkingLogo'] ?? '';
+        parkingName = adminData['ParkingName'] ?? 'Parking Name';
+        isLoading = false;
+      });
+
+      // Call printReceipt to print the receipt
+      printReceipt();
+    } else {
+      // If admin document doesn't exist
       setState(() {
         isLoading = false;
       });
     }
+  } catch (e) {
+    print('Error fetching parking details: $e');
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+Future<String> _saveQrCodeToFile(String data) async {
+  // Create a QrPainter with the data
+  final qrPainter = QrPainter(
+    data: data,
+    version: QrVersions.auto,
+    gapless: false,
+  );
+
+  // Create a picture recorder to capture the QR code image
+  final picRecorder = ui.PictureRecorder();
+  final canvas = Canvas(picRecorder);
+  final size = 200.0; // QR code size
+  qrPainter.paint(canvas, Size(size, size));
+
+  // Convert canvas to an image
+  final image = await picRecorder.endRecording().toImage(size.toInt(), size.toInt());
+
+  // Convert image to byte data (PNG format)
+  final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+  final pngBytes = byteData!.buffer.asUint8List();
+
+  // Save the image to a temporary directory
+  final tempDir = await getTemporaryDirectory();
+  final qrFile = File('${tempDir.path}/qrcode.png');
+
+  // Write bytes to file
+  await qrFile.writeAsBytes(pngBytes);
+
+  // Return the file path
+  return qrFile.path;
+}
 
   Future<void> printReceipt() async {
-    if (bluetoothManager.isConnected()) {
-      final printer = bluetoothManager.printer;
+    final printer = bluetoothManager.printer;
 
-      printer.printNewLine();
-      printer.printCustom('Receipt Details', 2, 1);
-      printer.printNewLine();
+    printer.printNewLine();
+    printer.printCustom('Receipt Details', 2, 1);
+    printer.printNewLine();
 
-      printer.printCustom(parkingName, 3, 1);
-      printer.printNewLine();
+    printer.printCustom(parkingName, 3, 1);
+    printer.printNewLine();
 
-      String dateTime =
-          'DATE: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}, Time: ${formatter.format(DateTime.now())}';
-      printer.printCustom(dateTime, 1, 1);
-      printer.printNewLine();
+    String dateTime =
+        'DATE: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}, Time: ${formatter.format(DateTime.now())}';
+    printer.printCustom(dateTime, 1, 1);
+    printer.printNewLine();
 
-      printer.printCustom('Vehicle No.: ${widget.vehicleNumber}', 2, 1);
-      printer.printCustom('Amount: ₹${widget.price}', 2, 1);
-      printer.printNewLine();
+    printer.printCustom('Vehicle No.: ${widget.vehicleNumber}', 2, 1);
+    printer.printCustom('Amount: Rs${widget.price}', 2, 1);
+    printer.printNewLine();
 
-      printer.printCustom('QR Code: ${widget.vehicleNumber}', 1, 1);
-      printer.printNewLine();
+    final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
 
-      printer.printCustom('Thank you, Lucky Road!', 1, 1);
-      printer.printNewLine();
-      printer.paperCut();
-    } else {
-      print('No printer connected');
-    }
+  // Print the QR code image from the file path
+  printer.printImage(qrFilePath); 
+    printer.printNewLine();
+
+    printer.printCustom('Thank you, Lucky Road!', 1, 1);
+    printer.printNewLine();
+    printer.paperCut();
   }
 
   @override
