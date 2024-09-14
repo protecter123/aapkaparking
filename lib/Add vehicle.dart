@@ -108,13 +108,38 @@ class _AddVehicleState extends State<AddVehicle> {
   }
 
   Future<void> _saveVehicleDetails() async {
-    if (_image == null || vehicleNameController.text.isEmpty) {
+    if (_image == null && vehicleNameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide Vehicle name and Image')),
+        const SnackBar(content: Text('Please provide Vehicle name and Image.')),
       );
       return;
     }
+    if (_image == null) {
+      // Handle validation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide Vehicle Image.')),
+      );
+      return;
+    }
+    if (vehicleNameController.text.isEmpty) {
+      // Handle validation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide Vehicle name.')),
+      );
+      return;
+    }
+
+    // Show loader
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
+        );
+      },
+    );
 
     try {
       // Get the current user's phone number or unique ID
@@ -122,6 +147,7 @@ class _AddVehicleState extends State<AddVehicle> {
 
       if (phoneNumber.isEmpty) {
         // Handle case where phoneNumber is null
+        Navigator.of(context).pop(); // Close loader dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('User not authenticated')),
         );
@@ -139,7 +165,8 @@ class _AddVehicleState extends State<AddVehicle> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Show SnackBar if vehicle already exists
+        // Close loader
+        Navigator.of(context).pop(); // Close loader dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vehicle already added')),
         );
@@ -160,7 +187,11 @@ class _AddVehicleState extends State<AddVehicle> {
       await firestoreRef.doc().set({
         'vehicleName': vehicleNameController.text.trim(),
         'vehicleImage': downloadUrl,
+        'pricingdone': false
       });
+
+      // Close the loader
+      Navigator.of(context).pop(); // Close loader dialog
 
       // Show success dialog with Lottie animation
       showDialog(
@@ -174,7 +205,7 @@ class _AddVehicleState extends State<AddVehicle> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Lottie.asset(
-                    'assets/animations/Add vehicle.json'), // Replace with your Lottie file URL
+                    'assets/animations/complete.json'), // Replace with your Lottie file URL
                 const SizedBox(height: 20),
                 const Text(
                   'Vehicle added successfully!',
@@ -212,6 +243,8 @@ class _AddVehicleState extends State<AddVehicle> {
         },
       );
     } catch (e) {
+      // Close the loader if there's an error
+      Navigator.of(context).pop(); // Close loader dialog
       // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to save vehicle details: $e')),

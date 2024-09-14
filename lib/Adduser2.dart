@@ -25,19 +25,41 @@ class _AdduserState extends State<Adduser2> {
     final String currentAdminId =
         FirebaseAuth.instance.currentUser?.phoneNumber ?? '';
     final String userName = nameController.text.trim();
+    if (phoneController.text.isEmpty && nameController.text.isEmpty) {
+      // Handle validation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide  name and phone number.')),
+      );
+      return;
+    }
+    if (phoneController.text.isEmpty) {
+      // Handle validation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide Phone number also.')),
+      );
+      return;
+    }
+    if (nameController.text.isEmpty) {
+      // Handle validation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide name also.')),
+      );
+      return;
+    }
+
     final Map<String, dynamic> UserData = {
       'uid': phoneNumber,
       'userName': userName,
       'CreatedAt': DateTime.now(),
       'isdeleted': false
     };
-    final Map<String, dynamic> AdminData = {
-      'uid': currentAdminId,
-      'ParkingSubscribePackage': 0,
-      'CreatedAt': DateTime.now(),
-      'Usertype': 'Admin',
-      'isdeleted': false
-    };
+    // final Map<String, dynamic> AdminData = {
+    //   'uid': currentAdminId,
+    //   'ParkingSubscribePackage': 0,
+    //   'CreatedAt': DateTime.now(),
+    //   'Usertype': 'Admin',
+    //   'isdeleted': false
+    // };
     // Get the current admin's phone number
 
     if (currentAdminId.isEmpty) {
@@ -49,10 +71,10 @@ class _AdduserState extends State<Adduser2> {
 
     try {
       // Save user data in "All Users" collection
-      await FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(currentAdminId)
-          .set(AdminData);
+      // await FirebaseFirestore.instance
+      //     .collection('AllUsers')
+      //     .doc(currentAdminId)
+      //     .set(AdminData);
       await FirebaseFirestore.instance
           .collection('LoginUsers')
           .doc(phoneNumber)
