@@ -86,7 +86,6 @@ class _ReceiptState extends State<Receipt> {
     }
   }
 
-  
   Future<void> printReceipt() async {
     final printer = bluetoothManager.printer;
 
@@ -98,7 +97,7 @@ class _ReceiptState extends State<Receipt> {
     printer.printNewLine();
 
     String dateTime =
-        'DATE: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}, Time: ${formatter.format(DateTime.now())}';
+        'DATE: ${DateFormat('dd MMMM yyyy').format(DateTime.now())}, Time: ${DateFormat('hh:mm a').format(DateTime.now())}';
     printer.printCustom(dateTime, 1, 1);
     printer.printNewLine();
 
@@ -106,10 +105,9 @@ class _ReceiptState extends State<Receipt> {
     printer.printCustom('Amount: Rs :${widget.price}', 2, 1);
     printer.printNewLine();
 
-    
     printer.printQRcode(widget.vehicleNumber, 400, 400, 1);
     printer.printNewLine();
-   
+
     printer.printCustom('Thank you, Lucky Road!', 1, 1);
     printer.printNewLine();
     printer.paperCut();
@@ -179,7 +177,7 @@ class _ReceiptState extends State<Receipt> {
                             textAlign: TextAlign.center,
                           ),
                           Text(
-                            'DATE: ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}, Time: ${formatter.format(DateTime.now())}',
+                            'DATE: ${DateFormat('dd MMM yyyy').format(DateTime.now())}, Time: ${DateFormat('hh:mm a').format(DateTime.now())}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,

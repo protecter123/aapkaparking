@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:aapkaparking/Admin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -136,7 +137,10 @@ class _AddVehicleState extends State<AddVehicle> {
       barrierDismissible: false, // Prevent dismissing the dialog
       builder: (BuildContext context) {
         return const Center(
-          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
+          child: CircularProgressIndicator(
+            backgroundColor: Color.fromARGB(255, 206, 200, 200),
+            color: Colors.black,
+          ), // Show loader
         );
       },
     );
@@ -225,6 +229,8 @@ class _AddVehicleState extends State<AddVehicle> {
                   ),
                   child: TextButton(
                     onPressed: () {
+                      vehicleNameController.clear();
+                      _image = null;
                       Navigator.of(context).pop(); // Close the dialog
                     },
                     child: const Text(
@@ -466,6 +472,10 @@ class _AddVehicleState extends State<AddVehicle> {
                                   fontSize: 19,
                                 ),
                               ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(
+                                    r'[a-zA-Z0-9 ]')), // Allows only letters, numbers, and spaces
+                              ],
                             ),
                           ),
                         ],

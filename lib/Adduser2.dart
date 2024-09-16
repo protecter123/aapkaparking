@@ -4,6 +4,7 @@ import 'package:aapkaparking/Admin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
@@ -68,7 +69,15 @@ class _AdduserState extends State<Adduser2> {
       );
       return;
     }
-
+showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
+        );
+      },
+    );
     try {
       // Save user data in "All Users" collection
       // await FirebaseFirestore.instance
@@ -89,6 +98,7 @@ class _AdduserState extends State<Adduser2> {
           .set(UserData);
 
       // Show success dialog
+       Navigator.of(context).pop();
       _showSuccessDialog();
 
       phoneController.clear();
@@ -102,7 +112,7 @@ class _AdduserState extends State<Adduser2> {
       );
     }
   }
-
+     
   // Function to show success dialog
   void _showSuccessDialog() {
     showDialog(
@@ -311,13 +321,17 @@ class _AdduserState extends State<Adduser2> {
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 12),
                                 ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(RegExp(
+                                      r'[a-zA-Z0-9 ]')), // Allows only letters, numbers, and spaces
+                                ],
                                 onChanged: (value) {
                                   setState(() {
                                     _buttonEnabled = value.isNotEmpty &&
                                         phoneController.text.length == 10;
                                   });
                                 },
-                              ),
+                              )
                             ],
                           ),
                         ),
@@ -396,15 +410,7 @@ class _AdduserState extends State<Adduser2> {
                         ),
                         const SizedBox(height: 80),
                         GestureDetector(
-                          onTap: _buttonEnabled
-                              ? saveUser
-                              : () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Crediantials not found,Kindy Add name and number')),
-                                  );
-                                },
+                          onTap: saveUser,
                           child: Container(
                             width: double.infinity,
                             height: 52,

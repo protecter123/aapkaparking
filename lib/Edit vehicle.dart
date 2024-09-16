@@ -40,6 +40,8 @@ class _EditVehicleState extends State<EditVehicle> {
             .collection('AllUsers')
             .doc(FirebaseAuth.instance.currentUser?.phoneNumber)
             .collection('Vehicles')
+            .where('pricingdone',
+                isEqualTo: true) // Filter where pricingdone is true
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {

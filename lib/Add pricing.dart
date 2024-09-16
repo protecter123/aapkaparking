@@ -63,7 +63,27 @@ class _AddPriceState extends State<AddPrice> {
       );
       return; // Exit the method if validation fails
     }
-
+    if (_selectedVehicleName==null) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select vehicle name'),
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+        ),
+      );
+      return; //
+    }
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            backgroundColor: Color.fromARGB(255, 206, 200, 200),
+            color: Colors.black,
+          ), // Show loader
+        );
+      },
+    );
     // Continue with saving data...
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && _selectedVehicleName != null) {
@@ -85,8 +105,9 @@ class _AddPriceState extends State<AddPrice> {
           'Pricing1Hour': _pricing1HourController.text,
           'Pricing120Minutes': _pricing120MinController.text,
           'PassPrice': _passPriceController.text,
+          'pricingdone': true
         });
-
+        Navigator.of(context).pop();
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -118,6 +139,11 @@ class _AddPriceState extends State<AddPrice> {
                     child: TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
+                        _selectedVehicleName=null;
+                        _pricing30MinController.clear();
+                        _passPriceController.clear();
+                        _pricing120MinController.clear();
+                        _pricing1HourController.clear();
                       },
                       child: const Text(
                         'OK',
@@ -289,7 +315,9 @@ class _AddPriceState extends State<AddPrice> {
                                 'Add price for 120 min',
                                 _pricing120MinController),
                             const SizedBox(height: 10),
-                            _buildTextField('Pass Price', 'Add pass price for vehicle',
+                            _buildTextField(
+                                'Pass Price',
+                                'Add pass price for vehicle',
                                 _passPriceController),
                             const SizedBox(height: 32),
                             _build3DButton(context, 'Submit', _savePricingData),

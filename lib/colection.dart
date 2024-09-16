@@ -357,7 +357,7 @@ class _CollectionState extends State<Collection> {
                                   ),
                                   SizedBox(width: 8),
                                   Text(
-                                    'UID: $userUID',
+                                    'Phone on.: $userUID',
                                     style: GoogleFonts.nunito(
                                       color: Colors.black,
                                       fontSize: 16,

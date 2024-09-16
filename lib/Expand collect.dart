@@ -69,7 +69,6 @@ class _ExpandcollectState extends State<Expandcollect> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        
         backgroundColor: const Color.fromARGB(0, 255, 255, 255),
         centerTitle: true,
         title: Text(
@@ -170,13 +169,30 @@ class _ExpandcollectState extends State<Expandcollect> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildMoneyContainer('Fix', collection['fixMoney'],
-                              Colors.green, Icons.attach_money,collection['date'],widget.userNo,context
-                              ),
-                          _buildMoneyContainer('Due', collection['dueMoney'],
-                              Colors.red, Icons.money_off,collection['date'],widget.userNo,context),
-                          _buildMoneyContainer('Pass', collection['passMoney'],
-                              Colors.blue, Icons.money,collection['date'],widget.userNo,context),
+                          _buildMoneyContainer(
+                              'Fix',
+                              collection['fixMoney'],
+                              Colors.green,
+                              Icons.attach_money,
+                              collection['date'],
+                              widget.userNo,
+                              context),
+                          _buildMoneyContainer(
+                              'Due',
+                              collection['dueMoney'],
+                              Colors.red,
+                              Icons.money_off,
+                              collection['date'],
+                              widget.userNo,
+                              context),
+                          _buildMoneyContainer(
+                              'Pass',
+                              collection['passMoney'],
+                              Colors.blue,
+                              Icons.money,
+                              collection['date'],
+                              widget.userNo,
+                              context),
                         ],
                       ),
                     ],
@@ -187,69 +203,68 @@ class _ExpandcollectState extends State<Expandcollect> {
   }
 
   // Helper function to create colorful money containers
-  Widget _buildMoneyContainer(
-    String title, dynamic amount, Color color, IconData icon, String date, String usernum, BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      if (title == "Fix" || title == "Pass") {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CollectionDetails1(
-              title: title,
-              date: date,
-              usernum: usernum,
+  Widget _buildMoneyContainer(String title, dynamic amount, Color color,
+      IconData icon, String date, String usernum, BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        if (title == "Fix" || title == "Pass") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CollectionDetails1(
+                title: title,
+                date: date,
+                usernum: usernum,
+              ),
             ),
-          ),
-        );
-      }
-      else{
-         Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CollectionDetail2(
-              title: title,
-              date: date,
-              usernum: usernum,
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CollectionDetail2(
+                title: title,
+                date: date,
+                usernum: usernum,
+              ),
             ),
-          ),
-        );
-      }
-    },
-    child: Container(
-      height: 80, // Slightly increased height for better spacing
-      width: 100, // Increased width for better alignment
-      padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1), // Light transparent background color
-        border: Border.all(color: Colors.black), // Black border
-        borderRadius: BorderRadius.circular(10), // Rounded corners for modern look
+          );
+        }
+      },
+      child: Container(
+        height: 80, // Slightly increased height for better spacing
+        width: 100, // Increased width for better alignment
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1), // Light transparent background color
+          border: Border.all(color: Colors.black), // Black border
+          borderRadius:
+              BorderRadius.circular(10), // Rounded corners for modern look
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 5), // Space between icon and text
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontSize: 16, // Increased font size for title
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              amount.toString(),
+              style: TextStyle(
+                fontSize: 18, // Slightly increased font size for amount
+                color: color,
+                fontWeight: FontWeight.bold, // Bold amount text
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 5), // Space between icon and text
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: color,
-              fontSize: 16, // Increased font size for title
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            amount.toString(),
-            style: TextStyle(
-              fontSize: 18, // Slightly increased font size for amount
-              color: color,
-              fontWeight: FontWeight.bold, // Bold amount text
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
+    );
+  }
 }

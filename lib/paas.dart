@@ -101,7 +101,9 @@ class _DueState extends State<Pass> {
       body: vehiclesCollection == null
           ? const Center(child: CircularProgressIndicator(color: Colors.yellow))
           : StreamBuilder<QuerySnapshot>(
-              stream: vehiclesCollection!.snapshots(),
+              stream: vehiclesCollection!
+                  .where('pricingdone', isEqualTo: true)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
