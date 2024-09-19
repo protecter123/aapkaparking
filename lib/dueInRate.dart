@@ -103,7 +103,15 @@ class _DuerateState extends State<Duerate> {
       // Getting the current user's phone number
       User? currentUser = FirebaseAuth.instance.currentUser;
       String phoneNumber = currentUser?.phoneNumber ?? 'unknown';
-
+  showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
+        );
+      },
+    );
       // Creating a reference to the DueInDetails collection under the user's document
       CollectionReference dueInCollection = FirebaseFirestore.instance
           .collection('LoginUsers')
@@ -171,7 +179,7 @@ class _DuerateState extends State<Duerate> {
               content: Text('Failed to update total money. Please try again.')),
         );
       }
-
+Navigator.of(context).pop();
       // Navigate to the Receipt screen
       Navigator.push(
         context,
@@ -182,6 +190,26 @@ class _DuerateState extends State<Duerate> {
             price: price,
             page: 'dueIn',
           ),
+        ),
+      );
+    }
+    if (_selectedContainerIndex == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select price.'),
+          showCloseIcon: true,
+          closeIconColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+        ),
+      );
+    }
+    if (_controller.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please Enter vehicle number'),
+          showCloseIcon: true,
+          closeIconColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
         ),
       );
     }

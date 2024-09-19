@@ -1,7 +1,10 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:aapkaparking/bluetoothManager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -85,6 +88,37 @@ class _ReceiptState extends State<Receipt> {
       });
     }
   }
+Future<String> _saveQrCodeToFile(String data) async {
+  // Create a QrPainter with the data
+  final qrPainter = QrPainter(
+    data: data,
+    version: QrVersions.auto,
+    gapless: false,
+  );
+
+  // Create a picture recorder to capture the QR code image
+  final picRecorder = ui.PictureRecorder();
+  final canvas = Canvas(picRecorder);
+  final size = 400.0; // QR code size
+  qrPainter.paint(canvas, Size(size, size));
+
+  // Convert canvas to an image
+  final image = await picRecorder.endRecording().toImage(size.toInt(), size.toInt());
+
+  // Convert image to byte data (BMP format)
+  final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  final bmpBytes = byteData!.buffer.asUint8List();
+
+  // Save the image to a temporary directory as BMP
+  final tempDir = await getTemporaryDirectory();
+  final qrFile = File('${tempDir.path}/qrcode.bmp');
+
+  // Write bytes to file
+  await qrFile.writeAsBytes(bmpBytes);
+
+  // Return the file path
+  return qrFile.path;
+}
 
   Future<void> printReceipt() async {
     final printer = bluetoothManager.printer;
@@ -105,9 +139,13 @@ class _ReceiptState extends State<Receipt> {
     printer.printCustom('Amount: Rs :${widget.price}', 2, 1);
     printer.printNewLine();
 
-    printer.printQRcode(widget.vehicleNumber, 400, 400, 1);
+    printer.printQRcode(widget.vehicleNumber,4,4, 1);
     printer.printNewLine();
+     final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
 
+  // Print the QR code image from the file path
+  printer.printImage(qrFilePath); 
+ printer.printNewLine();
     printer.printCustom('Thank you, Lucky Road!', 1, 1);
     printer.printNewLine();
     printer.paperCut();

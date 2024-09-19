@@ -102,7 +102,15 @@ class _FixirateState extends State<Fixirate> {
 
       // Convert price to double
       num priceAsDouble = num.tryParse(price.toString()) ?? 0.0;
-
+     showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
+        );
+      },
+    );
       // Firestore update logic
       try {
         CollectionReference usersRef = FirebaseFirestore.instance
@@ -175,7 +183,7 @@ class _FixirateState extends State<Fixirate> {
             });
           }
         });
-
+Navigator.of(context).pop();
         // Navigate to the receipt screen
         Navigator.push(
           context,
@@ -196,6 +204,27 @@ class _FixirateState extends State<Fixirate> {
         );
       }
     }
+    if (_selectedContainerIndex == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select price.'),
+          showCloseIcon: true,
+          closeIconColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+        ),
+      );
+    }
+    if (_controller.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please Enter vehicle number'),
+          showCloseIcon: true,
+          closeIconColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+        ),
+      );
+    }
+
   }
 
   @override
@@ -361,7 +390,7 @@ class _FixirateState extends State<Fixirate> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
+                  children: [ 
                     Lottie.asset('assets/animations/clock.json',
                         height: 23, width: 23),
                     const SizedBox(width: 4),

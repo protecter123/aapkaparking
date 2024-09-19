@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'package:aapkaparking/AfterScan.dart';
+import 'package:aapkaparking/duelist.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 class Qrscanner extends StatefulWidget {
@@ -93,12 +95,22 @@ class _QrscannerState extends State<Qrscanner>
           Padding(
             padding: const EdgeInsets.only(right: 8.0), // Padding for spacing
             child: ElevatedButton(
-              onPressed: _showManualInputDialog, // Open dialog on button press
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => Duelist()), // Navigate to DueList
+                );
+              }, // Open dialog on button press
               style: ElevatedButton.styleFrom(
-                foregroundColor: const Color.fromARGB(255, 6, 6, 6),
-                backgroundColor:  Colors.yellow // Text color
+                  foregroundColor: const Color.fromARGB(255, 6, 6, 6),
+                  backgroundColor: Colors.yellow // Text color
+                  ),
+              child: const FaIcon(
+                FontAwesomeIcons.list, // List icon from Font Awesome
+                color: Colors.black, // Icon color
+                size: 25, // Icon size
               ),
-              child: const Text('Enter No. Manually'),
             ),
           ),
         ],

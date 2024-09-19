@@ -40,6 +40,7 @@ class _PrintOptionsScreenState extends State<PrintOptionsScreen> {
       appBar: AppBar(
         title: Text('Print Options'),
         backgroundColor: const Color.fromARGB(255, 218, 255, 68),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -106,7 +106,15 @@ class _PassrateState extends State<Passrate> {
 
     // Convert price to integer
     int priceAsInt = int.tryParse(price) ?? 0;
-
+   showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing the dialog
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
+        );
+      },
+    );
     try {
       CollectionReference usersRef = FirebaseFirestore.instance
           .collection('AllUsers')
@@ -177,7 +185,7 @@ class _PassrateState extends State<Passrate> {
           });
         }
       });
-
+Navigator.of(context).pop();
       // Navigate to the receipt screen
       Navigator.push(
         context,
@@ -198,6 +206,26 @@ class _PassrateState extends State<Passrate> {
       );
     }
   }
+  if (_selectedContainerIndex == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select price.'),
+          showCloseIcon: true,
+          closeIconColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+        ),
+      );
+    }
+    if (_controller.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please Enter vehicle number'),
+          showCloseIcon: true,
+          closeIconColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+        ),
+      );
+    }
 }
 
   @override

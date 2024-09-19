@@ -98,6 +98,7 @@ class _AfterScanState extends State<AfterScan> {
               .doc(DateTime.now().year.toString())
               .collection(DateTime.now().month.toString())
               .where('vehicleNumber', isEqualTo: widget.vehicleNumber)
+              .orderBy('timestamp', descending: true)
               .get();
 
       if (querySnapshot.docs.isNotEmpty) {

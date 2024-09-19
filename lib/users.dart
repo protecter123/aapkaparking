@@ -2,6 +2,8 @@ import 'dart:ui'; // For ImageFilter
 import 'package:aapkaparking/Fix.dart';
 import 'package:aapkaparking/bluetoothShowScreen.dart';
 import 'package:aapkaparking/dueIn.dart';
+import 'package:aapkaparking/duelist.dart';
+import 'package:aapkaparking/fpList.dart';
 import 'package:aapkaparking/paas.dart';
 import 'package:aapkaparking/qrScanner.dart';
 import 'package:aapkaparking/verify.dart';
@@ -333,69 +335,91 @@ class _UserDashState extends State<UserDash> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       padding: const EdgeInsets.all(16.0),
-      constraints: BoxConstraints(
-        maxWidth: 450, // Adjust width to your needs
-        maxHeight: 170, // Adjust height to your needs
+      constraints: const BoxConstraints(
+        maxWidth: 450, // Keep original width
+        maxHeight: 170, // Keep original height
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6), // Slightly opaque background
-        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF6DC8F3), // Gradient start
+            Color(0xFF73A1F9), // Gradient end
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius:
+            BorderRadius.circular(12), // Rounded corners for modern look
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2), // Slight shadow
+            color: Colors.black.withOpacity(0.15), // Subtle shadow
             blurRadius: 10,
-            offset: const Offset(0, 5),
+            offset: const Offset(0, 8), // Slightly deeper shadow
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Greeting Row
           Row(
             children: [
               Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '${_getGreeting()}, ${userData['userName'] ?? 'User'}',
-                    style: GoogleFonts.nunito(
-                      color: Color.fromARGB(255, 221, 200, 4),
-                      fontSize: 25, // Base font size
-                      fontWeight: FontWeight.bold,
-                    ),
+                child: Text(
+                  '${_getGreeting()}, ${userData['userName'] ?? 'User'}',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const FaIcon(
+                FontAwesomeIcons.handPeace, // A colorful hand icon
+                color: Colors.white,
+                size: 30,
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          // Phone Number Row
+          Row(
+            children: [
+              const FaIcon(
+                FontAwesomeIcons.phoneAlt, // Colorful phone icon
+                color: const Color.fromARGB(255, 255, 0, 0),
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Phone no.: ${userData['uid'] ?? ''}',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontSize: 18,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
+          // Join Date Row
           Row(
             children: [
-              Icon(Icons.person, color: const Color.fromARGB(255, 19, 19, 19)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Phone no.: ${userData['uid'] ?? ''}',
-                  style: GoogleFonts.nunito(
-                    color: Colors.black54,
-                    fontSize: 14, // Adjusted font size
-                  ),
-                ),
+              const FaIcon(
+                FontAwesomeIcons.calendarAlt, // Colorful calendar icon
+                color: Color.fromARGB(255, 2, 2, 2),
+                size: 20,
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Icons.calendar_today,
-                  color: const Color.fromARGB(255, 10, 10, 10)),
-              const SizedBox(width: 8),
+              SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Joined: ${DateFormat('dd MMM yyyy').format((userData['CreatedAt'] as Timestamp).toDate())}',
-                  style: GoogleFonts.nunito(
-                    color: Colors.black54,
-                    fontSize: 14, // Adjusted font size
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontSize: 18,
                   ),
                 ),
               ),
@@ -408,30 +432,114 @@ class _UserDashState extends State<UserDash> {
 
   Widget _buildGridContainer(
       BuildContext context, String label, Color color, VoidCallback onTap) {
+    // Define icons for each label
+    IconData getIconForLabel(String label) {
+      switch (label) {
+        case "Due":
+          return FontAwesomeIcons.clock; // Due: clock icon
+        case "Fix":
+          return FontAwesomeIcons.tools; // Fix: tools icon
+        case "Pass":
+          return FontAwesomeIcons.ticketAlt; // Pass: ticket icon
+        case "Settings":
+          return FontAwesomeIcons.cog; // Settings: settings icon
+        default:
+          return FontAwesomeIcons.question; // Default icon
+      }
+    }
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+      child: Stack(
+        children: [
+          // Main container
+          Container(
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.nunito(
-              color: const Color.fromARGB(255, 6, 6, 6),
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
+            child: Center(
+              child: Container(
+                width: 150, // Set fixed width
+                height: 150, // Adjust height to fit larger icon and label
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(
+                      129, 255, 255, 255), // Background color
+                  borderRadius: BorderRadius.circular(10), // Rounded corners
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FaIcon(
+                      getIconForLabel(label), // Fetch icon based on label
+                      color: const Color.fromARGB(255, 9, 9, 9), // Icon color
+                      size: 40, // Larger icon size
+                    ),
+                    const SizedBox(height: 10), // Space between icon and label
+                    FittedBox(
+                      fit: BoxFit
+                          .scaleDown, // Ensures the text scales down to fit inside
+                      child: Text(
+                        label,
+                        style: GoogleFonts.nunito(
+                          color: const Color.fromARGB(255, 6, 6, 6),
+                          fontSize: 23, // Adjust label font size
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow
+                            .ellipsis, // Adds ellipsis if the text is too long
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
+          // Icon in top-right corner (if not Settings)
+          if (label != "Settings" && label != 'Due')
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () {
+                  if (label == "Fix" || label == "Pass") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              FpList(label: label)), // Navigate to FpList
+                    );
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    // color: const Color.fromARGB(102, 255, 255, 255),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const FaIcon(
+                    FontAwesomeIcons.list, // List icon from Font Awesome
+                    color: Colors.black, // Icon color
+                    size: 25, // Icon size
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -457,8 +565,8 @@ class _UserDashState extends State<UserDash> {
               },
             );
           }),
-          _buildGridContainer(context, 'Fix', Color.fromARGB(255, 98, 180, 247),
-              () {
+          _buildGridContainer(
+              context, 'Fix', Color.fromARGB(255, 152, 123, 244), () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -571,10 +679,10 @@ class _UserDashState extends State<UserDash> {
 
   Widget customAppBar(BuildContext context) {
     return Container(
-      height: 150,
+      height: 330,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.yellow[600],
+        color: Color.fromARGB(255, 252, 251, 251),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(50),
           bottomRight: Radius.circular(50),
@@ -589,7 +697,9 @@ class _UserDashState extends State<UserDash> {
       ),
       child: Stack(
         children: [
-          Center(
+          Positioned(
+            right: 110,
+            top: 55,
             child: Text(
               'User Dashboard',
               style: GoogleFonts.nunito(
@@ -626,26 +736,72 @@ class _UserDashState extends State<UserDash> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 220, 220, 220),
       body: Column(
         children: [
-          customAppBar(context),
-          const SizedBox(height: 20),
-          FutureBuilder<Map<String, dynamic>?>(
-            future: _fetchUserData(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              } else if (snapshot.hasData) {
-                return _buildUserCard(snapshot.data!);
-              } else {
-                return const Text('Error loading user data');
-              }
-            },
+          Stack(
+            children: [
+              customAppBar(context),
+              const SizedBox(height: 40),
+              Padding(
+                padding: const EdgeInsets.only(top: 125.0),
+                child: Center(
+                  child: FutureBuilder<Map<String, dynamic>?>(
+                    future: _fetchUserData(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator(
+                            backgroundColor: Colors.black, color: Colors.white);
+                      } else if (snapshot.hasData) {
+                        return _buildUserCard(snapshot.data!);
+                      } else {
+                        return const Text('Error loading user data');
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 0),
+            ],
           ),
-          const SizedBox(height: 0),
           Expanded(
             child: _buildGrid(),
           ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 50.0, left: 100),
+            child: Row(
+              children: [
+                // Container for the image
+                ColorFiltered(
+                  colorFilter: const ColorFilter.mode(
+                    Colors
+                        .grey, // The color you want to apply (in this case, grey)
+                    BlendMode
+                        .srcATop, // Blend mode to replace the original color
+                  ),
+                  child: Image.asset(
+                    'assets/aapka logo.webp', // Replace with your actual image asset path
+                    width: 50,
+                    height: 50,
+                  ),
+                ),
+                const SizedBox(
+                    width: 10), // Add some space between the image and the text
+
+                // Container for the text
+                Container(
+                  child: const Text(
+                    'Aapka Parking \u00A9',
+                    style: TextStyle(
+                      color: Colors.grey, // Dark yellow color (GoldenRod)
+                      fontSize: 24, // Set the font size
+                      fontWeight: FontWeight.bold, // Make the text bold
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
         ],
       ),
     );
