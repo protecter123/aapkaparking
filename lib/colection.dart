@@ -169,7 +169,7 @@ class _CollectionState extends State<Collection> {
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black),
-                      child: const Text('Set',
+                      child: const Text('Apply',
                           style: TextStyle(color: Colors.white)),
                     ),
                   ],

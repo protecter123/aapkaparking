@@ -107,9 +107,9 @@ class _QrscannerState extends State<Qrscanner>
                   backgroundColor: Colors.yellow // Text color
                   ),
               child: const FaIcon(
-                FontAwesomeIcons.list, // List icon from Font Awesome
+                FontAwesomeIcons.listUl, // List icon from Font Awesome
                 color: Colors.black, // Icon color
-                size: 25, // Icon size
+                size: 17, // Icon size
               ),
             ),
           ),

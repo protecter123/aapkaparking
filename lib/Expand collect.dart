@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class Expandcollect extends StatefulWidget {
   final String userNo; // Pass userNo as argument
@@ -33,11 +34,14 @@ class _ExpandcollectState extends State<Expandcollect> {
           .doc(widget.userNo)
           .collection('MoneyCollection');
 
-      // Ensure no limit is applied by using get() without any restrictions
+      // Fetch all documents without any restrictions
       final querySnapshot = await usersDoc.get();
 
+      // Reverse the order of the documents
+      final reversedDocs = querySnapshot.docs.reversed;
+
       // Extract data from each document
-      for (var doc in querySnapshot.docs) {
+      for (var doc in reversedDocs) {
         print('Fetched Document ID: ${doc.id}, Data: ${doc.data()}');
 
         // Assign default value of 0 if any of the fields are missing
@@ -103,103 +107,107 @@ class _ExpandcollectState extends State<Expandcollect> {
 
   // Build the collection tile with modern design
   Widget _buildCollectionTile(Map<String, dynamic> collection) {
+    // Parse the date from the 'collection' map and format it
+    final DateTime parsedDate = DateTime.parse(collection['date']);
+    final String formattedDate = DateFormat('d MMM yyyy').format(parsedDate);
+
     return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-            decoration: BoxDecoration(
-              color: Colors.transparent, // Transparent background
-              border: Border.all(
-                  color: Colors.black, width: 1), // 1 px black border
-              borderRadius:
-                  BorderRadius.circular(10), // Rectangular with slight curve
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.transparent, // Transparent background
+          border:
+              Border.all(color: Colors.black, width: 1), // 1 px black border
+          borderRadius:
+              BorderRadius.circular(10), // Rectangular with slight curve
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: Card(
+            color: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
+            elevation: 0,
             child: Padding(
-              padding: const EdgeInsets.all(0.0),
-              child: Card(
-                color: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Row for date with icon
+                  Row(
                     children: [
-                      // Row for date with icon
-                      Row(
-                        children: [
-                          const Icon(Icons.calendar_today,
-                              size: 20, color: Colors.black), // Icon for date
-                          const SizedBox(
-                              width: 8), // Space between icon and text
-                          Text(
-                            'Collection on ${collection['date']}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87, // Modern UI text color
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                          height: 8), // Space between date and user number
-                      // Row for user number with icon
-                      Row(
-                        children: [
-                          const Icon(Icons.person,
-                              size: 20,
-                              color: Colors.black), // Icon for user number
-                          const SizedBox(
-                              width: 8), // Space between icon and text
-                          Text(
-                            'User No: ${widget.userNo}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black54, // Subtle text color
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                          height: 20), // Increased height between elements
-                      // Row for money containers
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildMoneyContainer(
-                              'Fix',
-                              collection['fixMoney'],
-                              Colors.green,
-                              Icons.attach_money,
-                              collection['date'],
-                              widget.userNo,
-                              context),
-                          _buildMoneyContainer(
-                              'Due',
-                              collection['dueMoney'],
-                              Colors.red,
-                              Icons.money_off,
-                              collection['date'],
-                              widget.userNo,
-                              context),
-                          _buildMoneyContainer(
-                              'Pass',
-                              collection['passMoney'],
-                              Colors.blue,
-                              Icons.money,
-                              collection['date'],
-                              widget.userNo,
-                              context),
-                        ],
+                      const Icon(Icons.calendar_today,
+                          size: 20, color: Colors.black), // Icon for date
+                      const SizedBox(width: 8), // Space between icon and text
+                      Text(
+                        'Collection on $formattedDate', // Use formatted date here
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87, // Modern UI text color
+                        ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(
+                      height: 8), // Space between date and user number
+                  // Row for user number with icon
+                  Row(
+                    children: [
+                      const Icon(Icons.person,
+                          size: 20,
+                          color: Colors.black), // Icon for user number
+                      const SizedBox(width: 8), // Space between icon and text
+                      Text(
+                        'User No: ${widget.userNo}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black54, // Subtle text color
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                      height: 20), // Increased height between elements
+                  // Row for money containers
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildMoneyContainer(
+                          'Fix',
+                          collection['fixMoney'],
+                          Colors.green,
+                          Icons.attach_money,
+                          collection['date'],
+                          widget.userNo,
+                          context),
+                      _buildMoneyContainer(
+                          'Due',
+                          collection['dueMoney'],
+                          Colors.red,
+                          Icons.money_off,
+                          collection['date'],
+                          widget.userNo,
+                          context),
+                      _buildMoneyContainer(
+                          'Pass',
+                          collection['passMoney'],
+                          Colors.blue,
+                          Icons.money,
+                          collection['date'],
+                          widget.userNo,
+                          context),
+                    ],
+                  ),
+                ],
               ),
-            )));
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   // Helper function to create colorful money containers

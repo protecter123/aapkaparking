@@ -174,32 +174,68 @@ class _DuelistState extends State<Duelist> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.only(left: 8.0, right: 8, top: 10),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Color.fromARGB(255, 255, 255, 255),
                 labelText: 'Search by vehicle number',
-                prefixIcon: const Icon(Icons.search),
+                labelStyle: const TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: Color.fromARGB(255, 255, 204, 0), // Modern icon color
+                ),
                 suffixIcon: _searchController.text.isEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.keyboard),
+                        icon: const Icon(Icons.keyboard, color: Colors.grey),
                         onPressed: () {
                           _searchController.clear();
                           FocusScope.of(context).unfocus();
                         },
                       )
                     : IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: const Icon(Icons.clear, color: Colors.grey),
                         onPressed: () {
                           _searchController.clear();
-                          _onSearchChanged(''); // Clear search
+                          _onSearchChanged('');
                           FocusScope.of(context).unfocus();
                         },
                       ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(30), // Rounded corners
+                  borderSide: const BorderSide(
+                    color: Color.fromARGB(94, 0, 0, 0), // No visible border
+                  ),
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(
+                    color: Color.fromARGB(97, 0, 0, 0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(
+                    color: Colors.orange, // Highlighted border on focus
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                    vertical: 15.0, horizontal: 20.0),
               ),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.w400,
+              ),
+              onChanged: (value) {
+                _onSearchChanged(value);
+              },
             ),
           ),
           Expanded(

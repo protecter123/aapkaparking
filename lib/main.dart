@@ -1,6 +1,7 @@
 import 'package:aapkaparking/Admin.dart';
 import 'package:aapkaparking/sliding%20screen.dart';
 import 'package:aapkaparking/users.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -39,71 +40,68 @@ class SplashVideoScreen extends StatefulWidget {
 class _SplashVideoScreenState extends State<SplashVideoScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _textAnimationController;
-
+  bool parkingenable = false;
   @override
   void initState() {
     super.initState();
 
     _textAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2),
+      duration: Duration(milliseconds: 100),
     );
 
     _textAnimationController.forward().then((_) {
-      Future.delayed(Duration(milliseconds: 2150), () async {
-        await _navigateToNextScreen(); // Navigate based on authentication state
+      Future.delayed(Duration(milliseconds: 550), () async {
+        await _navigateToNextScreen();
       });
     });
   }
 
   Future<void> _navigateToNextScreen() async {
-  User? user = FirebaseAuth.instance.currentUser;
+    User? user = FirebaseAuth.instance.currentUser;
 
-  if (user != null) {
-    // Get the user's phone number
-    String? phoneNumber = user.phoneNumber;
+    if (user != null) {
+      // Get the user's phone number
+      String? phoneNumber = user.phoneNumber;
 
-    if (phoneNumber != null) {
-      // User is logged in, check if they are an admin or regular user
-      final userType = await _getUserType(phoneNumber);
-      if (userType == 'user') {
+      if (phoneNumber != null) {
+        // User is logged in, check if they are an admin or regular user
+        final userType = await _getUserType(phoneNumber);
+        if (userType == 'user') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => UserDash()),
+          );
+        } else if (userType == 'admin') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => AdminPage()),
+          );
+        }
+      } else {
+        // Handle case where phone number is null, though it shouldn't be in your use case
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => UserDash()),
-        );
-      } else if (userType == 'admin') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => AdminPage()),
+          MaterialPageRoute(builder: (context) => SplashScreen()),
         );
       }
     } else {
-      // Handle case where phone number is null, though it shouldn't be in your use case
+      // No user is logged in, navigate to the sliding screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => SplashScreen()),
       );
     }
-  } else {
-    // No user is logged in, navigate to the sliding screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => SplashScreen()),
-    );
   }
-}
 
+  Future<String> _getUserType(String uid) async {
+    final firestore = FirebaseFirestore.instance;
+    final docRef = firestore.collection('AllUsers').doc(uid);
 
-  
+    final docSnapshot = await docRef.get();
 
-Future<String> _getUserType(String uid) async {
-  final firestore = FirebaseFirestore.instance;
-  final docRef = firestore.collection('AllUsers').doc(uid);
-
-  final docSnapshot = await docRef.get();
-
-  if (docSnapshot.exists) {
-    return 'admin'; // UID found in 'AllUsers' collection, user is an admin
-  } else {
-    return 'user'; // UID not found, user is a regular user
+    if (docSnapshot.exists) {
+      return 'admin'; // UID found in 'AllUsers' collection, user is an admin
+    } else {
+      return 'user'; // UID not found, user is a regular user
+    }
   }
-}
 
   @override
   void dispose() {
@@ -114,16 +112,116 @@ Future<String> _getUserType(String uid) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
+          // Animated gradient background
+          AnimatedContainer(
+            duration: Duration(seconds: 1),
+            onEnd: () => setState(() {}),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black,
+                  Color.fromARGB(255, 45, 44, 44).withOpacity(0.1),
+                  Colors.black,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
           Center(
-            child: Lottie.asset('assets/animations/splash.json'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Spacer(flex: 2), // Moves the logo and heading above the center
+                // Logo in a square box with animated border
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 1),
+                  height: 170,
+                  width: 170,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.primaries[DateTime.now().millisecond %
+                          Colors.primaries
+                              .length], // Cycling through colors every millisecond
+                      width: 3,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                        12), // Square border with rounded edges
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.asset(
+                      'assets/aapka logo.webp',
+                      height: 150,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 40),
+                // "Apka Parking" animated text in a row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedTextKit(
+                      animatedTexts: [
+                        TyperAnimatedText(
+                          'Aapka',
+                          textStyle: TextStyle(
+                            color: Color.fromARGB(255, 252, 248, 33),
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          speed: Duration(milliseconds: 100),
+                        ),
+                      ],
+                      repeatForever: false,
+                      isRepeatingAnimation: false,
+                      onFinished: () {
+                        parkingenable = true;
+                        setState(() {
+                           parkingenable = true;
+                          // Triggering rebuild after "Aapka" finishes animating to show "Parking"
+                        });
+                      },
+                    ),
+                    if (parkingenable) // Show "Parking" only after "Aapka" completes
+                      SizedBox(width: 10),
+                    if (parkingenable)
+                      Text(
+                        'Parking',
+                        style: TextStyle(
+                          color: const Color.fromARGB(255, 2, 2, 2),
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
+                ),
+                Spacer(
+                    flex:
+                        3), // Spacer to push the footer text towards the bottom
+                // Footer with unique parking-related slogan
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: Text(
+                    'Parking Simplified, Spaces Maximized',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  bool _isAapkaAnimating() {
+    return _textAnimationController.isAnimating;
   }
 }

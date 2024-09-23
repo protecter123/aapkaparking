@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -92,20 +93,43 @@ class _EditVehicleState extends State<EditVehicle> {
                           borderRadius: BorderRadius.circular(0),
                         ),
                         child: vehicleImage.isNotEmpty
-                            ? Image.network(
-                                vehicleImage,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return const Center(
-                                      child: CircularProgressIndicator(
-                                    color: Color.fromARGB(255, 8, 8, 8),
-                                  ));
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(Icons.error);
-                                },
+                            ? Stack(
+                                children: [
+                                  // Asset image placeholder (visible while the network image is loading)
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.asset(
+                                      'assets/animations/placeholder.png', // Placeholder asset image
+                                      fit: BoxFit.cover,
+                                      height: 134,
+                                      width: double.infinity,
+                                    ),
+                                  ),
+
+                                  // Cached network image with a loader
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(0),
+                                    child: CachedNetworkImage(
+                                      imageUrl: vehicleImage,
+                                      fit: BoxFit.cover,
+                                      height: 134,
+                                      width: double.infinity,
+                                      placeholder: (context, url) => Container(
+                                        alignment: Alignment.center,
+                                        color: Colors.transparent,
+                                        child: const CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.black), // Loader color
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
+                                      cacheKey:
+                                          vehicleImage, // Ensuring image is cached correctly
+                                    ),
+                                  ),
+                                ],
                               )
                             : const Icon(Icons.directions_car, size: 80),
                       ),

@@ -28,7 +28,10 @@ class _FpListState extends State<FpList> {
   String searchQuery = '';
   TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
-
+  final TextEditingController _fromDateController = TextEditingController();
+  final TextEditingController _toDateController = TextEditingController();
+  DateTime? fromDate;
+  DateTime? toDate;
   @override
   void initState() {
     super.initState();
@@ -91,43 +94,51 @@ class _FpListState extends State<FpList> {
   }
 
   // Fetch the vehicle entry data with pagination
-  Future<void> _fetchVehicleData() async {
+  // Fetch the vehicle entry data with pagination and limit to 5
+  Future<void> _fetchVehicleData({DateTime? from, DateTime? to}) async {
     if (isLoading || !hasMoreData) return;
     setState(() {
       isLoading = true;
     });
 
     try {
-      final now = DateTime.now();
-      final fiveDaysAgo = now.subtract(const Duration(days: 5));
-
       if (adminNum != null && userPhoneNumber != null) {
         Query<Map<String, dynamic>> query = FirebaseFirestore.instance
             .collection('AllUsers')
             .doc(adminNum)
             .collection('Users')
             .doc(userPhoneNumber)
-            .collection('MoneyCollection')
-            .where('__name__',
-                isGreaterThanOrEqualTo:
-                    DateFormat('yyyy-MM-dd').format(fiveDaysAgo))
-            .where('__name__',
-                isLessThanOrEqualTo: DateFormat('yyyy-MM-dd').format(now))
+            .collection('MoneyCollection');
+
+        // Apply date range filter only if fromDate and toDate are both selected
+        if (from != null && to != null) {
+          String formattedFromDate = DateFormat('yyyy-MM-dd').format(from);
+          String formattedToDate = DateFormat('yyyy-MM-dd').format(to);
+          query = query
+              .where(FieldPath.documentId,
+                  isGreaterThanOrEqualTo: formattedFromDate)
+              .where(FieldPath.documentId,
+                  isLessThanOrEqualTo: formattedToDate);
+          debugPrint(
+              'Date range applied: $formattedFromDate to $formattedToDate');
+        }
+
+        query = query
+            .orderBy(FieldPath.documentId, descending: true)
             .limit(pageSize);
 
         if (lastDocument != null) {
-          query = query.startAfterDocument(lastDocument!); // Pagination logic
+          query = query.startAfterDocument(lastDocument!);
         }
 
         QuerySnapshot<Map<String, dynamic>> snapshot = await query.get();
+        debugPrint('Fetched ${snapshot.docs.length} documents from Firestore');
 
         if (snapshot.docs.isNotEmpty) {
-          // Reverse the order of dates fetched from 'MoneyCollection'
-          final reversedDocs = snapshot.docs.reversed.toList();
-          lastDocument =
-              reversedDocs.last; // Update last document for pagination
+          final docs = snapshot.docs;
+          lastDocument = docs.last;
 
-          for (var doc in reversedDocs) {
+          for (var doc in docs) {
             QuerySnapshot<Map<String, dynamic>> vehicleEntries =
                 await FirebaseFirestore.instance
                     .collection('AllUsers')
@@ -141,16 +152,17 @@ class _FpListState extends State<FpList> {
                     .orderBy('entryTime', descending: true)
                     .get();
 
-            // Reverse the vehicle entries and add to the list
-            allEntries.addAll(vehicleEntries.docs.reversed);
-            _filterEntriesBySearchQuery(); // Re-filter data after each load
+            allEntries.addAll(vehicleEntries.docs);
+            debugPrint('Vehicle entries added: ${vehicleEntries.docs.length}');
+            _filterEntriesBySearchQuery();
           }
 
           if (snapshot.docs.length < pageSize) {
-            hasMoreData = false; // No more data to fetch
+            hasMoreData = false;
           }
         } else {
           hasMoreData = false;
+          debugPrint('No more data available');
         }
       }
     } catch (e) {
@@ -168,6 +180,134 @@ class _FpListState extends State<FpList> {
         _scrollController.position.maxScrollExtent) {
       _fetchVehicleData();
     }
+  }
+
+  void _showDateFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Select Date Range',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _buildDateField('From Date', _fromDateController, (pickedDate) {
+                  setState(() {
+                    fromDate = pickedDate;
+                  });
+                }),
+                const SizedBox(height: 10),
+                _buildDateField('To Date', _toDateController, (pickedDate) {
+                  setState(() {
+                    toDate = pickedDate;
+                  });
+                }),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _fromDateController.clear();
+                          _toDateController.clear();
+                          fromDate = null;
+                          toDate = null;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: const Text('Clear',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (fromDate != null && toDate != null) {
+                          setState(() {
+                            allEntries
+                                .clear(); // Clear previous data when applying new filters
+                            filteredEntries.clear();
+                            lastDocument = null;
+                            _fetchVehicleData(from: fromDate, to: toDate);
+                          });
+                        }
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: const Text('Apply',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDateField(String label, TextEditingController controller,
+      Function(DateTime) onDatePicked) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: controller,
+          readOnly: true,
+          decoration: InputDecoration(
+            focusColor: Colors.orange,
+            hintText: 'Select Date',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: Colors.black),
+            ),
+          ),
+          onTap: () async {
+            DateTime? pickedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(DateTime.now().year, DateTime.now().month - 3,
+                  DateTime.now().day),
+              lastDate: DateTime.now(),
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Colors
+                          .orange, // Header background color and selection color
+                      onPrimary: Colors.white, // Text color on the header
+                      onSurface: Colors.black, // Default text color
+                    ),
+                    dialogBackgroundColor:
+                        Colors.white, // Background color of the dialog
+                  ),
+                  child: child!,
+                );
+              },
+            );
+
+            if (pickedDate != null) {
+              controller.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+              onDatePicked(pickedDate);
+            }
+          },
+        ),
+      ],
+    );
   }
 
   @override
@@ -188,26 +328,42 @@ class _FpListState extends State<FpList> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.black),
+            onPressed: _showDateFilterDialog,
+          ),
+        ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.only(left: 8.0, right: 8, top: 10),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Color.fromARGB(255, 255, 255, 255),
                 labelText: 'Search by vehicle number',
-                prefixIcon: const Icon(Icons.search),
+                labelStyle: const TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: Color.fromARGB(255, 255, 204, 0), // Modern icon color
+                ),
                 suffixIcon: _searchController.text.isEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.keyboard),
+                        icon: const Icon(Icons.keyboard, color: Colors.grey),
                         onPressed: () {
                           _searchController.clear();
                           FocusScope.of(context).unfocus();
                         },
                       )
                     : IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: const Icon(Icons.clear, color: Colors.grey),
                         onPressed: () {
                           _searchController.clear();
                           _onSearchChanged('');
@@ -215,8 +371,31 @@ class _FpListState extends State<FpList> {
                         },
                       ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(30), // Rounded corners
+                  borderSide: const BorderSide(
+                    color: Color.fromARGB(94, 0, 0, 0), // No visible border
+                  ),
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(
+                    color: Color.fromARGB(97, 0, 0, 0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(
+                    color: Colors.orange, // Highlighted border on focus
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                    vertical: 15.0, horizontal: 20.0),
+              ),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.w400,
               ),
               onChanged: (value) {
                 _onSearchChanged(value);

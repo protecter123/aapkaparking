@@ -141,10 +141,10 @@ Future<String> _saveQrCodeToFile(String data) async {
 
     printer.printQRcode(widget.vehicleNumber,4,4, 1);
     printer.printNewLine();
-     final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
+     //final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
 
   // Print the QR code image from the file path
-  printer.printImage(qrFilePath); 
+  //printer.printImage(qrFilePath); 
  printer.printNewLine();
     printer.printCustom('Thank you, Lucky Road!', 1, 1);
     printer.printNewLine();

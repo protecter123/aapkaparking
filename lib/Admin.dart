@@ -112,7 +112,7 @@ class _AdminPageState extends State<AdminPage> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Color.fromARGB(255, 247, 235, 217),
+          backgroundColor: const Color.fromARGB(255, 247, 235, 217),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
@@ -120,21 +120,37 @@ class _AdminPageState extends State<AdminPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // "Log out?" heading at the top
+                Text(
+                  'Log out?',
+                  textAlign: TextAlign.left,
+                  style: GoogleFonts.nunito(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 40, 40, 40),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Logout confirmation text
                 Text(
                   'Are you sure you want to logout?',
+                  textAlign: TextAlign.left,
                   style: GoogleFonts.nunito(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 40, 40, 40),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    // Yes Button
                     ElevatedButton(
                       onPressed: () async {
-                        // Log out the user from Firebase Authentication
                         await FirebaseAuth.instance.signOut();
-
                         Navigator.of(context).pop(); // Close the dialog
                         Navigator.pushReplacement(
                           context,
@@ -143,7 +159,9 @@ class _AdminPageState extends State<AdminPage> {
                         ); // Navigate to the Verify screen
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(0, 250, 1, 1),
+                        backgroundColor: Colors.transparent,
+                        shadowColor:
+                            Colors.transparent, // Transparent background
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -151,16 +169,19 @@ class _AdminPageState extends State<AdminPage> {
                       child: const Text(
                         'Yes',
                         style: TextStyle(
-                            color: Color.fromARGB(255, 40, 40, 40),
-                            fontSize: 18),
+                          color: Color.fromARGB(255, 40, 40, 40),
+                          fontSize: 18,
+                        ),
                       ),
                     ),
+                    // No Button
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop(); // Close the dialog
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 124, 244, 109),
+                        backgroundColor:
+                            const Color.fromARGB(255, 124, 244, 109),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -168,7 +189,9 @@ class _AdminPageState extends State<AdminPage> {
                       child: const Text(
                         'No',
                         style: TextStyle(
-                            color: Color.fromARGB(255, 0, 0, 0), fontSize: 18),
+                          color: Colors.black,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -181,244 +204,327 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromARGB(255, 223, 221, 221),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70.0),
-        child: AppBar(
-          shadowColor: const Color.fromARGB(255, 190, 190, 190),
-          backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(00),
-              bottomRight: Radius.circular(00),
-            ),
-          ),
-          elevation: 1,
-          leading: const SizedBox(), // Empty widget to keep title centered
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: _logout,
-              color: Colors.green,
-            ),
-          ],
-          title: Text(
-            'Admin Dashboard',
-            style: GoogleFonts.ubuntu(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(2),
-                color: Colors.yellow[50], // Light yellow background color
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 3,
-                    blurRadius: 7,
-                    offset: Offset(0, 3), // Changes position of shadow
-                  ),
-                ],
-                image: const DecorationImage(
-                  image: AssetImage(
-                      'assets/animations/Adminback.jpg'), // Background image asset
-                  fit: BoxFit.cover,
-                ),
+  Future<bool> _showExitDialog(BuildContext context) async {
+    return await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(5), // Rounded corners for the dialog
               ),
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Today\'s Revenue',
-                        style: GoogleFonts.libreBaskerville(
-                          fontSize: 23,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(
-                              255, 2, 2, 2), // Adjust color based on background
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start, // Align content to the left
+                  children: [
+                    // "Exit app" heading
+                    const Text(
+                      'Exit app',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    // Confirmation message
+                    const Text(
+                      'Do you want to exit the app?',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    const SizedBox(height: 20),
+                    // Row with "Yes" and "No" buttons
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.end, // Align buttons to the right
+                      children: [
+                        // "Yes" button with transparent background (only text)
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pop(true); // Close dialog and exit app
+                          },
+                          child: const Text(
+                            'Yes',
+                            style: TextStyle(color: Colors.black, fontSize: 18),
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis, // Prevents overflow
-                      ),
-                      const CircleAvatar(
-                        radius: 24,
-                        backgroundColor: Colors.transparent,
-                        backgroundImage: AssetImage(
-                            'assets/animations/Rupee-Sign-Money-PNG.png'), // Circle avatar with image
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 25,
-                  ), // Pushes content to the bottom
-                  Container(
-                    width: 400,
-                    height: 40,
-                    decoration: BoxDecoration(
-                        color: Color.fromARGB(140, 255, 255, 255),
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 18.0, right: 18),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '₹ ${_totalAmount.toStringAsFixed(1)}',
-                            style: const TextStyle(
-                              fontSize: 28, // Larger font size for emphasis
-                              fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(255, 8, 8,
-                                  8), // Colorful text for total amount
+                        const SizedBox(width: 10),
+                        // "No" button with green background
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pop(false); // Close dialog, stay in app
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(255, 124, 244,
+                                109), // Green background for "No"
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.calendar_month, // Colorful icon
-                                color: const Color.fromARGB(255, 7, 7, 7),
-                                size: 16,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                DateFormat('dd-MMM').format(DateTime
-                                    .now()), // Formats the date as dd-MMM
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 1, 1, 1),
-                                ),
-                              ),
-                            ],
+                          child: const Text(
+                            'No',
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                fontSize: 18),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Divider(
-              color: Colors.black, // Color of the divider
-              thickness: 1,
-              indent: 0,
-              endIndent: 0, // Thickness of the divider
-              height: 1, // Space above and below the divider
-            ),
-
-            const SizedBox(
-              height: 10,
-            ), // Add spacing between the container and grid
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.all(1.0),
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 20.0,
-                  mainAxisSpacing: 20.0,
-                  childAspectRatio: 1, // Adjust to make the cards taller
-                  children: [
-                    _buildCard(
-                        title: 'Add User',
-                        imagePath: 'assets/animations/wp2722623.png',
-                        animationUrl:
-                            'https://lottie.host/c5ea2a75-47eb-4000-805f-6c0708125ab7/rBQrP2Y1ea.json',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const Adduser2()),
-                          );
-                        },
-                        backgroundColor: Color.fromARGB(255, 254, 171, 167)),
-                    _buildCard(
-                        title: 'Add Vehicle',
-                        imagePath: 'assets/animations/OIP (3).jpeg',
-                        animationUrl:
-                            'https://lottie.host/142ea5df-9cc2-4a58-ad4d-ecc235a58c40/wrjztJKkxO.json',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const AddVehicle()),
-                          );
-                        },
-                        backgroundColor: Color.fromARGB(255, 251, 241, 153)),
-                    _buildCard(
-                        title: 'Add Pricing',
-                        imagePath: 'assets/animations/1353554.webp',
-                        animationUrl:
-                            'https://lottie.host/98de12b2-ac8e-45c7-9097-8215c4ed6e8e/lOrOs3Tnye.json',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const AddPrice()),
-                          );
-                        },
-                        backgroundColor: Color.fromARGB(255, 151, 253, 156)),
-                    _buildCard(
-                        title: 'View Vehicles',
-                        imagePath: 'assets/animations/pngtree-best-silk-wallpaper-any-one-can-loved-it-image_590012.jpg',
-                        animationUrl:
-                            'https://lottie.host/c024d909-3db9-4bc2-8aff-b3b4be0c6c5c/iUF7xCnkzl.json',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const EditVehicle()),
-                          );
-                        },
-                        backgroundColor: Color.fromARGB(255, 144, 205, 255)),
-                    _buildCard(
-                        title: 'Edit Users',
-                        imagePath: 'assets/animations/R.jpeg',
-                        animationUrl:
-                            'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const Viewuser()),
-                          );
-                        },
-                        backgroundColor: Color.fromARGB(255, 168, 141, 249)),
-                    _buildCard(
-                        title: 'Collection',
-                        imagePath: 'assets/animations/wp2722623.png',
-                        animationUrl:
-                            'https://lottie.host/464e74ce-b867-41f5-8035-7904f651eb79/unGc97LCpv.json',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const Collection()),
-                          );
-                        },
-                        backgroundColor: Color.fromARGB(255, 253, 178, 132)),
                   ],
                 ),
               ),
+            );
+          },
+        ) ??
+        false; // Return false if dialog is dismissed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        return await _showExitDialog(context); // Show exit dialog on back press
+      },
+      child: Scaffold(
+        backgroundColor: Color.fromARGB(255, 223, 221, 221),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(70.0),
+          child: AppBar(
+            shadowColor: const Color.fromARGB(255, 190, 190, 190),
+            backgroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(00),
+                bottomRight: Radius.circular(00),
+              ),
             ),
-          ],
+            elevation: 1,
+            leading: const SizedBox(), // Empty widget to keep title centered
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: _logout,
+                color: Colors.green,
+              ),
+            ],
+            title: Text(
+              'Admin Dashboard',
+              style: GoogleFonts.ubuntu(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true,
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(18.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 150,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(2),
+                  color: Colors.yellow[50], // Light yellow background color
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      spreadRadius: 3,
+                      blurRadius: 7,
+                      offset: Offset(0, 3), // Changes position of shadow
+                    ),
+                  ],
+                  image: const DecorationImage(
+                    image: AssetImage(
+                        'assets/animations/Adminback.jpg'), // Background image asset
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Today\'s Revenue',
+                          style: GoogleFonts.libreBaskerville(
+                            fontSize: 23,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 2, 2,
+                                2), // Adjust color based on background
+                          ),
+                          overflow: TextOverflow.ellipsis, // Prevents overflow
+                        ),
+                        const CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.transparent,
+                          backgroundImage: AssetImage(
+                              'assets/animations/Rupee-Sign-Money-PNG.png'), // Circle avatar with image
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 25,
+                    ), // Pushes content to the bottom
+                    Container(
+                      width: 400,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          color: Color.fromARGB(140, 255, 255, 255),
+                          borderRadius: BorderRadius.all(Radius.circular(10))),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 18.0, right: 18),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '₹ ${_totalAmount.toStringAsFixed(1)}',
+                              style: const TextStyle(
+                                fontSize: 28, // Larger font size for emphasis
+                                fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 8, 8,
+                                    8), // Colorful text for total amount
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_month, // Colorful icon
+                                  color: const Color.fromARGB(255, 7, 7, 7),
+                                  size: 16,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  DateFormat('dd-MMM').format(DateTime
+                                      .now()), // Formats the date as dd-MMM
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 1, 1, 1),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Divider(
+                color: Colors.black, // Color of the divider
+                thickness: 1,
+                indent: 0,
+                endIndent: 0, // Thickness of the divider
+                height: 1, // Space above and below the divider
+              ),
+
+              const SizedBox(
+                height: 10,
+              ), // Add spacing between the container and grid
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.all(1.0),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 20.0,
+                    mainAxisSpacing: 20.0,
+                    childAspectRatio: 1, // Adjust to make the cards taller
+                    children: [
+                      _buildCard(
+                          title: 'Add User',
+                          imagePath: 'assets/animations/wp2722623.png',
+                          animationUrl:
+                              'https://lottie.host/c5ea2a75-47eb-4000-805f-6c0708125ab7/rBQrP2Y1ea.json',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Adduser2()),
+                            );
+                          },
+                          backgroundColor: Color.fromARGB(255, 254, 171, 167)),
+                      _buildCard(
+                          title: 'Add Vehicle',
+                          imagePath: 'assets/animations/OIP (3).jpeg',
+                          animationUrl:
+                              'https://lottie.host/142ea5df-9cc2-4a58-ad4d-ecc235a58c40/wrjztJKkxO.json',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const AddVehicle()),
+                            );
+                          },
+                          backgroundColor: Color.fromARGB(255, 251, 241, 153)),
+                      _buildCard(
+                          title: 'Add Pricing',
+                          imagePath: 'assets/animations/1353554.webp',
+                          animationUrl:
+                              'https://lottie.host/98de12b2-ac8e-45c7-9097-8215c4ed6e8e/lOrOs3Tnye.json',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const AddPrice()),
+                            );
+                          },
+                          backgroundColor: Color.fromARGB(255, 151, 253, 156)),
+                      _buildCard(
+                          title: 'View Vehicles',
+                          imagePath:
+                              'assets/animations/pngtree-best-silk-wallpaper-any-one-can-loved-it-image_590012.jpg',
+                          animationUrl:
+                              'https://lottie.host/c024d909-3db9-4bc2-8aff-b3b4be0c6c5c/iUF7xCnkzl.json',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const EditVehicle()),
+                            );
+                          },
+                          backgroundColor: Color.fromARGB(255, 144, 205, 255)),
+                      _buildCard(
+                          title: 'Edit Users',
+                          imagePath: 'assets/animations/R.jpeg',
+                          animationUrl:
+                              'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Viewuser()),
+                            );
+                          },
+                          backgroundColor: Color.fromARGB(255, 168, 141, 249)),
+                      _buildCard(
+                          title: 'Collection',
+                          imagePath: 'assets/animations/wp2722623.png',
+                          animationUrl:
+                              'https://lottie.host/464e74ce-b867-41f5-8035-7904f651eb79/unGc97LCpv.json',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Collection()),
+                            );
+                          },
+                          backgroundColor: Color.fromARGB(255, 253, 178, 132)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

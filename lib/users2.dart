@@ -17,14 +17,14 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // Update this import with the correct path
 
-class UserDash extends StatefulWidget {
-  const UserDash({super.key});
+class UserDash2 extends StatefulWidget {
+  const UserDash2({super.key});
 
   @override
-  State<UserDash> createState() => _UserDashState();
+  State<UserDash2> createState() => _UserDashState();
 }
 
-class _UserDashState extends State<UserDash> {
+class _UserDashState extends State<UserDash2> {
   String _keyboardType = 'numeric'; // Default value
 
   @override
@@ -368,33 +368,30 @@ class _UserDashState extends State<UserDash> {
 
   Widget _buildUserCard(Map<String, dynamic> userData) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 0),
-      padding: const EdgeInsets.only(left: 30.0, right: 30, top: 0, bottom: 0),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.all(16.0),
       constraints: const BoxConstraints(
         maxWidth: 450, // Keep original width
-        maxHeight: 160, // Keep original height
+        maxHeight: 170, // Keep original height
       ),
       decoration: BoxDecoration(
-        // gradient: const LinearGradient(
-        //   colors: [
-        //     Color(0xFF6DC8F3), // Gradient start
-        //     Color(0xFF73A1F9), // Gradient end
-        //   ],
-        //   begin: Alignment.topLeft,
-        //   end: Alignment.bottomRight,
-        // ),
-        borderRadius: BorderRadius.circular(2),
-        border: Border.all(
-          color: Colors.black,
-          width: 1.0,
-        ), // Rounded corners for modern look
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.15), // Subtle shadow
-        //     blurRadius: 10,
-        //     offset: const Offset(0, 8), // Slightly deeper shadow
-        //   ),
-        // ],
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF6DC8F3), // Gradient start
+            Color(0xFF73A1F9), // Gradient end
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius:
+            BorderRadius.circular(12), // Rounded corners for modern look
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15), // Subtle shadow
+            blurRadius: 10,
+            offset: const Offset(0, 8), // Slightly deeper shadow
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,8 +403,8 @@ class _UserDashState extends State<UserDash> {
               child: Text(
                 '${_getGreeting()}, ${userData['userName'] ?? 'User'}',
                 style: GoogleFonts.poppins(
-                  color: const Color.fromARGB(255, 1, 1, 1),
-                  fontSize: 25,
+                  color: Colors.white,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
                 maxLines: 2,
@@ -417,8 +414,8 @@ class _UserDashState extends State<UserDash> {
             Lottie.network(
                 'https://lottie.host/f5b61010-8baf-4e9a-8fdf-2a6180a98fec/xsQlisfFJA.json', // Replace with your chosen Lottie animation URL
                 fit: BoxFit.cover,
-                height: 78,
-                width: 85),
+                height: 75,
+                width: 75),
           ]),
           const SizedBox(height: 10),
           // Phone Number Row
@@ -427,15 +424,15 @@ class _UserDashState extends State<UserDash> {
               const FaIcon(
                 FontAwesomeIcons.phoneAlt, // Colorful phone icon
                 color: Color.fromARGB(255, 19, 19, 19),
-                size: 15,
+                size: 17,
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Phone no.: ${userData['uid'] ?? ''}',
                   style: GoogleFonts.poppins(
-                    color: const Color.fromARGB(179, 37, 37, 37),
-                    fontSize: 15,
+                    color: Colors.white70,
+                    fontSize: 17,
                   ),
                 ),
               ),
@@ -448,15 +445,15 @@ class _UserDashState extends State<UserDash> {
               const FaIcon(
                 FontAwesomeIcons.calendarAlt, // Colorful calendar icon
                 color: Color.fromARGB(255, 2, 2, 2),
-                size: 15,
+                size: 20,
               ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Joined: ${DateFormat('dd MMM yyyy').format((userData['CreatedAt'] as Timestamp).toDate())}',
                   style: GoogleFonts.poppins(
-                    color: const Color.fromARGB(179, 37, 37, 37),
-                    fontSize: 15,
+                    color: Colors.white70,
+                    fontSize: 18,
                   ),
                 ),
               ),
@@ -467,46 +464,21 @@ class _UserDashState extends State<UserDash> {
     );
   }
 
-  Widget _buildGridContainer(BuildContext context, String label, Color color,
-      VoidCallback onTap, String Blocknum) {
-    // Determine border radius based on Blocknum
-    BorderRadius borderRadius;
-    switch (Blocknum) {
-      case '1': // Top-left rounded
-        borderRadius = const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.zero,
-          bottomLeft: Radius.zero,
-          bottomRight: Radius.zero,
-        );
-        break;
-      case '2': // Top-right rounded
-        borderRadius = const BorderRadius.only(
-          topRight: Radius.circular(12),
-          topLeft: Radius.zero,
-          bottomLeft: Radius.zero,
-          bottomRight: Radius.zero,
-        );
-        break;
-      case '3': // Bottom-right rounded
-        borderRadius = const BorderRadius.only(
-          bottomRight: Radius.zero,
-          topLeft: Radius.zero,
-          topRight: Radius.zero,
-          bottomLeft: Radius.circular(12),
-        );
-        break;
-      case '4': // Bottom-left rounded
-        borderRadius = const BorderRadius.only(
-          bottomRight: Radius.circular(12),
-          topLeft: Radius.zero,
-          topRight: Radius.zero,
-          bottomLeft: Radius.zero,
-        );
-        break;
-      default:
-        borderRadius =
-            BorderRadius.circular(12); // Default to all corners rounded
+  Widget _buildGridContainer(
+      BuildContext context, String label, Color color, VoidCallback onTap) {
+    IconData getIconForLabel(String label) {
+      switch (label) {
+        case "Due":
+          return FontAwesomeIcons.clock;
+        case "Fix":
+          return FontAwesomeIcons.anchorLock;
+        case "Pass":
+          return FontAwesomeIcons.ticketAlt;
+        case "Settings":
+          return FontAwesomeIcons.cog;
+        default:
+          return FontAwesomeIcons.question;
+      }
     }
 
     return GestureDetector(
@@ -517,10 +489,9 @@ class _UserDashState extends State<UserDash> {
           Container(
             decoration: BoxDecoration(
               color: color,
-              borderRadius: borderRadius, // Apply conditional border radius
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.grey.withOpacity(0.3),
-              ), // Subtle border
+                  color: Colors.grey.withOpacity(0.3)), // Subtle border
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
@@ -531,14 +502,26 @@ class _UserDashState extends State<UserDash> {
             ),
             child: Center(
               child: Container(
+                width: 160,
+                height: 160,
                 decoration: BoxDecoration(
-                  borderRadius:
-                      borderRadius, // Ensure the inner container matches
+                  borderRadius: BorderRadius.circular(12),
+                  image:const DecorationImage(
+                    image: AssetImage(
+                        'assets/animations/userbackimg2.jpg'), // Add your image path here
+                    fit: BoxFit.cover, // Adjust the fit as needed
+                  ),
                 ),
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    FaIcon(
+                      getIconForLabel(label),
+                      color: const Color.fromARGB(
+                          174, 0, 0, 0), // Softer color for the icon
+                      size: 38,
+                    ),
                     const SizedBox(height: 10),
                     FittedBox(
                       fit: BoxFit.scaleDown,
@@ -557,14 +540,14 @@ class _UserDashState extends State<UserDash> {
               ),
             ),
           ),
-          // Icon in top-right corner (if not Settings or Due)
-          if (label != "Settings" && label != 'Due' && label != 'Pass')
+          // Icon in top-right corner (if not Settings)
+          if (label != "Settings" && label != 'Due')
             Positioned(
-              top: 0,
-              right: 0,
+              top: 8,
+              right: 8,
               child: GestureDetector(
                 onTap: () {
-                  if (label == "Fix") {
+                  if (label == "Fix" || label == "Pass") {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -576,47 +559,7 @@ class _UserDashState extends State<UserDash> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius:
-                        const BorderRadius.only(topRight: Radius.circular(12)),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const FaIcon(
-                    FontAwesomeIcons.list,
-                    color: Colors.black,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-          if (label != "Settings" && label != 'Due' && label != 'Fix')
-            Positioned(
-              bottom: 0,
-              left: 0,
-              child: GestureDetector(
-                onTap: () {
-                  if (label == "Pass") {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FpList(label: label),
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(12)),
+                    shape: BoxShape.circle,
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -641,15 +584,15 @@ class _UserDashState extends State<UserDash> {
 
   Widget _buildGrid() {
     return Padding(
-      padding: const EdgeInsets.only(left: 30.0, right: 30),
+      padding: const EdgeInsets.all(16.0),
       child: GridView.count(
         crossAxisCount: 2,
-        crossAxisSpacing: 17,
-        mainAxisSpacing: 17,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
         shrinkWrap: true,
         children: [
           _buildGridContainer(
-              context, 'Due', const Color.fromARGB(255, 225, 215, 206), () {
+              context, 'Due', const Color.fromARGB(255, 249, 105, 94), () {
             showModalBottomSheet(
               context: context,
               shape: const RoundedRectangleBorder(
@@ -659,32 +602,32 @@ class _UserDashState extends State<UserDash> {
                 return dueBottomSheet(context);
               },
             );
-          }, '1'),
+          }),
           _buildGridContainer(
-              context, 'Fix', const Color.fromARGB(255, 225, 215, 206), () {
+              context, 'Fix', Color.fromARGB(255, 152, 123, 244), () {
             Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => Fix(keyboardtype: _keyboardType)),
             );
-          }, '2'),
+          }),
           _buildGridContainer(
-              context, 'Pass', const Color.fromARGB(255, 225, 215, 206), () {
+              context, 'Pass', const Color.fromARGB(255, 120, 238, 124), () {
             Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => Pass(keyboardtype: _keyboardType)),
             );
-          }, '3'),
+          }),
           _buildGridContainer(
-              context, 'Settings', const Color.fromARGB(255, 225, 215, 206),
+              context, 'Settings', const Color.fromARGB(255, 245, 233, 120),
               () {
             // Navigator.push(
             //   context,
             //   MaterialPageRoute(builder: (context) => Setting()),
             // );
             _getSettings();
-          }, '4'),
+          }),
         ],
       ),
     );
@@ -774,25 +717,25 @@ class _UserDashState extends State<UserDash> {
 
   Widget customAppBar(BuildContext context) {
     return Container(
-      height: 90,
+      height: 330,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(0, 225, 215, 206),
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 252, 251, 251),
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(0),
-          bottomRight: Radius.circular(0),
+          bottomLeft: Radius.circular(50),
+          bottomRight: Radius.circular(50),
         ),
-        // image: const DecorationImage(
-        //   image: AssetImage('assets/animations/userbackimg2.jpg'),
-        //   fit: BoxFit.cover, // Ensures the image covers the entire area
-        // ),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.2),
-        //     offset: const Offset(0, 5),
-        //     blurRadius: 15,
-        //   ),
-        // ],
+        image: const DecorationImage(
+          image: AssetImage('assets/animations/userbackimg2.jpg'),
+          fit: BoxFit.cover, // Ensures the image covers the entire area
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            offset: const Offset(0, 5),
+            blurRadius: 15,
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -917,188 +860,72 @@ class _UserDashState extends State<UserDash> {
         return await _showExitDialog(context); // Show exit dialog on back press
       },
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+        backgroundColor: const Color.fromARGB(255, 220, 220, 220),
         body: Column(
           children: [
             Stack(
               children: [
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: Container(
-                    width: 150,
-                    height: 150,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color.fromARGB(255, 234, 77, 255),
-                          Color.fromARGB(255, 238, 133, 252),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 40.0,
-                        sigmaY: 40.0,
-                      ),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 30,
-                  left: 20,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.orange.shade300,
-                          Colors.yellow.shade200
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 30.0,
-                        sigmaY: 30.0,
-                      ),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 80,
-                  left: 70,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color.fromARGB(255, 243, 255, 77),
-                          Color.fromARGB(255, 251, 230, 190)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 30.0,
-                        sigmaY: 30.0,
-                      ),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
                 customAppBar(context),
-                const SizedBox(height: 0),
+                const SizedBox(height: 40),
                 Padding(
-                  padding: const EdgeInsets.only(top: 115.0),
+                  padding: const EdgeInsets.only(top: 125.0),
                   child: Center(
                     child: FutureBuilder<Map<String, dynamic>?>(
                       future: _fetchUserData(),
                       builder: (context, snapshot) {
-                        return _buildUserCard(snapshot.data!);
-                        // if (snapshot.connectionState ==
-                        //     ConnectionState.waiting) {
-                        //   return const CircularProgressIndicator(
-                        //       backgroundColor: Colors.black,
-                        //       color: Colors.white);
-                        // } else if (snapshot.hasData) {
-                        //   return _buildUserCard(snapshot.data!);
-                        // } else {
-                        //   return const Text('Error loading user data');
-                        // }
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator(
+                              backgroundColor: Colors.black,
+                              color: Colors.white);
+                        } else if (snapshot.hasData) {
+                          return _buildUserCard(snapshot.data!);
+                        } else {
+                          return const Text('Error loading user data');
+                        }
                       },
                     ),
                   ),
                 ),
+                const SizedBox(height: 0),
               ],
             ),
-            Image.asset(
-              'assets/animations/tesla_car_PNG30.png', // Replace with your actual image asset path
-              width: 400,
-              height: 160,
+            Expanded(
+              child: _buildGrid(),
             ),
-            Spacer(),
-            Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                      'assets/animations/background bottom.jpg'), // Background image path
-                  fit:
-                      BoxFit.cover, // Cover the entire container with the image
-                ),
-                border: Border.all(
-                  color: Colors.black, // Border color
-                  width: 1.0, // Border width (1px)
-                ),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(50), // Rounded top-left corner
-                  topRight: Radius.circular(50), // Rounded top-right corner
-                ),
-              ),
-              height: 420, // Example height, can be adjusted
-              width: MediaQuery.of(context).size.width, // Full screen width
-              child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.end, // Stick content to bottom
+            Padding(
+              padding: const EdgeInsets.only(bottom: 50.0, left: 100),
+              child: Row(
                 children: [
-                  _buildGrid(),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0, left: 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Container for the image
-                        ColorFiltered(
-                          colorFilter: const ColorFilter.mode(
-                            Colors.grey, // Grey filter for the logo
-                            BlendMode.srcATop, // Blend mode
-                          ),
-                          child: Image.asset(
-                            'assets/aapka logo.webp', // Image asset path
-                            width: 20,
-                            height: 20,
-                          ),
-                        ),
-                        const SizedBox(
-                            width: 10), // Space between the logo and text
-                        Container(
-                          child: const Text(
-                            'Aapka Parking \u00A9',
-                            style: TextStyle(
-                              color: Colors.grey, // Text color
-                              fontSize: 20, // Font size
-                              fontWeight: FontWeight.bold, // Bold text
-                            ),
-                          ),
-                        ),
-                      ],
+                  // Container for the image
+                  ColorFiltered(
+                    colorFilter: const ColorFilter.mode(
+                      Colors
+                          .grey, // The color you want to apply (in this case, grey)
+                      BlendMode
+                          .srcATop, // Blend mode to replace the original color
                     ),
-                  )
+                    child: Image.asset(
+                      'assets/aapka logo.webp', // Replace with your actual image asset path
+                      width: 50,
+                      height: 50,
+                    ),
+                  ),
+                  const SizedBox(
+                      width:
+                          10), // Add some space between the image and the text
+
+                  // Container for the text
+                  Container(
+                    child: const Text(
+                      'Aapka Parking \u00A9',
+                      style: TextStyle(
+                        color: Colors.grey, // Dark yellow color (GoldenRod)
+                        fontSize: 24, // Set the font size
+                        fontWeight: FontWeight.bold, // Make the text bold
+                      ),
+                    ),
+                  ),
                 ],
               ),
             )
