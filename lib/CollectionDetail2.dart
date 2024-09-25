@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 class CollectionDetail2 extends StatefulWidget {
@@ -108,7 +108,7 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
   // Method to build a single list tile for each entry
   Widget _buildEntryTile(DocumentSnapshot entry) {
     // Extract data from the entry document
-    var dueInRate = entry.get('dueInRate');
+   // var dueInRate = entry.get('dueInRate');
     var dueInTime = entry.get('dueInTime');
     var dueOutTime = entry.get('dueOutTime');
     var exceededTime = entry.get('exceededTime');
@@ -117,19 +117,19 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
     var type = entry.get('type');
     var vehicleNumber = entry.get('vehicleNumber');
 
-    // Ensure correct data types
-    String formattedDueInTime = '';
-    String formattedDueOutTime = '';
+    // // Ensure correct data types
+    // String formattedDueInTime = '';
+    // String formattedDueOutTime = '';
 
-    if (dueInTime is Timestamp) {
-      formattedDueInTime =
-          DateFormat('yyyy-MM-dd HH:mm:ss').format(dueInTime.toDate());
-    }
+    // if (dueInTime is Timestamp) {
+    //   formattedDueInTime =
+    //       DateFormat('yyyy-MM-dd HH:mm:ss').format(dueInTime.toDate());
+    // }
 
-    if (dueOutTime is Timestamp) {
-      formattedDueOutTime =
-          DateFormat('yyyy-MM-dd HH:mm:ss').format(dueOutTime.toDate());
-    }
+    // if (dueOutTime is Timestamp) {
+    //   formattedDueOutTime =
+    //       DateFormat('yyyy-MM-dd HH:mm:ss').format(dueOutTime.toDate());
+    // }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

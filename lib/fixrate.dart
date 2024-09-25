@@ -48,7 +48,8 @@ class _FixirateState extends State<Fixirate> {
           // Set admin phone number and update the vehiclesCollection reference
           adminPhoneNumber = adminDoc.id;
           SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('AdminNum', adminPhoneNumber); // Admin phone number or document ID
+          await prefs.setString('AdminNum',
+              adminPhoneNumber); // Admin phone number or document ID
           CollectionReference vehiclesCollection =
               adminDoc.reference.collection('Vehicles');
 
@@ -102,15 +103,18 @@ class _FixirateState extends State<Fixirate> {
 
       // Convert price to double
       num priceAsDouble = num.tryParse(price.toString()) ?? 0.0;
-     showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent dismissing the dialog
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
-        );
-      },
-    );
+      showDialog(
+        context: context,
+        barrierDismissible: false, // Prevent dismissing the dialog
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(
+              backgroundColor: Color.fromARGB(255, 206, 200, 200),
+              color: Colors.black,
+            ), // Show loader
+          );
+        },
+      );
       // Firestore update logic
       try {
         CollectionReference usersRef = FirebaseFirestore.instance
@@ -183,7 +187,7 @@ class _FixirateState extends State<Fixirate> {
             });
           }
         });
-Navigator.of(context).pop();
+        Navigator.of(context).pop();
         // Navigate to the receipt screen
         Navigator.push(
           context,
@@ -205,7 +209,7 @@ Navigator.of(context).pop();
       }
     }
     if (_selectedContainerIndex == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select price.'),
           showCloseIcon: true,
@@ -215,7 +219,7 @@ Navigator.of(context).pop();
       );
     }
     if (_controller.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please Enter vehicle number'),
           showCloseIcon: true,
@@ -224,13 +228,14 @@ Navigator.of(context).pop();
         ),
       );
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 225, 215, 206),
         title: AnimatedTextKit(
           animatedTexts: [
             TyperAnimatedText(
@@ -249,7 +254,9 @@ Navigator.of(context).pop();
         centerTitle: true,
       ),
       body: pricingData == null
-          ? const Center(child: CircularProgressIndicator(color: Colors.yellow))
+          ? const Center(
+              child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 6, 6, 6)))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -258,7 +265,7 @@ Navigator.of(context).pop();
                     Container(
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        color: Colors.yellow[100],
+                        color: const Color.fromARGB(255, 3, 3, 3),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
@@ -290,19 +297,32 @@ Navigator.of(context).pop();
                     ),
                     const SizedBox(height: 16),
                     Container(
-                      width: MediaQuery.of(context).size.width -
-                          48, // Decreases the width by 10 pixels
-                      child: TextField(
-                        controller: _controller,
-                        keyboardType: widget.keyboardtype == 'numeric'
-                            ? TextInputType.number
-                            : TextInputType.text,
-                        decoration: const InputDecoration(
-                          hintText: 'Add vehicle number',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
+                        width: MediaQuery.of(context).size.width -
+                            48, // Decreases the width by 10 pixels
+                        child: TextField(
+                          controller: _controller,
+                          keyboardType: widget.keyboardtype == 'numeric'
+                              ? TextInputType.number
+                              : TextInputType.text,
+                          decoration: const InputDecoration(
+                            hintText: 'Add vehicle number',
+                            enabledBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.black, // Default black border
+                              ),
+                            ),
+                            focusedBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Color.fromARGB(255, 25, 239,
+                                    1), // Green border when focused
+                              ),
+                            ),
+                            border:
+                                const OutlineInputBorder(), // This acts as a fallback border if others are not defined
+                          ),
+                        )),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _generateReceipt,
@@ -318,8 +338,11 @@ Navigator.of(context).pop();
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
-                              Color.fromARGB(255, 231, 242, 136),
-                              Color.fromARGB(255, 77, 50, 80)
+                              Color.fromARGB(
+                                  255, 25, 239, 1), 
+                              Color.fromARGB(255, 1, 1, 1),
+                              Color.fromARGB(
+                                  255, 25, 239, 1),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -361,15 +384,17 @@ Navigator.of(context).pop();
       child: Container(
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color.fromARGB(255, 225, 215, 206),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? Colors.black : Colors.transparent,
-            width: 1,
+            color: isSelected
+                ? Color.fromARGB(255, 28, 251, 3)
+                : Colors.transparent,
+            width: 2,
           ),
           boxShadow: const [
             BoxShadow(
-              color: Colors.black26,
+              color: Color.fromARGB(66, 247, 252, 226),
               blurRadius: 10,
               offset: Offset(0, 5),
             ),
@@ -381,8 +406,10 @@ Navigator.of(context).pop();
               alignment: Alignment.topRight,
               child: Container(
                 padding: const EdgeInsets.all(5.0),
-                decoration: const BoxDecoration(
-                  color: Colors.yellow,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Color.fromARGB(255, 28, 251, 3)
+                      : Color.fromARGB(165, 250, 249, 248),
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(0),
                       topRight: Radius.circular(10),
@@ -390,7 +417,7 @@ Navigator.of(context).pop();
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [ 
+                  children: [
                     Lottie.asset('assets/animations/clock.json',
                         height: 23, width: 23),
                     const SizedBox(width: 4),

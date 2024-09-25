@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:aapkaparking/Add%20pricing.dart';
 import 'package:aapkaparking/Add%20vehicle.dart';
 import 'package:aapkaparking/Adduser2.dart';

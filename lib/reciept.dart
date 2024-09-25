@@ -88,37 +88,39 @@ class _ReceiptState extends State<Receipt> {
       });
     }
   }
-Future<String> _saveQrCodeToFile(String data) async {
-  // Create a QrPainter with the data
-  final qrPainter = QrPainter(
-    data: data,
-    version: QrVersions.auto,
-    gapless: false,
-  );
 
-  // Create a picture recorder to capture the QR code image
-  final picRecorder = ui.PictureRecorder();
-  final canvas = Canvas(picRecorder);
-  final size = 400.0; // QR code size
-  qrPainter.paint(canvas, Size(size, size));
+  Future<String> _saveQrCodeToFile(String data) async {
+    // Create a QrPainter with the data
+    final qrPainter = QrPainter(
+      data: data,
+      version: QrVersions.auto,
+      gapless: false,
+    );
 
-  // Convert canvas to an image
-  final image = await picRecorder.endRecording().toImage(size.toInt(), size.toInt());
+    // Create a picture recorder to capture the QR code image
+    final picRecorder = ui.PictureRecorder();
+    final canvas = Canvas(picRecorder);
+    final size = 400.0; // QR code size
+    qrPainter.paint(canvas, Size(size, size));
 
-  // Convert image to byte data (BMP format)
-  final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-  final bmpBytes = byteData!.buffer.asUint8List();
+    // Convert canvas to an image
+    final image =
+        await picRecorder.endRecording().toImage(size.toInt(), size.toInt());
 
-  // Save the image to a temporary directory as BMP
-  final tempDir = await getTemporaryDirectory();
-  final qrFile = File('${tempDir.path}/qrcode.bmp');
+    // Convert image to byte data (BMP format)
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final bmpBytes = byteData!.buffer.asUint8List();
 
-  // Write bytes to file
-  await qrFile.writeAsBytes(bmpBytes);
+    // Save the image to a temporary directory as BMP
+    final tempDir = await getTemporaryDirectory();
+    final qrFile = File('${tempDir.path}/qrcode.bmp');
 
-  // Return the file path
-  return qrFile.path;
-}
+    // Write bytes to file
+    await qrFile.writeAsBytes(bmpBytes);
+
+    // Return the file path
+    return qrFile.path;
+  }
 
   Future<void> printReceipt() async {
     final printer = bluetoothManager.printer;
@@ -139,13 +141,13 @@ Future<String> _saveQrCodeToFile(String data) async {
     printer.printCustom('Amount: Rs :${widget.price}', 2, 1);
     printer.printNewLine();
 
-    printer.printQRcode(widget.vehicleNumber,4,4, 1);
+    printer.printQRcode(widget.vehicleNumber, 4, 4, 1);
     printer.printNewLine();
-     //final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
+    //final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
 
-  // Print the QR code image from the file path
-  //printer.printImage(qrFilePath); 
- printer.printNewLine();
+    // Print the QR code image from the file path
+    //printer.printImage(qrFilePath);
+    printer.printNewLine();
     printer.printCustom('Thank you, Lucky Road!', 1, 1);
     printer.printNewLine();
     printer.paperCut();
@@ -154,8 +156,9 @@ Future<String> _saveQrCodeToFile(String data) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
-        backgroundColor: Colors.yellow,
+        backgroundColor: const Color.fromARGB(255, 225, 215, 206),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -166,13 +169,18 @@ Future<String> _saveQrCodeToFile(String data) async {
         title: Text(
           'Receipt Details',
           style: GoogleFonts.nunito(
-              color: Colors.black, fontWeight: FontWeight.bold),
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        elevation: 3.0, // Add elevation
+        shadowColor: const Color.fromARGB(
+            255, 25, 239, 1), // Green shadow color with slight transparency
       ),
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator(
-              color: Colors.yellow,
+              color: ui.Color.fromARGB(255, 2, 2, 2),
             ))
           : LayoutBuilder(
               builder: (context, constraints) {
@@ -204,7 +212,7 @@ Future<String> _saveQrCodeToFile(String data) async {
                           ),
                           Container(
                             height: 2,
-                            color: Colors.yellow,
+                            color: const Color.fromARGB(255, 25, 239, 1),
                           ),
                           Text(
                             'Paid Parking',
@@ -250,7 +258,7 @@ Future<String> _saveQrCodeToFile(String data) async {
                           ),
                           Container(
                             height: 2,
-                            color: Colors.yellow,
+                            color: Color.fromARGB(255, 25, 239, 1),
                           ),
                           const Text(
                             'Thank you, Lucky Road!',

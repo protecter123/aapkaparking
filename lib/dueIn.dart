@@ -1,6 +1,4 @@
 import 'package:aapkaparking/dueInRate.dart';
-import 'package:aapkaparking/fixrate.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -74,8 +72,9 @@ class _DueState extends State<Due> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
-        backgroundColor: Colors.yellow[600],
+        backgroundColor: const Color.fromARGB(0, 253, 216, 53),
         title: Text(
           'All Vehicles',
           style: GoogleFonts.nunito(
@@ -93,15 +92,15 @@ class _DueState extends State<Due> {
         ),
       ),
       body: vehiclesCollection == null
-          ? const Center(child: CircularProgressIndicator(color: Colors.yellow))
+          ? const Center(child: CircularProgressIndicator(color: Color.fromARGB(255, 10, 10, 10)))
           : StreamBuilder<QuerySnapshot>(
               stream: vehiclesCollection!
-              .where('pricingdone',isEqualTo: true)
-              .snapshots(),
+                  .where('pricingdone', isEqualTo: true)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Colors.yellow),
+                    child: CircularProgressIndicator(color: Color.fromARGB(255, 10, 10, 10)),
                   );
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -138,10 +137,14 @@ class _DueState extends State<Due> {
                       },
                       child: Card(
                         elevation: 10.0,
-                        color: const Color.fromARGB(
-                            255, 248, 246, 225), // 3D effect
+                        color: const Color.fromARGB(255, 225, 215, 206),
+                        borderOnForeground: true, // 3D effect
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(
+                            color: Colors.black, // Black color for the border
+                            width: 1, // 2px width
+                          ),
                         ),
                         child: Column(
                           children: [
@@ -174,7 +177,7 @@ class _DueState extends State<Due> {
                                         child: const CircularProgressIndicator(
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                                  Colors.yellow),
+                                                  Color.fromARGB(255, 8, 8, 8)),
                                         ),
                                       ),
                                       errorWidget: (context, url, error) =>

@@ -1,5 +1,4 @@
 import 'package:aapkaparking/verify.dart';
-import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -36,12 +35,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2),
+      duration:const Duration(seconds: 2),
     );
 
     _colorAnimation = ColorTween(
-      begin: Color(0xFFFFD700),
-      end: Color(0xFFFFE082), // Different shades of yellow
+      begin:const Color(0xFFFFD700),
+      end:const Color(0xFFFFE082), // Different shades of yellow
     ).animate(
       CurvedAnimation(
         parent: _animationController,
@@ -72,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void _animateToNextPage() {
     if (_current == _lottieWidgets.length - 1) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => Verify()),
+        MaterialPageRoute(builder: (context) =>const Verify()),
       );
     } else {
       _carouselController.nextPage();
@@ -85,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     return Scaffold(
       backgroundColor: Colors.white, // Set background color to white
       appBar: AppBar(
-        backgroundColor: Color(0xFFFFF9C4), // Light yellow color
+        backgroundColor:const Color(0xFFFFF9C4), // Light yellow color
         elevation: 0,
         title:  Text(
           'Aapka parking',
@@ -103,15 +102,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 return Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: _colorAnimation.value ?? Color(0xFFFFD700),
+                      color: _colorAnimation.value ??const Color(0xFFFFD700),
                       width: 5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.5),
+                        color:const Color.fromARGB(255, 255, 255, 255).withOpacity(0.5),
                         spreadRadius: 5,
                         blurRadius: 7,
-                        offset: Offset(0, 3), // changes position of shadow
+                        offset:const Offset(0, 3), // changes position of shadow
                       ),
                     ],
                   ),
@@ -119,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 );
               },
               child: _isLoading
-                  ? CircularProgressIndicator()
+                  ?const CircularProgressIndicator()
                   : CarouselSlider(
                       items: _lottieWidgets,
                       carouselController: _carouselController,
@@ -166,12 +165,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   child: Container(
                     width: 12.0,
                     height: 12.0,
-                    margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    margin:const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _current == entry.key
-                          ? Color(0xFFFFD700) // Yellow color
-                          : Color(0xFFFFD700).withOpacity(0.4),
+                          ?const Color(0xFFFFD700) // Yellow color
+                          :const Color(0xFFFFD700).withOpacity(0.4),
                     ),
                   ),
                 );
@@ -184,14 +183,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: ElevatedButton(
               onPressed: _animateToNextPage,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFFD700), // Yellow color
+                backgroundColor:const Color(0xFFFFD700), // Yellow color
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 elevation: 5.0,
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding:const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               ),
-              child: Icon(
+              child:const Icon(
                 Icons.arrow_forward,
                 color: Colors.white,
               ),

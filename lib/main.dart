@@ -4,7 +4,6 @@ import 'package:aapkaparking/users.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,7 +13,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -25,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Color(0xFFFFD700), // Gold (Yellow) color
+        primaryColor:const Color(0xFFFFD700), // Gold (Yellow) color
       ),
       home: SplashVideoScreen(), // Initial route set to SplashVideoScreen
     );
@@ -47,11 +46,11 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
 
     _textAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 100),
+      duration:const Duration(milliseconds: 100),
     );
 
     _textAnimationController.forward().then((_) {
-      Future.delayed(Duration(milliseconds: 550), () async {
+      Future.delayed(const Duration(milliseconds: 550), () async {
         await _navigateToNextScreen();
       });
     });
@@ -69,11 +68,11 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
         final userType = await _getUserType(phoneNumber);
         if (userType == 'user') {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => UserDash()),
+            MaterialPageRoute(builder: (context) =>const UserDash()),
           );
         } else if (userType == 'admin') {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => AdminPage()),
+            MaterialPageRoute(builder: (context) =>const AdminPage()),
           );
         }
       } else {
@@ -116,13 +115,13 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
         children: [
           // Animated gradient background
           AnimatedContainer(
-            duration: Duration(seconds: 1),
+            duration:const Duration(seconds: 1),
             onEnd: () => setState(() {}),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Colors.black,
-                  Color.fromARGB(255, 45, 44, 44).withOpacity(0.1),
+                 const Color.fromARGB(255, 45, 44, 44).withOpacity(0.1),
                   Colors.black,
                 ],
                 begin: Alignment.topCenter,
@@ -134,10 +133,10 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Spacer(flex: 2), // Moves the logo and heading above the center
+               const Spacer(flex: 2), // Moves the logo and heading above the center
                 // Logo in a square box with animated border
                 AnimatedContainer(
-                  duration: Duration(milliseconds: 1),
+                  duration:const Duration(milliseconds: 1),
                   height: 170,
                   width: 170,
                   decoration: BoxDecoration(
@@ -158,7 +157,7 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
                     ),
                   ),
                 ),
-                SizedBox(height: 40),
+               const SizedBox(height: 40),
                 // "Apka Parking" animated text in a row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -167,12 +166,12 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
                       animatedTexts: [
                         TyperAnimatedText(
                           'Aapka',
-                          textStyle: TextStyle(
+                          textStyle:const TextStyle(
                             color: Color.fromARGB(255, 252, 248, 33),
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                           ),
-                          speed: Duration(milliseconds: 100),
+                          speed:const Duration(milliseconds: 100),
                         ),
                       ],
                       repeatForever: false,
@@ -186,19 +185,19 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
                       },
                     ),
                     if (parkingenable) // Show "Parking" only after "Aapka" completes
-                      SizedBox(width: 10),
+                     const SizedBox(width: 10),
                     if (parkingenable)
-                      Text(
+                    const  Text(
                         'Parking',
                         style: TextStyle(
-                          color: const Color.fromARGB(255, 2, 2, 2),
+                          color:  Color.fromARGB(255, 2, 2, 2),
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                   ],
                 ),
-                Spacer(
+              const  Spacer(
                     flex:
                         3), // Spacer to push the footer text towards the bottom
                 // Footer with unique parking-related slogan

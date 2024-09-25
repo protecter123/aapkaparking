@@ -73,8 +73,9 @@ class _DueState extends State<Pass> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
-        backgroundColor: Colors.yellow[600],
+        backgroundColor: const Color.fromARGB(0, 253, 216, 53),
         title: AnimatedTextKit(
           animatedTexts: [
             TyperAnimatedText(
@@ -99,7 +100,9 @@ class _DueState extends State<Pass> {
         ),
       ),
       body: vehiclesCollection == null
-          ? const Center(child: CircularProgressIndicator(color: Colors.yellow))
+          ? const Center(
+              child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 5, 5, 5)))
           : StreamBuilder<QuerySnapshot>(
               stream: vehiclesCollection!
                   .where('pricingdone', isEqualTo: true)
@@ -107,7 +110,8 @@ class _DueState extends State<Pass> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Colors.yellow),
+                    child: CircularProgressIndicator(
+                        color: Color.fromARGB(255, 8, 8, 8)),
                   );
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -145,9 +149,13 @@ class _DueState extends State<Pass> {
                       child: Card(
                         elevation: 10.0,
                         color: const Color.fromARGB(
-                            255, 248, 246, 225), // 3D effect
+                            255, 225, 215, 206), // 3D effect
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(
+                            color: Colors.black, // Black color for the border
+                            width: 1, // 2px width
+                          ),
                         ),
                         child: Column(
                           children: [

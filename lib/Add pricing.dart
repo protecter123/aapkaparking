@@ -1,6 +1,4 @@
 import 'dart:ui';
-
-import 'package:aapkaparking/Admin.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -355,7 +353,7 @@ class _AddPriceState extends State<AddPrice> {
             color: const Color.fromARGB(255, 29, 29, 29),
           ),
         ),
-        SizedBox(
+      const  SizedBox(
           height: 4,
         ),
         GestureDetector(
@@ -496,12 +494,11 @@ class _AddPriceState extends State<AddPrice> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-            child: Text(
-          hinttext,
-          style: GoogleFonts.nunitoSans(color: Color.fromARGB(255, 29, 29, 29)),
-        )),
-        SizedBox(
+        Text(
+                  hinttext,
+                  style: GoogleFonts.nunitoSans(color:const Color.fromARGB(255, 29, 29, 29)),
+                ),
+      const  SizedBox(
           height: 4,
         ),
         TextField(

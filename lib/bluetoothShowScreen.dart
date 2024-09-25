@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'bluetoothManager.dart';
 
 class PrintOptionsScreen extends StatefulWidget {
@@ -23,22 +22,13 @@ class _PrintOptionsScreenState extends State<PrintOptionsScreen> {
     setState(() {});
   }
 
-  void _showToast(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.black54,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
-  }
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Print Options'),
+        title:const Text('Print Options'),
         backgroundColor: const Color.fromARGB(255, 218, 255, 68),
         centerTitle: true,
       ),
@@ -56,20 +46,20 @@ class _PrintOptionsScreenState extends State<PrintOptionsScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               elevation: 4,
-              margin: EdgeInsets.symmetric(vertical: 8),
+              margin:const EdgeInsets.symmetric(vertical: 8),
               child: ListTile(
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding:const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 title: Text(
                   device.name ?? 'Unknown Device',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style:const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 subtitle: Text(
                   device.address ?? 'No Address',
                   style: TextStyle(color: Colors.grey[600]),
                 ),
                 trailing: isConnected
-                    ? Icon(Icons.check_circle, color: Colors.green, size: 24)
-                    : Icon(Icons.bluetooth, color: Colors.grey, size: 24),
+                    ?const Icon(Icons.check_circle, color: Colors.green, size: 24)
+                    :const Icon(Icons.bluetooth, color: Colors.grey, size: 24),
                 onTap: () async {
                   if (isConnected) {
                     await bluetoothManager.disconnectPrinter();

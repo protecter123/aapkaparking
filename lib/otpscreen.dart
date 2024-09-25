@@ -154,7 +154,7 @@ class OtpScreenState extends State<OtpScreen>
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        AdminPage()), // Replace with your AdminPage
+                       const AdminPage()), // Replace with your AdminPage
               );
             } else {
               Navigator.pushReplacement(
@@ -246,7 +246,7 @@ class OtpScreenState extends State<OtpScreen>
                             padding: const EdgeInsets.only(right: 350, top: 60),
                             child: IconButton(
                                 icon: const Icon(Icons.arrow_back),
-                                color: Color.fromARGB(255, 7, 7, 7),
+                                color:const Color.fromARGB(255, 7, 7, 7),
                                 iconSize: 30,
                                 onPressed: () {
                                   Navigator.push(
@@ -391,7 +391,7 @@ class OtpScreenState extends State<OtpScreen>
                                     backgroundColor:
                                         WidgetStateProperty.all<Color>(
                                       buttonenable
-                                          ? Color.fromARGB(255, 255, 255, 0)
+                                          ?const Color.fromARGB(255, 255, 255, 0)
                                           : Colors.grey,
                                     ),
                                     fixedSize: WidgetStateProperty.all<Size>(

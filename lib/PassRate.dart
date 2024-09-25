@@ -24,62 +24,62 @@ class _PassrateState extends State<Passrate> {
   Map<String, dynamic>? pricingData;
   String adminPhoneNumber = '';
   String currentUserPhoneNumber = '';
- Future<void> fetchPricingDetails() async {
-  User? currentUser = FirebaseAuth.instance.currentUser;
-  currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+  Future<void> fetchPricingDetails() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
-  try {
-    // Reference to the AllUsers collection
-    CollectionReference allUsersRef =
-        FirebaseFirestore.instance.collection('AllUsers');
+    try {
+      // Reference to the AllUsers collection
+      CollectionReference allUsersRef =
+          FirebaseFirestore.instance.collection('AllUsers');
 
-    // Fetch all admin documents
-    QuerySnapshot adminsSnapshot = await allUsersRef.get();
+      // Fetch all admin documents
+      QuerySnapshot adminsSnapshot = await allUsersRef.get();
 
-    for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
-      // Reference to the Users subcollection
-      CollectionReference usersRef = adminDoc.reference.collection('Users');
+      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
+        // Reference to the Users subcollection
+        CollectionReference usersRef = adminDoc.reference.collection('Users');
 
-      // Check if the current user's phone number exists in this admin's Users subcollection
-      DocumentSnapshot userDoc =
-          await usersRef.doc(currentUserPhoneNumber).get();
+        // Check if the current user's phone number exists in this admin's Users subcollection
+        DocumentSnapshot userDoc =
+            await usersRef.doc(currentUserPhoneNumber).get();
 
-      if (userDoc.exists) {
-        // Set admin phone number and update the vehiclesCollection reference
-        adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
+        if (userDoc.exists) {
+          // Set admin phone number and update the vehiclesCollection reference
+          adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
 
-        // Save adminPhoneNumber to SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('AdminNum', adminPhoneNumber);
+          // Save adminPhoneNumber to SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('AdminNum', adminPhoneNumber);
 
-        CollectionReference vehiclesCollection =
-            adminDoc.reference.collection('Vehicles');
+          CollectionReference vehiclesCollection =
+              adminDoc.reference.collection('Vehicles');
 
-        // Fetch pricing details based on the vehicle image URL
-        var snapshot = await vehiclesCollection
-            .where('vehicleImage', isEqualTo: widget.imgUrl)
-            .get();
+          // Fetch pricing details based on the vehicle image URL
+          var snapshot = await vehiclesCollection
+              .where('vehicleImage', isEqualTo: widget.imgUrl)
+              .get();
 
-        if (snapshot.docs.isNotEmpty) {
-          setState(() {
-            pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
-          });
+          if (snapshot.docs.isNotEmpty) {
+            setState(() {
+              pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
+            });
+          }
+          return; // Exit the loop once the correct admin is found
         }
-        return; // Exit the loop once the correct admin is found
       }
-    }
 
-    // Handle the case where no matching admin is found
-    setState(() {
-      pricingData = null;
-    });
-  } catch (e) {
-    print('Error fetching pricing details: $e');
-    setState(() {
-      pricingData = null;
-    });
+      // Handle the case where no matching admin is found
+      setState(() {
+        pricingData = null;
+      });
+    } catch (e) {
+      print('Error fetching pricing details: $e');
+      setState(() {
+        pricingData = null;
+      });
+    }
   }
-}
 
   @override
   void initState() {
@@ -87,127 +87,131 @@ class _PassrateState extends State<Passrate> {
     fetchPricingDetails();
   }
 
- void _generateReceipt() async {
-  if (_selectedContainerIndex != null &&
-      _controller.text.isNotEmpty &&
-      pricingData != null) {
-    var selectedRate = _selectedContainerIndex == 0
-        ? '1 Month Pass'
-        : _selectedContainerIndex == 1
-            ? '2 Month Pass'
-            : '3 Month Pass';
+  void _generateReceipt() async {
+    if (_selectedContainerIndex != null &&
+        _controller.text.isNotEmpty &&
+        pricingData != null) {
+      var selectedRate = _selectedContainerIndex == 0
+          ? '1 Month Pass'
+          : _selectedContainerIndex == 1
+              ? '2 Month Pass'
+              : '3 Month Pass';
 
-    // Calculate the price based on the selected option
-    var price = _selectedContainerIndex == 0
-        ? pricingData!['PassPrice']
-        : _selectedContainerIndex == 1
-            ? (int.tryParse(pricingData!['PassPrice'])! * 2).toString()
-            : (int.tryParse(pricingData!['PassPrice'])! * 3).toString();
+      // Calculate the price based on the selected option
+      var price = _selectedContainerIndex == 0
+          ? pricingData!['PassPrice']
+          : _selectedContainerIndex == 1
+              ? (int.tryParse(pricingData!['PassPrice'])! * 2).toString()
+              : (int.tryParse(pricingData!['PassPrice'])! * 3).toString();
 
-    // Convert price to integer
-    int priceAsInt = int.tryParse(price) ?? 0;
-   showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent dismissing the dialog
-      builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
-        );
-      },
-    );
-    try {
-      CollectionReference usersRef = FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(adminPhoneNumber)
-          .collection('Users')
-          .doc(currentUserPhoneNumber)
-          .collection('MoneyCollection');
+      // Convert price to integer
+      int priceAsInt = int.tryParse(price) ?? 0;
+      showDialog(
+        context: context,
+        barrierDismissible: false, // Prevent dismissing the dialog
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(
+              backgroundColor: Color.fromARGB(255, 206, 200, 200),
+              color: Colors.black,
+            ), // Show loader
+          );
+        },
+      );
+      try {
+        CollectionReference usersRef = FirebaseFirestore.instance
+            .collection('AllUsers')
+            .doc(adminPhoneNumber)
+            .collection('Users')
+            .doc(currentUserPhoneNumber)
+            .collection('MoneyCollection');
 
-      DocumentReference passDocRef =
-          usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+        DocumentReference passDocRef =
+            usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
-      // Run a transaction to safely update the passMoney field and create vehicleEntry sub-collection
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        DocumentSnapshot snapshot = await transaction.get(passDocRef);
+        // Run a transaction to safely update the passMoney field and create vehicleEntry sub-collection
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          DocumentSnapshot snapshot = await transaction.get(passDocRef);
 
-        if (snapshot.exists) {
-          // Cast data to Map<String, dynamic>
-          Map<String, dynamic>? data =
-              snapshot.data() as Map<String, dynamic>?;
+          if (snapshot.exists) {
+            // Cast data to Map<String, dynamic>
+            Map<String, dynamic>? data =
+                snapshot.data() as Map<String, dynamic>?;
 
-          if (data != null && data.containsKey('passMoney')) {
-            // Convert the existing passMoney from string to integer
-            int existingTotal = int.tryParse(data['passMoney'] ?? '0') ?? 0;
-            int newTotal = existingTotal + priceAsInt;
+            if (data != null && data.containsKey('passMoney')) {
+              // Convert the existing passMoney from string to integer
+              int existingTotal = int.tryParse(data['passMoney'] ?? '0') ?? 0;
+              int newTotal = existingTotal + priceAsInt;
 
-            print('Existing Total: $existingTotal, New Total: $newTotal');
+              print('Existing Total: $existingTotal, New Total: $newTotal');
 
-            // Update only the 'passMoney' field without disturbing other fields
-            transaction.update(passDocRef, {'passMoney': newTotal.toString()});
+              // Update only the 'passMoney' field without disturbing other fields
+              transaction
+                  .update(passDocRef, {'passMoney': newTotal.toString()});
+            } else {
+              // If passMoney field does not exist, create it or update it with the initial amount
+              print('Creating document with initial total: $price');
+              transaction.set(
+                  passDocRef, {'passMoney': price}, SetOptions(merge: true));
+            }
           } else {
-            // If passMoney field does not exist, create it or update it with the initial amount
+            // If the document doesn't exist, create it with the initial amount
             print('Creating document with initial total: $price');
-            transaction.set(
-                passDocRef, {'passMoney': price}, SetOptions(merge: true));
+            transaction.set(passDocRef, {'passMoney': price});
           }
-        } else {
-          // If the document doesn't exist, create it with the initial amount
-          print('Creating document with initial total: $price');
-          transaction.set(passDocRef, {'passMoney': price});
-        }
 
-        // Now we handle the vehicleEntry sub-collection
-        CollectionReference vehicleEntryRef =
-            passDocRef.collection('vehicleEntry');
+          // Now we handle the vehicleEntry sub-collection
+          CollectionReference vehicleEntryRef =
+              passDocRef.collection('vehicleEntry');
 
-        // Check if a document for the vehicle number exists
-        QuerySnapshot existingVehicleEntry = await vehicleEntryRef
-            .where('vehicleNumber', isEqualTo: _controller.text)
-            .get();
+          // Check if a document for the vehicle number exists
+          QuerySnapshot existingVehicleEntry = await vehicleEntryRef
+              .where('vehicleNumber', isEqualTo: _controller.text)
+              .get();
 
-        if (existingVehicleEntry.docs.isEmpty) {
-          // If no document exists for this vehicle, create a new one
-          vehicleEntryRef.add({
-            'vehicleNumber': _controller.text,
-            'entryTime': DateTime.now(),
-            'entryType': 'Pass',
-            'selectedTime': selectedRate,
-            'selectedRate':price
-          });
-        } else {
-          // If document exists, create a new document with the vehicle details
-          vehicleEntryRef.add({
-            'vehicleNumber': _controller.text,
-            'entryTime': DateTime.now(),
-            'entryType': 'Pass',
-            'selectedTime': selectedRate,
-            'selectedRate':price,
-          });
-        }
-      });
-Navigator.of(context).pop();
-      // Navigate to the receipt screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Receipt(
-            vehicleNumber: _controller.text,
-            rateType: selectedRate,
-            price: price,
-            page: 'Pass',
+          if (existingVehicleEntry.docs.isEmpty) {
+            // If no document exists for this vehicle, create a new one
+            vehicleEntryRef.add({
+              'vehicleNumber': _controller.text,
+              'entryTime': DateTime.now(),
+              'entryType': 'Pass',
+              'selectedTime': selectedRate,
+              'selectedRate': price
+            });
+          } else {
+            // If document exists, create a new document with the vehicle details
+            vehicleEntryRef.add({
+              'vehicleNumber': _controller.text,
+              'entryTime': DateTime.now(),
+              'entryType': 'Pass',
+              'selectedTime': selectedRate,
+              'selectedRate': price,
+            });
+          }
+        });
+        Navigator.of(context).pop();
+        // Navigate to the receipt screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Receipt(
+              vehicleNumber: _controller.text,
+              rateType: selectedRate,
+              price: price,
+              page: 'Pass',
+            ),
           ),
-        ),
-      );
-    } catch (e) {
-      print('Error updating total money: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to update total money. Please try again.')),
-      );
-    }
-  }
-  if (_selectedContainerIndex == null) {
+        );
+      } catch (e) {
+        print('Error updating total money: $e');
         ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Failed to update total money. Please try again.')),
+        );
+      }
+    }
+    if (_selectedContainerIndex == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select price.'),
           showCloseIcon: true,
@@ -217,7 +221,7 @@ Navigator.of(context).pop();
       );
     }
     if (_controller.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please Enter vehicle number'),
           showCloseIcon: true,
@@ -226,12 +230,14 @@ Navigator.of(context).pop();
         ),
       );
     }
-}
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 225, 215, 206),
         title: AnimatedTextKit(
           animatedTexts: [
             TyperAnimatedText(
@@ -250,7 +256,9 @@ Navigator.of(context).pop();
         centerTitle: true,
       ),
       body: pricingData == null
-          ? const Center(child: CircularProgressIndicator(color: Colors.yellow))
+          ? const Center(
+              child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 3, 3, 3)))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -259,7 +267,7 @@ Navigator.of(context).pop();
                     Container(
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        color: Colors.yellow[100],
+                        color: Color.fromARGB(255, 7, 7, 7),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
@@ -290,7 +298,7 @@ Navigator.of(context).pop();
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
+                    SizedBox(
                       width: MediaQuery.of(context).size.width -
                           48, // Decreases the width by 10 pixels
                       child: TextField(
@@ -300,7 +308,21 @@ Navigator.of(context).pop();
                             : TextInputType.text,
                         decoration: const InputDecoration(
                           hintText: 'Add vehicle number',
-                          border: OutlineInputBorder(),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Colors.black, // Default black border
+                            ),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 2,
+                              color: Color.fromARGB(
+                                  255, 25, 239, 1), // Green border when focused
+                            ),
+                          ),
+                          border:
+                              const OutlineInputBorder(), // This acts as a fallback border if others are not defined
                         ),
                       ),
                     ),
@@ -319,8 +341,11 @@ Navigator.of(context).pop();
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
-                              Color.fromARGB(255, 231, 242, 136),
-                              Color.fromARGB(255, 77, 50, 80)
+                              Color.fromARGB(
+                                  255, 25, 239, 1), 
+                              Color.fromARGB(255, 1, 1, 1),
+                              Color.fromARGB(
+                                  255, 25, 239, 1), 
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -362,11 +387,13 @@ Navigator.of(context).pop();
       child: Container(
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color.fromARGB(255, 225, 215, 206),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? Colors.black : Colors.transparent,
-            width: 1,
+            color: isSelected
+                ? Color.fromARGB(255, 28, 251, 3)
+                : Colors.transparent,
+            width: 2,
           ),
           boxShadow: const [
             BoxShadow(
@@ -382,9 +409,11 @@ Navigator.of(context).pop();
               alignment: Alignment.topRight,
               child: Container(
                 padding: const EdgeInsets.all(5.0),
-                decoration: const BoxDecoration(
-                  color: Colors.yellow,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color.fromARGB(255, 28, 251, 3)
+                      : const Color.fromARGB(165, 250, 249, 248),
+                  borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(0),
                       topRight: Radius.circular(10),
                       bottomLeft: Radius.circular(10)),
@@ -411,7 +440,7 @@ Navigator.of(context).pop();
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 50.0),
+              padding: const EdgeInsets.only(top: 50.0),
               child: Lottie.asset('assets/animations/line.json', repeat: false),
             ),
           ],

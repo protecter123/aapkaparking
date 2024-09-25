@@ -2,7 +2,6 @@ import 'dart:ui'; // For ImageFilter
 import 'package:aapkaparking/Fix.dart';
 import 'package:aapkaparking/bluetoothShowScreen.dart';
 import 'package:aapkaparking/dueIn.dart';
-import 'package:aapkaparking/duelist.dart';
 import 'package:aapkaparking/fpList.dart';
 import 'package:aapkaparking/paas.dart';
 import 'package:aapkaparking/qrScanner.dart';
@@ -207,7 +206,7 @@ class _UserDashState extends State<UserDash> {
               height: 100,
               width: MediaQuery.of(context).size.width *
                   0.5, // Adjust width as needed
-              color: Color.fromARGB(
+              color: const Color.fromARGB(
                   0, 0, 0, 0), // Changed to transparent to detect taps
               child: Center(
                 child: Padding(
@@ -242,7 +241,7 @@ class _UserDashState extends State<UserDash> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => Qrscanner(),
+                  builder: (_) => const Qrscanner(),
                 ),
               );
             },
@@ -250,7 +249,7 @@ class _UserDashState extends State<UserDash> {
               height: 100,
               width: MediaQuery.of(context).size.width *
                   0.49, // Adjust width as needed
-              color: Color.fromARGB(
+              color: const Color.fromARGB(
                   0, 0, 0, 0), // Changed to transparent to detect taps
               child: Center(
                 child: Padding(
@@ -286,7 +285,7 @@ class _UserDashState extends State<UserDash> {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(0),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -331,7 +330,7 @@ class _UserDashState extends State<UserDash> {
                         side: const BorderSide(
                             color: Colors.black), // Black border for "Yes"
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(0),
                         ),
                       ),
                       child: const Text(
@@ -345,15 +344,14 @@ class _UserDashState extends State<UserDash> {
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                            255, 31, 249, 2), // Green background for "No"
+                        backgroundColor:const Color.fromARGB(255, 7, 7, 7), // Green background for "No"
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(0),
                         ),
                       ),
                       child: const Text(
                         'No',
-                        style: TextStyle(color: Colors.black, fontSize: 18),
+                        style: TextStyle(color: Color.fromARGB(255, 254, 254, 254), fontSize: 18),
                       ),
                     ),
                   ],
@@ -375,26 +373,11 @@ class _UserDashState extends State<UserDash> {
         maxHeight: 160, // Keep original height
       ),
       decoration: BoxDecoration(
-        // gradient: const LinearGradient(
-        //   colors: [
-        //     Color(0xFF6DC8F3), // Gradient start
-        //     Color(0xFF73A1F9), // Gradient end
-        //   ],
-        //   begin: Alignment.topLeft,
-        //   end: Alignment.bottomRight,
-        // ),
         borderRadius: BorderRadius.circular(2),
         border: Border.all(
           color: Colors.black,
           width: 1.0,
-        ), // Rounded corners for modern look
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.15), // Subtle shadow
-        //     blurRadius: 10,
-        //     offset: const Offset(0, 8), // Slightly deeper shadow
-        //   ),
-        // ],
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,7 +433,7 @@ class _UserDashState extends State<UserDash> {
                 color: Color.fromARGB(255, 2, 2, 2),
                 size: 15,
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Joined: ${DateFormat('dd MMM yyyy').format((userData['CreatedAt'] as Timestamp).toDate())}',
@@ -544,10 +527,10 @@ class _UserDashState extends State<UserDash> {
                       fit: BoxFit.scaleDown,
                       child: Text(
                         label,
-                        style: GoogleFonts.nunito(
+                        style: GoogleFonts.inconsolata(
                           color: Colors.black87,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 27,
+                          fontWeight: FontWeight.w700,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -577,8 +560,9 @@ class _UserDashState extends State<UserDash> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     shape: BoxShape.rectangle,
-                    borderRadius:
-                        const BorderRadius.only(topRight: Radius.circular(12)),
+                    borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(12),
+                        bottomLeft: Radius.circular(12)),
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -616,7 +600,8 @@ class _UserDashState extends State<UserDash> {
                   decoration: BoxDecoration(
                     shape: BoxShape.rectangle,
                     borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(12)),
+                        bottomLeft: Radius.circular(12),
+                        topRight: Radius.circular(12)),
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -750,7 +735,7 @@ class _UserDashState extends State<UserDash> {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const FaIcon(
+                        FaIcon(
                           FontAwesomeIcons.print,
                           color: Colors.black,
                           size: 50, // Increase icon size
@@ -778,21 +763,10 @@ class _UserDashState extends State<UserDash> {
       width: double.infinity,
       decoration: const BoxDecoration(
         color: Color.fromARGB(0, 225, 215, 206),
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(0),
           bottomRight: Radius.circular(0),
         ),
-        // image: const DecorationImage(
-        //   image: AssetImage('assets/animations/userbackimg2.jpg'),
-        //   fit: BoxFit.cover, // Ensures the image covers the entire area
-        // ),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.2),
-        //     offset: const Offset(0, 5),
-        //     blurRadius: 15,
-        //   ),
-        // ],
       ),
       child: Stack(
         children: [
@@ -801,7 +775,7 @@ class _UserDashState extends State<UserDash> {
             top: 55,
             child: Text(
               'User Dashboard',
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.lora(
                 color: Colors.black,
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
@@ -912,6 +886,7 @@ class _UserDashState extends State<UserDash> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async {
         return await _showExitDialog(context); // Show exit dialog on back press
@@ -931,7 +906,7 @@ class _UserDashState extends State<UserDash> {
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color.fromARGB(255, 234, 77, 255),
+                          Color.fromARGB(255, 234, 77, 255),
                           Color.fromARGB(255, 238, 133, 252),
                         ],
                         begin: Alignment.topLeft,
@@ -1021,16 +996,6 @@ class _UserDashState extends State<UserDash> {
                       future: _fetchUserData(),
                       builder: (context, snapshot) {
                         return _buildUserCard(snapshot.data!);
-                        // if (snapshot.connectionState ==
-                        //     ConnectionState.waiting) {
-                        //   return const CircularProgressIndicator(
-                        //       backgroundColor: Colors.black,
-                        //       color: Colors.white);
-                        // } else if (snapshot.hasData) {
-                        //   return _buildUserCard(snapshot.data!);
-                        // } else {
-                        //   return const Text('Error loading user data');
-                        // }
                       },
                     ),
                   ),
@@ -1042,12 +1007,13 @@ class _UserDashState extends State<UserDash> {
               width: 400,
               height: 160,
             ),
-            Spacer(),
+            const Spacer(),
             Container(
               decoration: BoxDecoration(
-                image: DecorationImage(
+                color: Colors.black,
+                image: const DecorationImage(
                   image: AssetImage(
-                      'assets/animations/background bottom.jpg'), // Background image path
+                      'assets/animations/OIP (4)4.jpeg'), // Background image path
                   fit:
                       BoxFit.cover, // Cover the entire container with the image
                 ),
@@ -1055,13 +1021,14 @@ class _UserDashState extends State<UserDash> {
                   color: Colors.black, // Border color
                   width: 1.0, // Border width (1px)
                 ),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(50), // Rounded top-left corner
                   topRight: Radius.circular(50), // Rounded top-right corner
                 ),
               ),
               height: 420, // Example height, can be adjusted
-              width: MediaQuery.of(context).size.width, // Full screen width
+              width:
+                  MediaQuery.of(context).size.width - 30, // Full screen width
               child: Column(
                 mainAxisAlignment:
                     MainAxisAlignment.end, // Stick content to bottom
@@ -1086,14 +1053,12 @@ class _UserDashState extends State<UserDash> {
                         ),
                         const SizedBox(
                             width: 10), // Space between the logo and text
-                        Container(
-                          child: const Text(
-                            'Aapka Parking \u00A9',
-                            style: TextStyle(
-                              color: Colors.grey, // Text color
-                              fontSize: 20, // Font size
-                              fontWeight: FontWeight.bold, // Bold text
-                            ),
+                        const Text(
+                          'Aapka Parking \u00A9',
+                          style: TextStyle(
+                            color: Colors.grey, // Text color
+                            fontSize: 20, // Font size
+                            fontWeight: FontWeight.bold, // Bold text
                           ),
                         ),
                       ],
