@@ -76,20 +76,13 @@ class _DueState extends State<Pass> {
       backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(0, 253, 216, 53),
-        title: AnimatedTextKit(
-          animatedTexts: [
-            TyperAnimatedText(
-              'All Vehicles',
-              textStyle: GoogleFonts.nunito(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              speed: const Duration(milliseconds: 200),
-            ),
-          ],
-          isRepeatingAnimation: true,
-          repeatForever: true,
+        title: Text(
+          'All Vehicles',
+          style: GoogleFonts.nunito(
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(

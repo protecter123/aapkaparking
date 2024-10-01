@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EditVehicle extends StatefulWidget {
@@ -12,6 +13,156 @@ class EditVehicle extends StatefulWidget {
 }
 
 class _EditVehicleState extends State<EditVehicle> {
+  Future<void> _showEditPricingDialog(String docId, String pricing30,
+      String pricing60, String pricing120, String passPrice) async {
+    final TextEditingController _pricing30Controller =
+        TextEditingController(text: pricing30);
+    final TextEditingController _pricing60Controller =
+        TextEditingController(text: pricing60);
+    final TextEditingController _pricing120Controller =
+        TextEditingController(text: pricing120);
+    final TextEditingController _passPricingController =
+        TextEditingController(text: passPrice);
+    final String vehiclename = docId;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          title: Text(
+            'Edit ${vehiclename.toUpperCase()} Pricing',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildPricingField(
+                  'Edit pricing for 30 minutes', _pricing30Controller),
+              const SizedBox(height: 10),
+              _buildPricingField(
+                  'Edit pricing for 60 minutes', _pricing60Controller),
+              const SizedBox(height: 10),
+              _buildPricingField(
+                  'Edit pricing for 120 minutes', _pricing120Controller),
+              const SizedBox(height: 10),
+              _buildPricingField(
+                  'Edit pricing for Pass', _passPricingController),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog without action
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black, // Black button
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8), // Rectangular shape
+                ),
+              ),
+              onPressed: () async {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false, // Prevent dismissing the dialog
+                  builder: (BuildContext context) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Color.fromARGB(255, 206, 200, 200),
+                        color: Colors.black,
+                      ), // Show loader
+                    );
+                  },
+                );
+                await _updateVehiclePricing(
+                    docId,
+                    _pricing30Controller.text,
+                    _pricing60Controller.text,
+                    _pricing120Controller.text,
+                    _passPricingController.text);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close dialog after saving
+              },
+              child: const Text(
+                'Save Changes',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPricingField(String label, TextEditingController controller) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly
+      ], // Restrict input to numbers only
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(), // Rectangular shape
+      ),
+    );
+  }
+
+  Future<void> _updateVehiclePricing(String docId, String pricing30,
+      String pricing60, String pricing120, String passPrice) async {
+    final phoneNumber = FirebaseAuth.instance.currentUser?.phoneNumber ?? '';
+    await FirebaseFirestore.instance
+        .collection('AllUsers')
+        .doc(phoneNumber)
+        .collection('Vehicles')
+        .where('vehicleName', isEqualTo: docId) // Query by vehicleName
+        .get()
+        .then((querySnapshot) {
+      if (querySnapshot.docs.isNotEmpty) {
+        // Assuming only one document matches, get the first document
+        var docId = querySnapshot.docs.first.id;
+
+        // Now update the document with the found docId
+        FirebaseFirestore.instance
+            .collection('AllUsers')
+            .doc(phoneNumber)
+            .collection('Vehicles')
+            .doc(docId)
+            .update({
+          'Pricing30Minutes': pricing30,
+          'Pricing1Hour': pricing60,
+          'Pricing120Minutes': pricing120,
+          'PassPrice': passPrice,
+        }).then((_) {
+          print('Vehicle pricing updated successfully.');
+        }).catchError((error) {
+          print('Failed to update vehicle pricing: $error');
+        });
+      } else {
+        print('No vehicle found with the given name.');
+      }
+    }).catchError((error) {
+      print('Error fetching vehicle: $error');
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vehicle pricing updated successfully'),
+          duration: Duration(milliseconds: 400),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,6 +269,7 @@ class _EditVehicleState extends State<EditVehicle> {
                                         alignment: Alignment.center,
                                         color: Colors.transparent,
                                         child: const CircularProgressIndicator(
+                                          strokeWidth: 1,
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
                                                   Colors.black), // Loader color
@@ -174,12 +326,29 @@ class _EditVehicleState extends State<EditVehicle> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 90.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.black),
-                          onPressed: () {
-                            _showDeleteConfirmationDialog(vehicle.id);
-                          },
+                        padding: const EdgeInsets.only(bottom: 50.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.black),
+                              onPressed: () {
+                                _showEditPricingDialog(
+                                    vehicle['vehicleName'],
+                                    pricing30Minutes,
+                                    pricing1Hour,
+                                    pricing120Minutes,
+                                    passPrice);
+                              },
+                            ),
+                            IconButton(
+                              icon:
+                                  const Icon(Icons.delete, color: Colors.black),
+                              onPressed: () {
+                                _showDeleteConfirmationDialog(vehicle.id);
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ],

@@ -1,7 +1,9 @@
 import 'package:aapkaparking/Add%20pricing.dart';
 import 'package:aapkaparking/Add%20vehicle.dart';
+import 'package:aapkaparking/AddAdmin.dart';
 import 'package:aapkaparking/Adduser2.dart';
 import 'package:aapkaparking/Edit%20vehicle.dart';
+import 'package:aapkaparking/EditAdmin.dart';
 import 'package:aapkaparking/colection.dart';
 import 'package:aapkaparking/verify.dart';
 import 'package:aapkaparking/viewUser.dart';
@@ -12,6 +14,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -26,8 +29,14 @@ class _AdminPageState extends State<AdminPage> {
   void initState() {
     super.initState();
     _fetchTotalAmount();
+    _loadCachedData();
   }
 
+  String? imageUrl;
+  String? parkingName;
+  String? duemoney;
+  String? fixmoney;
+  String? passmoney;
   Future<void> _fetchTotalAmount() async {
     try {
       // Getting the current user's phone number from Firebase Auth
@@ -71,6 +80,7 @@ class _AdminPageState extends State<AdminPage> {
 
           // Check for individual fields and add them to the total if they exist
           if (data.containsKey('dueMoney')) {
+            duemoney = data['dueMoney'].toString();
             int? dueMoney = int.tryParse(data['dueMoney'].toString());
             if (dueMoney != null) {
               total += dueMoney.toDouble();
@@ -78,6 +88,7 @@ class _AdminPageState extends State<AdminPage> {
           }
 
           if (data.containsKey('fixMoney')) {
+            fixmoney = data['fixMoney'].toString();
             int? fixMoney = int.tryParse(data['fixMoney'].toString());
             if (fixMoney != null) {
               total += fixMoney.toDouble();
@@ -85,6 +96,7 @@ class _AdminPageState extends State<AdminPage> {
           }
 
           if (data.containsKey('passMoney')) {
+            passmoney = data['passMoney'].toString();
             int? passMoney = int.tryParse(data['passMoney'].toString());
             if (passMoney != null) {
               total += passMoney.toDouble();
@@ -279,6 +291,200 @@ class _AdminPageState extends State<AdminPage> {
         false; // Return false if dialog is dismissed
   }
 
+  void showTodayCollectionDialog(BuildContext context, String? fixmoney,
+      String? duemoney, String? passmoney) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+                10), // Rectangular shape with rounded edges
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top Text for Today's Detailed Revenue
+                const Text(
+                  'Today\'s Detailed Revenue',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Row containing the three small containers
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // FIX Container
+                    GestureDetector(
+                      onTap: () {
+                        print('FIX tapped');
+                      },
+                      child: Container(
+                        width: 80, // Fixed width
+                        height: 80, // Fixed height
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black, width: 2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('FIX',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 5),
+                            Text(fixmoney ?? '0',
+                                style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // DUE Container
+                    GestureDetector(
+                      onTap: () {
+                        print('DUE tapped');
+                      },
+                      child: Container(
+                        width: 80, // Fixed width
+                        height: 80, // Fixed height
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black, width: 2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('DUE',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 5),
+                            Text(duemoney ?? '0',
+                                style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // PASS Container
+                    GestureDetector(
+                      onTap: () {
+                        print('PASS tapped');
+                      },
+                      child: Container(
+                        width: 80, // Fixed width
+                        height: 80, // Fixed height
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black, width: 2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('PASS',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 5),
+                            Text(passmoney ?? '0',
+                                style: TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Close Button
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black, // Black background
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(color: Colors.white), // White text
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> fetchAndSaveParkingDetails() async {
+    // Get the current authenticated user's phone number
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String currentUserPhoneNumber =
+          user.phoneNumber ?? ""; // Get phone number from Firebase Auth
+
+      // Firestore document reference for the current user
+      final docRef = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(currentUserPhoneNumber);
+
+      // Fetch parking details from Firestore
+      DocumentSnapshot snapshot = await docRef.get();
+
+      if (snapshot.exists) {
+        // Extract 'ParkingName' and 'ParkingLogo' fields
+        String parkingName = snapshot['ParkingName'];
+        String parkingLogo = snapshot['ParkingLogo'];
+
+        // Save the fetched data in SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cachedParkingName', parkingName);
+        await prefs.setString('cachedParkingLogo', parkingLogo);
+      } else {
+        print('Document does not exist');
+      }
+    } else {
+      print('No user is signed in');
+    }
+  }
+
+  Future<String?> getCachedImageUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('cachedParkingLogo');
+  }
+
+  Future<String?> getCachedParkingName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('cachedParkingName');
+  }
+
+  Future<void> _loadCachedData() async {
+    String? cachedUrl = await getCachedImageUrl();
+    String? cachedName = await getCachedParkingName();
+    setState(() {
+      imageUrl = cachedUrl;
+      parkingName = cachedName;
+    });
+
+    // If image URL or name is not cached, fetch from Firebase
+    if (cachedUrl == null || cachedName == null) {
+      await fetchAndSaveParkingDetails();
+      _loadCachedData(); // Reload cached data after fetching
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -286,7 +492,7 @@ class _AdminPageState extends State<AdminPage> {
         return await _showExitDialog(context); // Show exit dialog on back press
       },
       child: Scaffold(
-        backgroundColor: Color.fromARGB(255, 223, 221, 221),
+        backgroundColor: const Color.fromARGB(255, 223, 221, 221),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(70.0),
           child: AppBar(
@@ -299,7 +505,7 @@ class _AdminPageState extends State<AdminPage> {
               ),
             ),
             elevation: 1,
-            leading: const SizedBox(), // Empty widget to keep title centered
+            //leading: const SizedBox(), // Empty widget to keep title centered
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout),
@@ -315,6 +521,72 @@ class _AdminPageState extends State<AdminPage> {
               ),
             ),
             centerTitle: true,
+            leading: Builder(
+              builder: (context) {
+                return IconButton(
+                  icon: Icon(Icons.menu), // Drawer icon
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+        drawer: Drawer(
+          width: 250,
+          surfaceTintColor: const Color.fromARGB(255, 236, 219, 178),
+          shadowColor: const Color.fromARGB(255, 39, 239, 3),
+          elevation: 45,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              // Custom DrawerHeader with parking logo and name
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 81, 81, 82),
+                ),
+                child: Column(
+                  children: [
+                    if (imageUrl != null)
+                      Image.network(
+                        imageUrl!,
+                        width: 100,
+                        height: 100,
+                      )
+                    else
+                      CircularProgressIndicator(),
+                    if (parkingName != null)
+                      Text(
+                        parkingName!,
+                        style: TextStyle(color: Colors.white),
+                      )
+                    else
+                      Text("Loading..."),
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: const Text('Add Admin details'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AddAdmin()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Admin details'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  EditAdmin(imgUrl:imageUrl,Name:parkingName)),
+                  );
+                },
+              ),
+            ],
           ),
         ),
         body: Padding(
@@ -322,99 +594,110 @@ class _AdminPageState extends State<AdminPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 150,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(2),
-                  color: Colors.yellow[50], // Light yellow background color
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-                      spreadRadius: 3,
-                      blurRadius: 7,
-                      offset: Offset(0, 3), // Changes position of shadow
+              GestureDetector(
+                onTap: () {
+                  showTodayCollectionDialog(
+                      context, fixmoney, duemoney, passmoney);
+                },
+                child: Container(
+                  height: 150,
+                  width: double.infinity, // Ensures it takes the full width
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: Colors.yellow[50], // Light yellow background color
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 3,
+                        blurRadius: 7,
+                        offset:
+                            const Offset(0, 3), // Changes position of shadow
+                      ),
+                    ],
+                    image: const DecorationImage(
+                      image: AssetImage(
+                          'assets/animations/Adminback.jpg'), // Background image asset
+                      fit: BoxFit.cover,
                     ),
-                  ],
-                  image: const DecorationImage(
-                    image: AssetImage(
-                        'assets/animations/Adminback.jpg'), // Background image asset
-                    fit: BoxFit.cover,
                   ),
-                ),
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Today\'s Revenue',
-                          style: GoogleFonts.libreBaskerville(
-                            fontSize: 23,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 2, 2,
-                                2), // Adjust color based on background
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Today\'s Revenue',
+                            style: GoogleFonts.libreBaskerville(
+                              fontSize: 23,
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(255, 2, 2,
+                                  2), // Adjust color based on background
+                            ),
+                            overflow:
+                                TextOverflow.ellipsis, // Prevents overflow
                           ),
-                          overflow: TextOverflow.ellipsis, // Prevents overflow
-                        ),
-                        const CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Colors.transparent,
-                          backgroundImage: AssetImage(
-                              'assets/animations/Rupee-Sign-Money-PNG.png'), // Circle avatar with image
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 25,
-                    ), // Pushes content to the bottom
-                    Container(
-                      width: 400,
-                      height: 40,
-                      decoration: BoxDecoration(
+                          const CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.transparent,
+                            backgroundImage: AssetImage(
+                                'assets/animations/Rupee-Sign-Money-PNG.png'), // Circle avatar with image
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                          height: 25), // Pushes content to the bottom
+                      Container(
+                        width:
+                            double.infinity, // Ensures it takes the full width
+                        height: 40,
+                        decoration: const BoxDecoration(
                           color: Color.fromARGB(140, 255, 255, 255),
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 18.0, right: 18),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '₹ ${_totalAmount.toStringAsFixed(1)}',
-                              style: const TextStyle(
-                                fontSize: 28, // Larger font size for emphasis
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 8, 8,
-                                    8), // Colorful text for total amount
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '₹ ${_totalAmount.toStringAsFixed(1)}',
+                                style: const TextStyle(
+                                  fontSize: 28, // Larger font size for emphasis
+                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromARGB(255, 8, 8,
+                                      8), // Colorful text for total amount
+                                ),
                               ),
-                            ),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.calendar_month, // Colorful icon
-                                  color: const Color.fromARGB(255, 7, 7, 7),
-                                  size: 16,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  DateFormat('dd-MMM').format(DateTime
-                                      .now()), // Formats the date as dd-MMM
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color.fromARGB(255, 1, 1, 1),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_month, // Colorful icon
+                                    color: Color.fromARGB(255, 7, 7, 7),
+                                    size: 16,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    DateFormat('dd-MMM').format(DateTime
+                                        .now()), // Formats the date as dd-MMM
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color.fromARGB(255, 1, 1, 1),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+
               const SizedBox(
                 height: 10,
               ),

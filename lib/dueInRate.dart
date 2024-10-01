@@ -86,6 +86,7 @@ class _DuerateState extends State<Duerate> {
   }
 
   void _generateReceipt() async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     if (_selectedContainerIndex != null &&
         _controller.text.isNotEmpty &&
         pricingData != null) {
@@ -179,7 +180,7 @@ class _DuerateState extends State<Duerate> {
       } catch (e) {
         print('Error updating total money: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+         const SnackBar(
               content: Text('Failed to update total money. Please try again.')),
         );
       }
@@ -192,28 +193,19 @@ class _DuerateState extends State<Duerate> {
             vehicleNumber: _controller.text,
             rateType: selectedRate,
             price: price,
-            page: 'dueIn',
+            page: 'DueIn',
           ),
         ),
       );
     }
-    if (_selectedContainerIndex == null) {
+    if (_selectedContainerIndex == null || _controller.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select price.'),
+          content: Text('Please select price and Enter num.'),
           showCloseIcon: true,
           closeIconColor: Colors.white,
           backgroundColor: Color.fromARGB(255, 10, 10, 10),
-        ),
-      );
-    }
-    if (_controller.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please Enter vehicle number'),
-          showCloseIcon: true,
-          closeIconColor: Colors.white,
-          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+          duration: const Duration(milliseconds: 300),
         ),
       );
     }
@@ -225,20 +217,13 @@ class _DuerateState extends State<Duerate> {
       backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 225, 215, 206),
-        title: AnimatedTextKit(
-          animatedTexts: [
-            TyperAnimatedText(
-              'Parking Rates',
-              textStyle: GoogleFonts.nunito(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              speed: const Duration(milliseconds: 200),
-            ),
-          ],
-          isRepeatingAnimation: true,
-          repeatForever: true,
+        title: Text(
+          'Parking Rates',
+          style: GoogleFonts.nunito(
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -307,8 +292,8 @@ class _DuerateState extends State<Duerate> {
                           focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(
                               width: 2,
-                              color: Color.fromARGB(
-                                  255, 25, 239, 1), // Green border when focused
+                              color: Color.fromARGB(255, 207, 239,
+                                  1), // Green border when focused
                             ),
                           ),
                           border:
@@ -331,9 +316,9 @@ class _DuerateState extends State<Duerate> {
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
-                              Color.fromARGB(255, 25, 239, 1),
+                              Color.fromARGB(255, 207, 239, 1),
                               Color.fromARGB(255, 1, 1, 1),
-                              Color.fromARGB(255, 25, 239, 1),
+                              Color.fromARGB(255, 207, 239, 1),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -379,7 +364,7 @@ class _DuerateState extends State<Duerate> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? Color.fromARGB(255, 28, 251, 3)
+                ? Color.fromARGB(255, 207, 239, 1)
                 : Colors.transparent,
             width: 2,
           ),
@@ -399,8 +384,8 @@ class _DuerateState extends State<Duerate> {
                 padding: const EdgeInsets.all(5.0),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Color.fromARGB(255, 28, 251, 3)
-                      : Color.fromARGB(165, 250, 249, 248),
+                      ?const Color.fromARGB(255, 207, 239, 1)
+                      :const Color.fromARGB(165, 250, 249, 248),
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(0),
                       topRight: Radius.circular(10),

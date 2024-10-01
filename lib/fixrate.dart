@@ -208,23 +208,14 @@ class _FixirateState extends State<Fixirate> {
         );
       }
     }
-    if (_selectedContainerIndex == null) {
+    if (_selectedContainerIndex == null || _controller.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select price.'),
+          content: Text('Please select price and Enter num.'),
           showCloseIcon: true,
           closeIconColor: Colors.white,
           backgroundColor: Color.fromARGB(255, 10, 10, 10),
-        ),
-      );
-    }
-    if (_controller.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please Enter vehicle number'),
-          showCloseIcon: true,
-          closeIconColor: Colors.white,
-          backgroundColor: Color.fromARGB(255, 10, 10, 10),
+          duration: const Duration(milliseconds: 300),
         ),
       );
     }
@@ -236,20 +227,13 @@ class _FixirateState extends State<Fixirate> {
       backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 225, 215, 206),
-        title: AnimatedTextKit(
-          animatedTexts: [
-            TyperAnimatedText(
-              'Parking Rates',
-              textStyle: GoogleFonts.nunito(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              speed: const Duration(milliseconds: 200),
-            ),
-          ],
-          isRepeatingAnimation: true,
-          repeatForever: true,
+        title: Text(
+          'Parking Rates',
+          style: GoogleFonts.nunito(
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -315,7 +299,7 @@ class _FixirateState extends State<Fixirate> {
                             focusedBorder: const OutlineInputBorder(
                               borderSide: BorderSide(
                                 width: 2,
-                                color: Color.fromARGB(255, 25, 239,
+                                color: Color.fromARGB(255, 207, 239,
                                     1), // Green border when focused
                               ),
                             ),
@@ -338,11 +322,9 @@ class _FixirateState extends State<Fixirate> {
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
-                              Color.fromARGB(
-                                  255, 25, 239, 1), 
+                              Color.fromARGB(255, 207, 239, 1),
                               Color.fromARGB(255, 1, 1, 1),
-                              Color.fromARGB(
-                                  255, 25, 239, 1),
+                              Color.fromARGB(255, 207, 239, 1),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -388,7 +370,7 @@ class _FixirateState extends State<Fixirate> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? Color.fromARGB(255, 28, 251, 3)
+                ? Color.fromARGB(255, 207, 239, 1)
                 : Colors.transparent,
             width: 2,
           ),
@@ -408,7 +390,7 @@ class _FixirateState extends State<Fixirate> {
                 padding: const EdgeInsets.all(5.0),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Color.fromARGB(255, 28, 251, 3)
+                      ? Color.fromARGB(255, 207, 239, 1)
                       : Color.fromARGB(165, 250, 249, 248),
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(0),

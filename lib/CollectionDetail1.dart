@@ -108,99 +108,107 @@ class _CollectionDetails1State extends State<CollectionDetails1> {
 
   // Method to build a single list tile for each entry
   Widget _buildEntryTile(DocumentSnapshot entry) {
-  // Extract data from the entry document
-  var entryTime = (entry['entryTime'] as Timestamp).toDate();
-  var entryType = entry['entryType'];
-  var selectedRate = entry['selectedRate'];
-  var selectedTime = entry['selectedTime'];
-  var vehicleNumber = entry['vehicleNumber'];
+    // Extract data from the entry document
+    var entryTime = (entry['entryTime'] as Timestamp).toDate();
+    var entryType = entry['entryType'];
+    var selectedRate = entry['selectedRate'];
+    var selectedTime = entry['selectedTime'];
+    var vehicleNumber = entry['vehicleNumber'];
 
-  // Format the date and time to include seconds
-  String formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(entryTime);
+    // Format the date and time to include seconds
+    String formattedDate =
+        DateFormat('d MMM yyyy').format(entryTime); // e.g., 29 Sept 2024
+    String formattedTime =
+        DateFormat('h a').format(entryTime); // e.g., 10 AM or 10 PM
 
-  return Card(
-    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(0), // Sharp edges
-      side: BorderSide(color: Colors.black, width: 1), // Black border
-    ),
-    elevation: 0, // No shadow
-    color: Colors.transparent, // Transparent background
-    child: Stack(
+    String formattedDateTime =
+        '$formattedDate, $formattedTime'; // e.g., 29 Sept 2024, 10 AM
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(0), // Sharp edges
+        side: BorderSide(color: Colors.black, width: 1), // Black border
+      ),
+      elevation: 0, // No shadow
+      color: Colors.transparent, // Transparent background
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 4.0),
+                      color: Colors.black,
+                      child: Text(
+                        entryType,
+                        style: GoogleFonts.roboto(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 4.0),
+                      color: Colors.black,
+                      child: Text(
+                        vehicleNumber,
+                        style: GoogleFonts.roboto(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildDetailRow(
+                  icon: Icons.access_time,
+                  text: 'Entry Time: $formattedDateTime',
+                ),
+                const SizedBox(height: 10),
+                _buildDetailRow(
+                  icon: Icons.attach_money,
+                  text: 'Selected Rate: $selectedRate',
+                ),
+                const SizedBox(height: 10),
+                _buildDetailRow(
+                  icon: Icons.timer,
+                  text: 'Selected Time: $selectedTime',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Helper method to build a row with an icon and text
+  Widget _buildDetailRow({required IconData icon, required String text}) {
+    return Row(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    color: Colors.black,
-                    child: Text(
-                      entryType,
-                      style: GoogleFonts.roboto(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    color: Colors.black,
-                    child: Text(
-                      vehicleNumber,
-                      style: GoogleFonts.roboto(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              _buildDetailRow(
-                icon: Icons.access_time,
-                text: 'Entry Time: $formattedDateTime',
-              ),
-              const SizedBox(height: 10),
-              _buildDetailRow(
-                icon: Icons.attach_money,
-                text: 'Selected Rate: $selectedRate',
-              ),
-              const SizedBox(height: 10),
-              _buildDetailRow(
-                icon: Icons.timer,
-                text: 'Selected Time: $selectedTime',
-              ),
-            ],
+        Icon(icon, color: Colors.black),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.roboto(
+              fontSize: 16,
+              color: Colors.black,
+            ),
           ),
         ),
       ],
-    ),
-  );
-}
-
-// Helper method to build a row with an icon and text
-Widget _buildDetailRow({required IconData icon, required String text}) {
-  return Row(
-    children: [
-      Icon(icon, color: Colors.black),
-      const SizedBox(width: 10),
-      Expanded(
-        child: Text(
-          text,
-          style: GoogleFonts.roboto(
-            fontSize: 16,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    ],
-  );
-}
+    );
+  }
 }

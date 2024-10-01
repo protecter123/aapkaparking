@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +21,7 @@ class _AdduserState extends State<Adduser2> {
 
   // Function to save user data
   void saveUser() async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final String phoneNumber = '+91' + phoneController.text.trim();
     final String currentAdminId =
         FirebaseAuth.instance.currentUser?.phoneNumber ?? '';
@@ -29,21 +29,50 @@ class _AdduserState extends State<Adduser2> {
     if (phoneController.text.isEmpty && nameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide  name and phone number.')),
+        const SnackBar(
+            content: Text('please provide  name and phone number.'),
+            duration: const Duration(milliseconds: 300)),
       );
       return;
     }
     if (phoneController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide Phone number also.')),
+        const SnackBar(
+          content: Text('please provide Phone number also.'),
+          duration: const Duration(milliseconds: 300),
+        ),
       );
       return;
     }
+
     if (nameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide name also.')),
+        const SnackBar(
+          content: Text('please provide name also.'),
+          duration: const Duration(milliseconds: 300),
+        ),
+      );
+      return;
+    }
+    if (phoneController.text.length < 10) {
+      // Handle validation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please provide a valid phone number of 10 digit.'),
+          duration: const Duration(milliseconds: 300),
+        ),
+      );
+      return;
+    }
+    if (phoneController.text.startsWith(RegExp(r'[0-6]'))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Phone number cannot start with 0, 1, 2, 3, 4, 5, or 6. Please provide a valid phone number.'),
+          duration: Duration(milliseconds: 400),
+        ),
       );
       return;
     }
@@ -69,12 +98,15 @@ class _AdduserState extends State<Adduser2> {
       );
       return;
     }
-showDialog(
+    showDialog(
       context: context,
       barrierDismissible: false, // Prevent dismissing the dialog
       builder: (BuildContext context) {
         return const Center(
-          child: CircularProgressIndicator(backgroundColor:Color.fromARGB(255, 206, 200, 200),color: Colors.black,), // Show loader
+          child: CircularProgressIndicator(
+            backgroundColor: Color.fromARGB(255, 206, 200, 200),
+            color: Colors.black,
+          ), // Show loader
         );
       },
     );
@@ -98,7 +130,7 @@ showDialog(
           .set(UserData);
 
       // Show success dialog
-       Navigator.of(context).pop();
+      Navigator.of(context).pop();
       _showSuccessDialog();
 
       phoneController.clear();
@@ -112,7 +144,7 @@ showDialog(
       );
     }
   }
-     
+
   // Function to show success dialog
   void _showSuccessDialog() {
     showDialog(
@@ -285,7 +317,7 @@ showDialog(
                                 style: GoogleFonts.notoSansHanunoo(
                                     color: const Color.fromARGB(255, 5, 5, 5)),
                               )),
-                              SizedBox(
+                              const SizedBox(
                                 height: 5,
                               ),
                               TextField(
@@ -347,7 +379,7 @@ showDialog(
                                 style: GoogleFonts.notoSansHanunoo(
                                     color: const Color.fromARGB(255, 5, 5, 5)),
                               )),
-                              SizedBox(
+                              const SizedBox(
                                 height: 5,
                               ),
                               TextField(

@@ -25,65 +25,101 @@ class _AfterScanState extends State<AfterScan> {
   String exceededTime = "";
   String finalAmount = "";
   BluetoothManager bluetoothManager = BluetoothManager();
-
+  String? parkingname;
   @override
   void initState() {
     super.initState();
+    fetchParkingNameFromFirestore();
     fetchData();
     dueOutTime = formatDateTime(DateTime.now());
   }
- void saveData() async {
-  try {
-    // Retrieve adminPhoneNumber from SharedPreferences
+
+  Future<String?> fetchParkingNameFromFirestore() async {
+    // Retrieve 'AdminNum' from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? adminPhoneNumber = prefs.getString('AdminNum');
+    String? adminNum =
+        prefs.getString('AdminNum'); // Get AdminNum from preferences
 
-    // If adminPhoneNumber is null, throw an error or handle it accordingly
-    if (adminPhoneNumber == null) {
-      print('Error: Admin phone number is missing');
-      return;
+    if (adminNum != null && adminNum.isNotEmpty) {
+      // Reference to the document in Firestore
+      final docRef =
+          FirebaseFirestore.instance.collection('AllUsers').doc(adminNum);
+
+      // Fetch the document from Firestore
+      DocumentSnapshot snapshot = await docRef.get();
+
+      if (snapshot.exists) {
+        // Extract 'ParkingName' field from the document
+        String parkingName = snapshot['ParkingName'];
+        setState(() {
+          parkingname = parkingName;
+        });
+        return parkingName; // Return the ParkingName
+      } else {
+        print('Document does not exist');
+        return null;
+      }
+    } else {
+      print('AdminNum not found in SharedPreferences');
+      return null;
     }
-
-    // Get the current user
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    String currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
-
-    // Format today's date as yyyy-MM-dd
-    String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    // Reference to the MoneyCollection -> Today's Date -> vehicleEntry subcollection
-    CollectionReference vehicleEntryRef = FirebaseFirestore.instance
-        .collection('AllUsers')
-        .doc(adminPhoneNumber)
-        .collection('Users')
-        .doc(currentUserPhoneNumber)
-        .collection('MoneyCollection')
-        .doc(formattedDate) // Document for today's date
-        .collection('vehicleEntry');
-
-    // Generate a random document ID for this entry
-    String docId = Random().nextInt(1000000).toString();
-
-    // Data to save
-    Map<String, dynamic> dataToSave = {
-      'type': 'Due',
-      'dueInTime': dueInTime,
-      'dueOutTime': dueOutTime,
-      'dueInRate': dueInRate,
-      'timeGiven': timeGiven,
-      'exceededTime': timeExceeded ? exceededTime : '0', // If timeExceeded is false, save 0
-      'finalAmount': finalAmount,
-      'vehicleNumber':widget.vehicleNumber 
-    };
-
-    // Save the data to the vehicleEntry subcollection
-    await vehicleEntryRef.doc(docId).set(dataToSave);
-
-    print('Data saved successfully to Firestore');
-  } catch (e) {
-    print('Error saving data: $e');
   }
-}
+
+  void saveData() async {
+    try {
+      // Retrieve adminPhoneNumber from SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? adminPhoneNumber = prefs.getString('AdminNum');
+
+      // If adminPhoneNumber is null, throw an error or handle it accordingly
+      if (adminPhoneNumber == null) {
+        print('Error: Admin phone number is missing');
+        return;
+      }
+
+      // Get the current user
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      String currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+
+      // Format today's date as yyyy-MM-dd
+      String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      // Reference to the MoneyCollection -> Today's Date -> vehicleEntry subcollection
+      CollectionReference vehicleEntryRef = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(adminPhoneNumber)
+          .collection('Users')
+          .doc(currentUserPhoneNumber)
+          .collection('MoneyCollection')
+          .doc(formattedDate) // Document for today's date
+          .collection('vehicleEntry');
+
+      // Generate a random document ID for this entry
+      String docId = Random().nextInt(1000000).toString();
+
+      // Data to save
+      Map<String, dynamic> dataToSave = {
+        'type': 'Due',
+        'dueInTime': dueInTime,
+        'dueOutTime': dueOutTime,
+        'dueInRate': dueInRate,
+        'timeGiven': timeGiven,
+        'exceededTime': timeExceeded
+            ? exceededTime
+            : '0', // If timeExceeded is false, save 0
+        'finalAmount': finalAmount,
+        'vehicleNumber': widget.vehicleNumber
+      };
+
+      // Save the data to the vehicleEntry subcollection
+      await vehicleEntryRef.doc(docId).set(dataToSave);
+
+      print('Data saved successfully to Firestore');
+    } catch (e) {
+      print('Error saving data: $e');
+    }
+  }
+
   Future<void> fetchData() async {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
@@ -178,49 +214,48 @@ class _AfterScanState extends State<AfterScan> {
   }
 
   Future<void> printReceipt() async {
-    
-      final printer = bluetoothManager.printer;
+    final printer = bluetoothManager.printer;
 
-      // Printing Receipt Header
-      printer.printNewLine();
-      printer.printCustom(
-          'Receipt Details', 2, 1); // 2: Font size, 1: Center aligned
-      printer.printNewLine();
-
-      // Printing Due In details
-      printer.printCustom(
-          "Due In", 1, 0); // 1: Normal font size, 0: Left aligned
-      printer.printNewLine();
-      printer.printCustom("Vehicle No.: ${widget.vehicleNumber}", 1, 0);
-      printer.printCustom("Due In Time: $dueInTime", 1, 0);
-      printer.printCustom("Due In Rate: ₹$dueInRate", 1, 0);
-      printer.printCustom("Time Given: $timeGiven minutes", 1, 0);
-      printer.printNewLine();
-
-      // Printing Due Out details
-      printer.printCustom(
-          "Due Out", 1, 0); // 1: Normal font size, 0: Left aligned
-      printer.printNewLine();
-      printer.printCustom("Current Time: $dueOutTime", 1, 0);
-      printer.printNewLine();
-
-      // Printing Final Amount
-      printer.printCustom(
-          "Amount to Pay", 2, 1); // 2: Font size, 1: Center aligned
-      printer.printNewLine();
-      printer.printCustom("Rs$finalAmount", 2,
-          1); // Centered and larger font for the final amount
-      if (timeExceeded) {
+    // Printing Receipt Header
+    printer.printNewLine();
+    printer.printCustom(
+        'Receipt Details', 2, 1); // 2: Font size, 1: Center aligned
+    printer.printNewLine();
+printer.printCustom(
+        '$parkingname', 2, 1); 
         printer.printNewLine();
-        printer.printCustom("Time Exceeded: $exceededTime", 1, 0);
-      }
-      printer.printNewLine();
+    // Printing Due In details
+    printer.printCustom("Due In", 1, 1); // 1: Normal font size, 0: Left aligned
+    printer.printNewLine();
+    printer.printCustom("Vehicle No.: ${widget.vehicleNumber}", 1, 1);
+    printer.printCustom("Due In Time: $dueInTime", 1, 1);
+    printer.printCustom("Due In Rate: Rs $dueInRate", 1, 1);
+    printer.printCustom("Time Given: $timeGiven minutes", 1, 1);
+    printer.printNewLine();
 
-      // Printing Footer
-      printer.printCustom('Thank you, Lucky Road!', 1, 1);
+    // Printing Due Out details
+    printer.printCustom(
+        "Due Out", 1, 1); // 1: Normal font size, 0: Left aligned
+    printer.printNewLine();
+    printer.printCustom("Current Time: $dueOutTime", 1, 1);
+    printer.printNewLine();
+
+    // Printing Final Amount
+    printer.printCustom(
+        "Amount to Pay", 2, 1); // 2: Font size, 1: Center aligned
+    printer.printNewLine();
+    printer.printCustom("Rs $finalAmount", 2,
+        1); // Centered and larger font for the final amount
+    if (timeExceeded) {
       printer.printNewLine();
-      printer.paperCut(); // Cut the paper after printing
-  
+      printer.printCustom("Time Exceeded: $exceededTime", 1, 1);
+    }
+    printer.printNewLine();
+
+    // Printing Footer
+    printer.printCustom('Thank you, Lucky Road!', 1, 1);
+    printer.printNewLine();
+    printer.paperCut(); // Cut the paper after printing
   }
 
   @override

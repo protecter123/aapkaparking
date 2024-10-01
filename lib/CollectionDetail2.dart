@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class CollectionDetail2 extends StatefulWidget {
   final String title;
@@ -108,7 +109,7 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
   // Method to build a single list tile for each entry
   Widget _buildEntryTile(DocumentSnapshot entry) {
     // Extract data from the entry document
-   // var dueInRate = entry.get('dueInRate');
+    // var dueInRate = entry.get('dueInRate');
     var dueInTime = entry.get('dueInTime');
     var dueOutTime = entry.get('dueOutTime');
     var exceededTime = entry.get('exceededTime');
@@ -117,6 +118,19 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
     var type = entry.get('type');
     var vehicleNumber = entry.get('vehicleNumber');
 
+    DateTime dueInDateTime = DateFormat('d-M-yyyy HH:mm').parse(dueInTime);
+    DateTime dueOutDateTime = DateFormat('d-M-yyyy HH:mm').parse(dueOutTime);
+
+    // Format the DateTime to '21 Sept 2024' and '10 AM/PM'
+    String formattedDueInDate =
+        DateFormat('d MMM yyyy').format(dueInDateTime); // e.g., 21 Sept 2024
+    String formattedDueInTime =
+        DateFormat('h a').format(dueInDateTime); // e.g., 10 AM
+
+    String formattedDueOutDate =
+        DateFormat('d MMM yyyy').format(dueOutDateTime); // e.g., 21 Sept 2024
+    String formattedDueOutTime =
+        DateFormat('h a').format(dueOutDateTime); // e.g., 6 PM
     // // Ensure correct data types
     // String formattedDueInTime = '';
     // String formattedDueOutTime = '';
@@ -180,12 +194,13 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
                 const SizedBox(height: 10),
                 _buildDetailRow(
                   icon: Icons.access_time,
-                  text: 'Due In Time: $dueInTime',
+                  text: 'Due In Time: $formattedDueInDate,$formattedDueInTime',
                 ),
                 const SizedBox(height: 10),
                 _buildDetailRow(
                   icon: Icons.access_time,
-                  text: 'Due Out Time: $dueOutTime',
+                  text:
+                      'Due Out Time: $formattedDueOutDate, $formattedDueOutTime',
                 ),
                 const SizedBox(height: 10),
                 _buildDetailRow(

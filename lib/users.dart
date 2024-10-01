@@ -104,8 +104,8 @@ class _UserDashState extends State<UserDash> {
                           });
                         }
                       },
-                      activeColor: const Color.fromARGB(255, 235, 197, 103),
-                      checkColor: Colors.black,
+                      activeColor: Color.fromARGB(255, 6, 2, 133),
+                      checkColor: const Color.fromARGB(255, 249, 249, 249),
                     ),
                     const SizedBox(height: 8),
 
@@ -126,8 +126,8 @@ class _UserDashState extends State<UserDash> {
                           });
                         }
                       },
-                      activeColor: Colors.yellow.shade700,
-                      checkColor: Colors.black,
+                      activeColor: Color.fromARGB(255, 6, 2, 133),
+                      checkColor: const Color.fromARGB(255, 249, 249, 249),
                     ),
                     const SizedBox(height: 24),
 
@@ -141,7 +141,7 @@ class _UserDashState extends State<UserDash> {
                         Navigator.of(context).pop(); // Close the dialog
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.yellow.shade700,
+                        backgroundColor: Color.fromARGB(255, 6, 2, 133),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -152,7 +152,7 @@ class _UserDashState extends State<UserDash> {
                         style: GoogleFonts.nunito(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: Color.fromARGB(255, 250, 251, 251),
                         ),
                       ),
                     ),
@@ -187,7 +187,7 @@ class _UserDashState extends State<UserDash> {
     return Container(
       height: 100,
       decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 255, 254, 254),
+        color: Color.fromARGB(187, 73, 67, 240),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
@@ -213,7 +213,8 @@ class _UserDashState extends State<UserDash> {
                   padding: const EdgeInsets.only(left: 60.0),
                   child: Row(
                     children: [
-                      const Icon(Icons.arrow_downward, color: Colors.black),
+                      const Icon(Icons.arrow_downward,
+                          color: Color.fromARGB(255, 255, 255, 255)),
                       const SizedBox(width: 10),
                       FittedBox(
                         fit: BoxFit.scaleDown,
@@ -221,7 +222,7 @@ class _UserDashState extends State<UserDash> {
                           'Due In',
                           style: GoogleFonts.nunitoSans(
                             fontSize: 20,
-                            color: Colors.black,
+                            color: Color.fromARGB(255, 255, 255, 255),
                           ),
                         ),
                       ),
@@ -234,7 +235,7 @@ class _UserDashState extends State<UserDash> {
           Container(
             height: 50,
             width: 1,
-            color: Colors.yellow,
+            color: Color.fromARGB(255, 51, 255, 0),
           ),
           GestureDetector(
             onTap: () {
@@ -256,7 +257,8 @@ class _UserDashState extends State<UserDash> {
                   padding: const EdgeInsets.only(left: 40.0),
                   child: Row(
                     children: [
-                      const Icon(Icons.arrow_upward, color: Colors.black),
+                      const Icon(Icons.arrow_upward,
+                          color: Color.fromARGB(255, 255, 255, 255)),
                       const SizedBox(width: 10),
                       FittedBox(
                         fit: BoxFit.scaleDown,
@@ -264,7 +266,7 @@ class _UserDashState extends State<UserDash> {
                           'Due Out',
                           style: GoogleFonts.nunitoSans(
                             fontSize: 20,
-                            color: Colors.black,
+                            color: Color.fromARGB(255, 255, 255, 255),
                           ),
                         ),
                       ),
@@ -344,14 +346,17 @@ class _UserDashState extends State<UserDash> {
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:const Color.fromARGB(255, 7, 7, 7), // Green background for "No"
+                        backgroundColor: const Color.fromARGB(
+                            255, 7, 7, 7), // Green background for "No"
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(0),
                         ),
                       ),
                       child: const Text(
                         'No',
-                        style: TextStyle(color: Color.fromARGB(255, 254, 254, 254), fontSize: 18),
+                        style: TextStyle(
+                            color: Color.fromARGB(255, 254, 254, 254),
+                            fontSize: 18),
                       ),
                     ),
                   ],
@@ -367,124 +372,155 @@ class _UserDashState extends State<UserDash> {
   Widget _buildUserCard(Map<String, dynamic> userData) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 0),
-      padding: const EdgeInsets.only(left: 30.0, right: 30, top: 0, bottom: 0),
+      padding: const EdgeInsets.only(
+          left: 20.0, right: 20.0, top: 10.0, bottom: 10.0),
       constraints: const BoxConstraints(
-        maxWidth: 450, // Keep original width
-        maxHeight: 160, // Keep original height
+        maxWidth: 450, // Maintain max width
+        maxHeight: 160, // Maintain max height
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(2),
-        border: Border.all(
-          color: Colors.black,
-          width: 1.0,
-        ),
+        borderRadius: BorderRadius.circular(8),
+        color: Color.fromARGB(24, 0, 0, 0), // Optional: Set background color
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          // Greeting Row
-          Row(children: [
-            Expanded(
-              child: Text(
-                '${_getGreeting()}, ${userData['userName'] ?? 'User'}',
-                style: GoogleFonts.poppins(
-                  color: const Color.fromARGB(255, 1, 1, 1),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Lottie.network(
-                'https://lottie.host/f5b61010-8baf-4e9a-8fdf-2a6180a98fec/xsQlisfFJA.json', // Replace with your chosen Lottie animation URL
-                fit: BoxFit.cover,
-                height: 78,
-                width: 85),
-          ]),
-          const SizedBox(height: 10),
-          // Phone Number Row
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const FaIcon(
-                FontAwesomeIcons.phoneAlt, // Colorful phone icon
-                color: Color.fromARGB(255, 19, 19, 19),
-                size: 15,
-              ),
-              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  'Phone no.: ${userData['uid'] ?? ''}',
-                  style: GoogleFonts.poppins(
-                    color: const Color.fromARGB(179, 37, 37, 37),
-                    fontSize: 15,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Greeting Row
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${_getGreeting()}',
+                        style: GoogleFonts.poppins(
+                          color: const Color.fromARGB(255, 251, 251, 251),
+                          fontSize: 20, // Bigger font for greeting
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                        height: 5), // Space between greeting and name
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${userData['userName'] ?? 'User'}',
+                        style: GoogleFonts.lora(
+                          color: const Color.fromARGB(255, 251, 251, 251),
+                          fontSize: 18, // Different font style for name
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                        height: 10), // Space between name and phone number
+                    // Phone Number Row
+                    Row(
+                      children: [
+                        const FaIcon(
+                          FontAwesomeIcons.phoneAlt,
+                          color: Color.fromARGB(255, 254, 253, 253),
+                          size: 15,
+                        ),
+                        const SizedBox(width: 10),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Phone no.: ${userData['uid'] ?? ''}',
+                            style: GoogleFonts.poppins(
+                              color: const Color.fromARGB(196, 248, 248, 248),
+                              fontSize: 15,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                        height:
+                            5), // Space between phone number and joined date
+                    // Join Date Row
+                    Row(
+                      children: [
+                        const FaIcon(
+                          FontAwesomeIcons.calendarAlt,
+                          color: Color.fromARGB(255, 251, 250, 250),
+                          size: 15,
+                        ),
+                        const SizedBox(width: 10),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Joined: ${DateFormat('dd MMM yyyy').format((userData['CreatedAt'] as Timestamp).toDate())}',
+                            style: GoogleFonts.poppins(
+                              color: const Color.fromARGB(195, 247, 246, 246),
+                              fontSize: 15,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Lottie Animation on the right side
+              SizedBox(
+                height: 100, // Adjust height as needed
+                width: 100, // Adjust width as needed
+                child: Lottie.network(
+                  'https://lottie.host/f5b61010-8baf-4e9a-8fdf-2a6180a98fec/xsQlisfFJA.json',
+                  fit: BoxFit.cover,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 10),
-          // Join Date Row
-          Row(
-            children: [
-              const FaIcon(
-                FontAwesomeIcons.calendarAlt, // Colorful calendar icon
-                color: Color.fromARGB(255, 2, 2, 2),
-                size: 15,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Joined: ${DateFormat('dd MMM yyyy').format((userData['CreatedAt'] as Timestamp).toDate())}',
-                  style: GoogleFonts.poppins(
-                    color: const Color.fromARGB(179, 37, 37, 37),
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildGridContainer(BuildContext context, String label, Color color,
-      VoidCallback onTap, String Blocknum) {
+      VoidCallback onTap, String Blocknum, String label2, String animation) {
     // Determine border radius based on Blocknum
     BorderRadius borderRadius;
     switch (Blocknum) {
       case '1': // Top-left rounded
         borderRadius = const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.zero,
-          bottomLeft: Radius.zero,
+          topLeft: Radius.zero,
+          topRight: Radius.circular(12),
+          bottomLeft: Radius.circular(12),
           bottomRight: Radius.zero,
         );
         break;
       case '2': // Top-right rounded
         borderRadius = const BorderRadius.only(
-          topRight: Radius.circular(12),
-          topLeft: Radius.zero,
+          topRight: Radius.zero,
+          topLeft: Radius.circular(12),
           bottomLeft: Radius.zero,
-          bottomRight: Radius.zero,
+          bottomRight: Radius.circular(12),
         );
         break;
       case '3': // Bottom-right rounded
         borderRadius = const BorderRadius.only(
-          bottomRight: Radius.zero,
-          topLeft: Radius.zero,
+          bottomRight: Radius.circular(12),
+          topLeft: Radius.circular(12),
           topRight: Radius.zero,
-          bottomLeft: Radius.circular(12),
+          bottomLeft: Radius.zero,
         );
         break;
       case '4': // Bottom-left rounded
         borderRadius = const BorderRadius.only(
-          bottomRight: Radius.circular(12),
+          bottomRight: Radius.zero,
           topLeft: Radius.zero,
-          topRight: Radius.zero,
-          bottomLeft: Radius.zero,
+          topRight: Radius.circular(12),
+          bottomLeft: Radius.circular(12),
         );
         break;
       default:
@@ -494,132 +530,87 @@ class _UserDashState extends State<UserDash> {
 
     return GestureDetector(
       onTap: onTap,
-      child: Stack(
-        children: [
-          // Main container
-          Container(
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: borderRadius, // Apply conditional border radius
-              border: Border.all(
-                color: Colors.grey.withOpacity(0.3),
-              ), // Subtle border
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius:
-                      borderRadius, // Ensure the inner container matches
-                ),
-                padding: const EdgeInsets.all(12),
+      child: Container(
+        //  height: 600,
+        child: Stack(
+          children: [
+            // Main container
+            Container(
+              // Fixed width
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: borderRadius, // Apply conditional border radius
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.3),
+                ), // Subtle border
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Center(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 10),
+                    // Add animation at the top
+                    SizedBox(
+                      //height: 200, // Adjust size for the animation
+                      child: Lottie.network(
+                          //'https://lottie.host/de35767f-42a6-4448-8c99-c0eb5a16468f/OKr5v9EXuE.json',
+                          animation), // Example animation
+                    ),
+                    const SizedBox(height: 0), // Spacing
+                    // Label
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
                         label,
                         style: GoogleFonts.inconsolata(
-                          color: Colors.black87,
+                          color: Color.fromARGB(221, 246, 243, 243),
                           fontSize: 27,
                           fontWeight: FontWeight.w700,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(height: 0),
+                    // Description lines
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Get the width of the available space
+                          double availableWidth = constraints.maxWidth;
+
+                          // Calculate a responsive font size based on the available width
+                          double fontSize = availableWidth *
+                              0.045; // Adjust the multiplier as needed
+
+                          return Text(
+                            label2,
+                            style: GoogleFonts.inconsolata(
+                              color: Color.fromARGB(255, 248, 247, 247),
+                              fontSize: fontSize < 10
+                                  ? 10
+                                  : fontSize, // Ensure minimum font size
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2, // Limit to 2 lines to prevent overflow
+                            overflow: TextOverflow.ellipsis, // Handle overflow
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-          ),
-          // Icon in top-right corner (if not Settings or Due)
-          if (label != "Settings" && label != 'Due' && label != 'Pass')
-            Positioned(
-              top: 0,
-              right: 0,
-              child: GestureDetector(
-                onTap: () {
-                  if (label == "Fix") {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FpList(label: label),
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(12),
-                        bottomLeft: Radius.circular(12)),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const FaIcon(
-                    FontAwesomeIcons.list,
-                    color: Colors.black,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-          if (label != "Settings" && label != 'Due' && label != 'Fix')
-            Positioned(
-              bottom: 0,
-              left: 0,
-              child: GestureDetector(
-                onTap: () {
-                  if (label == "Pass") {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FpList(label: label),
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(12),
-                        topRight: Radius.circular(12)),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const FaIcon(
-                    FontAwesomeIcons.list,
-                    color: Colors.black,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-        ],
+            // Existing icon and interaction logic remains unchanged
+          ],
+        ),
       ),
     );
   }
@@ -629,12 +620,13 @@ class _UserDashState extends State<UserDash> {
       padding: const EdgeInsets.only(left: 30.0, right: 30),
       child: GridView.count(
         crossAxisCount: 2,
-        crossAxisSpacing: 17,
-        mainAxisSpacing: 17,
+        crossAxisSpacing: 13,
+        mainAxisSpacing: 13,
+        childAspectRatio: 2 / 3.1,
         shrinkWrap: true,
         children: [
-          _buildGridContainer(
-              context, 'Due', const Color.fromARGB(255, 225, 215, 206), () {
+          _buildGridContainer(context, 'Due', Color.fromARGB(206, 220, 189, 15),
+              () {
             showModalBottomSheet(
               context: context,
               shape: const RoundedRectangleBorder(
@@ -644,32 +636,31 @@ class _UserDashState extends State<UserDash> {
                 return dueBottomSheet(context);
               },
             );
-          }, '1'),
-          _buildGridContainer(
-              context, 'Fix', const Color.fromARGB(255, 225, 215, 206), () {
+          }, '1', 'Tap to genrate or scan the reciept',
+              'https://lottie.host/6d9d83cf-c148-49d9-a8ad-3b5fc041668c/gERbOpneL2.json'),
+          _buildGridContainer(context, 'Fix', Color.fromARGB(201, 213, 15, 140),
+              () {
             Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => Fix(keyboardtype: _keyboardType)),
             );
-          }, '2'),
+          }, '2', 'Tap to Select Fix Timing',
+              'https://lottie.host/a72b4eab-f590-48d9-9976-cc73fd3dbedf/pNAOdrM24Z.json'),
           _buildGridContainer(
-              context, 'Pass', const Color.fromARGB(255, 225, 215, 206), () {
+              context, 'Pass', Color.fromARGB(209, 187, 29, 226), () {
             Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => Pass(keyboardtype: _keyboardType)),
             );
-          }, '3'),
+          }, '3', 'Tap to purchase pass',
+              'https://lottie.host/5d3bc3a1-945a-4cc1-ad22-527c20b543d1/SoEz4YlIlH.json'),
           _buildGridContainer(
-              context, 'Settings', const Color.fromARGB(255, 225, 215, 206),
-              () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => Setting()),
-            // );
+              context, 'Settings', Color.fromARGB(223, 6, 197, 143), () {
             _getSettings();
-          }, '4'),
+          }, '4', 'Tap for bluetooth and keyboard settings ',
+              'https://lottie.host/438165aa-37f6-4757-9887-2d118439c336/3XJxuZF6yG.json'),
         ],
       ),
     );
@@ -680,7 +671,7 @@ class _UserDashState extends State<UserDash> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          color: const Color.fromARGB(255, 244, 244, 158),
+          color: const Color.fromARGB(187, 73, 67, 240),
           height: 150, // Adjust height as needed
           child: Row(
             children: [
@@ -693,20 +684,20 @@ class _UserDashState extends State<UserDash> {
                   child: Container(
                     height: 150,
                     width: 160,
-                    color: const Color.fromARGB(255, 244, 244, 158),
+                    color: const Color.fromARGB(187, 73, 67, 240),
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         FaIcon(
                           FontAwesomeIcons.keyboard,
-                          color: Colors.black,
+                          color: Color.fromARGB(255, 255, 255, 255),
                           size: 50, // Increase icon size
                         ), // Colorful icon
                         SizedBox(height: 10),
                         Text('Keyboard Setting',
                             style: TextStyle(
                                 fontSize: 16,
-                                color: Color.fromARGB(255, 5, 5, 5))), // Label
+                                color: Color.fromARGB(255, 255, 255, 255))), // Label
                       ],
                     ),
                   ),
@@ -715,7 +706,7 @@ class _UserDashState extends State<UserDash> {
               Container(
                 width: 1, // Separator line width
                 color:
-                    const Color.fromARGB(255, 9, 9, 9), // Separator line color
+                    Color.fromARGB(255, 255, 255, 255), // Separator line color
                 height: 80, // Separator line height
               ),
               Expanded(
@@ -731,20 +722,20 @@ class _UserDashState extends State<UserDash> {
                   child: Container(
                     height: 150,
                     width: 160,
-                    color: const Color.fromARGB(255, 244, 244, 158),
+                    color: const Color.fromARGB(187, 73, 67, 240),
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         FaIcon(
                           FontAwesomeIcons.print,
-                          color: Colors.black,
+                          color: Color.fromARGB(255, 255, 255, 255),
                           size: 50, // Increase icon size
                         ), // Colorful icon
                         SizedBox(height: 10),
                         Text('printer Setting',
                             style: TextStyle(
                                 fontSize: 16,
-                                color: Color.fromARGB(255, 2, 2, 2))), // Label
+                                color: Color.fromARGB(255, 255, 255, 255))), // Label
                       ],
                     ),
                   ),
@@ -759,10 +750,10 @@ class _UserDashState extends State<UserDash> {
 
   Widget customAppBar(BuildContext context) {
     return Container(
-      height: 90,
+      height: 50,
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color.fromARGB(0, 225, 215, 206),
+        color: Color.fromARGB(0, 4, 4, 4),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(0),
           bottomRight: Radius.circular(0),
@@ -771,12 +762,26 @@ class _UserDashState extends State<UserDash> {
       child: Stack(
         children: [
           Positioned(
+            left: 30,
+            top: 10,
+            child: Row(
+              children: [
+                // The image asset
+                Image.asset(
+                  'assets/aapka logo.webp', // Replace with your actual image path
+                  width: 32,
+                  height: 32,
+                ),
+              ],
+            ),
+          ),
+          Positioned(
             right: 110,
-            top: 55,
+            top: 10,
             child: Text(
               'User Dashboard',
               style: GoogleFonts.lora(
-                color: Colors.black,
+                color: const Color.fromARGB(255, 246, 245, 245),
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
               ),
@@ -784,19 +789,19 @@ class _UserDashState extends State<UserDash> {
           ),
           Positioned(
             right: 20,
-            top: 50,
+            top: 0,
             child: GestureDetector(
               onTap: _logout,
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(
-                      0, 255, 82, 82), // Transparent background
+                  color: Color.fromARGB(
+                      0, 247, 247, 247), // Transparent background
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
                   Icons.logout,
-                  color: Color.fromARGB(255, 5, 0, 0),
+                  color: Color.fromARGB(255, 250, 250, 250),
                   size: 25,
                 ),
               ),
@@ -892,150 +897,186 @@ class _UserDashState extends State<UserDash> {
         return await _showExitDialog(context); // Show exit dialog on back press
       },
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+        backgroundColor: Color.fromARGB(255, 0, 12, 55),
+        appBar: AppBar(
+          backgroundColor: Color.fromARGB(0, 212, 123, 123),
+          toolbarHeight: -0,
+        ),
         body: Column(
           children: [
-            Stack(
-              children: [
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: Container(
-                    width: 150,
-                    height: 150,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color.fromARGB(255, 234, 77, 255),
-                          Color.fromARGB(255, 238, 133, 252),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
+            customAppBar(context),
+            //const SizedBox(height: 0),
+            FutureBuilder<Map<String, dynamic>?>(
+              future: _fetchUserData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // Show black loader while waiting for data
+                  return const Center(
+                    heightFactor: 4.5,
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.black), // Black color loader
                     ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 40.0,
-                        sigmaY: 40.0,
-                      ),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                        ),
+                  );
+                } else if (snapshot.hasError) {
+                  // Handle error scenario
+                  return Center(
+                    child: Text(
+                      'Error loading data',
+                      style: GoogleFonts.poppins(
+                        color: Colors.red,
+                        fontSize: 16,
                       ),
                     ),
-                  ),
-                ),
-                Positioned(
-                  top: 30,
-                  left: 20,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.orange.shade300,
-                          Colors.yellow.shade200
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 30.0,
-                        sigmaY: 30.0,
-                      ),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                        ),
+                  );
+                } else if (snapshot.hasData) {
+                  // Data is available, show user card
+                  return _buildUserCard(snapshot.data!);
+                } else {
+                  // If no data is present
+                  return Center(
+                    child: Text(
+                      'No data available',
+                      style: GoogleFonts.poppins(
+                        color: Colors.black,
+                        fontSize: 16,
                       ),
                     ),
-                  ),
-                ),
-                Positioned(
-                  top: 80,
-                  left: 70,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color.fromARGB(255, 243, 255, 77),
-                          Color.fromARGB(255, 251, 230, 190)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 30.0,
-                        sigmaY: 30.0,
-                      ),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                customAppBar(context),
-                const SizedBox(height: 0),
-                Padding(
-                  padding: const EdgeInsets.only(top: 115.0),
-                  child: Center(
-                    child: FutureBuilder<Map<String, dynamic>?>(
-                      future: _fetchUserData(),
-                      builder: (context, snapshot) {
-                        return _buildUserCard(snapshot.data!);
-                      },
-                    ),
-                  ),
-                ),
-              ],
+                  );
+                }
+              },
             ),
-            Image.asset(
-              'assets/animations/tesla_car_PNG30.png', // Replace with your actual image asset path
-              width: 400,
-              height: 160,
-            ),
-            const Spacer(),
+
+            // Image.asset(
+            //   'assets/animations/tesla_car_PNG30.png', // Replace with your actual image asset path
+            //   width: 400,
+            //   height: 160,
+            // ),
+            // const Spacer(),
             Container(
               decoration: BoxDecoration(
                 color: Colors.black,
-                image: const DecorationImage(
-                  image: AssetImage(
-                      'assets/animations/OIP (4)4.jpeg'), // Background image path
-                  fit:
-                      BoxFit.cover, // Cover the entire container with the image
-                ),
+                // Uncomment the image line if you want to add the background image later
+                // image: const DecorationImage(
+                //   image: AssetImage('assets/animations/OIP (4)4.jpeg'), // Background image path
+                //   fit: BoxFit.cover, // Cover the entire container with the image
+                // ),
                 border: Border.all(
                   color: Colors.black, // Border color
                   width: 1.0, // Border width (1px)
                 ),
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(50), // Rounded top-left corner
-                  topRight: Radius.circular(50), // Rounded top-right corner
+                  topLeft: Radius.circular(0), // Rounded top-left corner
+                  topRight: Radius.circular(0), // Rounded top-right corner
                 ),
+                // Adding the green shadow
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color.fromARGB(255, 25, 239, 1)
+                        .withOpacity(0.9), // Slight green shadow with opacity
+                    blurRadius: 15, // How blurred the shadow will be
+                    offset: const Offset(
+                        0, 1), // Horizontal and vertical offsets of the shadow
+                  ),
+                ],
               ),
-              height: 420, // Example height, can be adjusted
+
+              height: 600, // Example height, can be adjusted
               width:
                   MediaQuery.of(context).size.width - 30, // Full screen width
               child: Column(
                 mainAxisAlignment:
-                    MainAxisAlignment.end, // Stick content to bottom
+                    MainAxisAlignment.start, // Stick content to bottom
                 children: [
+                  const SizedBox(
+                    height: 15,
+                  ),
                   _buildGrid(),
+                  const SizedBox(
+                    height: 22,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // First Button for "Fix Entries"
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const FpList(label: "Fix"),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.black, // Button background color
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color.fromARGB(255, 25, 239, 1)
+                                    .withOpacity(
+                                        0.9), // Green shadow on four sides
+                                blurRadius: 11,
+                                offset: const Offset(0, 1), // Offset for shadow
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Fix entries',
+                            style: GoogleFonts.lato(
+                              // You can replace 'lato' with any other Google Font
+                              color: Colors.white, // Text color
+                              fontSize: 16, // Text size
+                              fontWeight: FontWeight.w600, // Text weight
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 20), // Space between the buttons
+
+                      // Second Button for "Pass Entries"
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FpList(label: "Pass"),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.black, // Button background color
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color.fromARGB(255, 25, 239, 1)
+                                    .withOpacity(
+                                        0.9), // Green shadow on four sides
+                                blurRadius: 11,
+                                offset: Offset(0, 1), // Offset for shadow
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Pass entries',
+                            style: GoogleFonts.lato(
+                              // You can replace 'lato' with any other Google Font
+                              color: Colors.white, // Text color
+                              fontSize: 16, // Text size
+                              fontWeight: FontWeight.w600, // Text weight
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0, left: 0),
+                    padding: const EdgeInsets.only(top: 20.0, left: 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1047,8 +1088,8 @@ class _UserDashState extends State<UserDash> {
                           ),
                           child: Image.asset(
                             'assets/aapka logo.webp', // Image asset path
-                            width: 20,
-                            height: 20,
+                            width: 15,
+                            height: 15,
                           ),
                         ),
                         const SizedBox(
@@ -1056,8 +1097,9 @@ class _UserDashState extends State<UserDash> {
                         const Text(
                           'Aapka Parking \u00A9',
                           style: TextStyle(
-                            color: Colors.grey, // Text color
-                            fontSize: 20, // Font size
+                            color: Color.fromARGB(
+                                255, 158, 158, 158), // Text color
+                            fontSize: 15, // Font size
                             fontWeight: FontWeight.bold, // Bold text
                           ),
                         ),

@@ -72,7 +72,7 @@ class OtpScreenState extends State<OtpScreen>
     super.initState();
     startTimer();
     SystemChrome.setSystemUIOverlayStyle(
-     const SystemUiOverlayStyle(
+      const SystemUiOverlayStyle(
         statusBarColor:
             Color.fromARGB(243, 0, 0, 0), // Make the status bar transparent
         statusBarIconBrightness:
@@ -154,7 +154,7 @@ class OtpScreenState extends State<OtpScreen>
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                       const AdminPage()), // Replace with your AdminPage
+                        const AdminPage()), // Replace with your AdminPage
               );
             } else {
               Navigator.pushReplacement(
@@ -177,9 +177,7 @@ class OtpScreenState extends State<OtpScreen>
                 MaterialPageRoute(builder: (context) => const UserDash()),
               );
             }
-          } else {
-            
-          }
+          } else {}
         } catch (e) {
           print('Error checking phone number: $e');
         }
@@ -213,7 +211,7 @@ class OtpScreenState extends State<OtpScreen>
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value:const SystemUiOverlayStyle(
+        value: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark, // Dark icons
           statusBarBrightness: Brightness.light, // For iOS
@@ -230,9 +228,9 @@ class OtpScreenState extends State<OtpScreen>
                     gradient: LinearGradient(
                       begin: _bgAnimation.value,
                       end: Alignment.centerRight,
-                      colors:const [
-                         Color.fromARGB(255, 246, 240, 187),
-                         Color.fromARGB(255, 252, 250, 226),
+                      colors: const [
+                        Color.fromARGB(255, 246, 240, 187),
+                        Color.fromARGB(255, 252, 250, 226),
                         Color.fromARGB(255, 249, 249, 239),
                       ],
                     ),
@@ -246,7 +244,7 @@ class OtpScreenState extends State<OtpScreen>
                             padding: const EdgeInsets.only(right: 350, top: 60),
                             child: IconButton(
                                 icon: const Icon(Icons.arrow_back),
-                                color:const Color.fromARGB(255, 7, 7, 7),
+                                color: const Color.fromARGB(255, 7, 7, 7),
                                 iconSize: 30,
                                 onPressed: () {
                                   Navigator.push(
@@ -269,7 +267,7 @@ class OtpScreenState extends State<OtpScreen>
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 40.0, right: 0, top: 15),
+                                left: 36.0, right: 0, top: 15),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -286,6 +284,9 @@ class OtpScreenState extends State<OtpScreen>
                                         }
                                         clearenable = value.isNotEmpty;
                                       });
+                                    },
+                                    onCompleted: (String) {
+                                      buttonenable ? _verifyOTP() : null;
                                     },
                                     defaultPinTheme: PinTheme(
                                       width: 40,
@@ -312,7 +313,7 @@ class OtpScreenState extends State<OtpScreen>
                                         borderRadius: BorderRadius.circular(10),
                                         boxShadow: [
                                           BoxShadow(
-                                            color:const Color.fromARGB(
+                                            color: const Color.fromARGB(
                                                     255, 126, 129, 116)
                                                 .withOpacity(0.5),
                                             blurRadius: 10,
@@ -333,7 +334,8 @@ class OtpScreenState extends State<OtpScreen>
                                     icon: Icon(
                                       buttonenable ? Icons.check : Icons.clear,
                                       color: clearenable
-                                          ? const Color.fromARGB(255, 157, 255, 0)
+                                          ? const Color.fromARGB(
+                                              255, 157, 255, 0)
                                           : Colors.transparent,
                                       size: 25,
                                     ),
@@ -342,7 +344,7 @@ class OtpScreenState extends State<OtpScreen>
                               ],
                             ),
                           ),
-                        const  SizedBox(
+                          const SizedBox(
                             height: 15,
                           ),
                           Center(
@@ -368,7 +370,8 @@ class OtpScreenState extends State<OtpScreen>
                                     child: Text(
                                       'Resend OTP',
                                       style: TextStyle(
-                                        color:const Color.fromARGB(255, 255, 70, 64),
+                                        color: const Color.fromARGB(
+                                            255, 255, 70, 64),
                                         fontSize: MediaQuery.of(context)
                                                 // ignore: deprecated_member_use
                                                 .textScaleFactor *
@@ -379,7 +382,7 @@ class OtpScreenState extends State<OtpScreen>
                               ],
                             ),
                           ),
-                         const SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                           Center(
@@ -391,11 +394,12 @@ class OtpScreenState extends State<OtpScreen>
                                     backgroundColor:
                                         WidgetStateProperty.all<Color>(
                                       buttonenable
-                                          ?const Color.fromARGB(255, 255, 255, 0)
+                                          ? const Color.fromARGB(
+                                              255, 255, 255, 0)
                                           : Colors.grey,
                                     ),
                                     fixedSize: WidgetStateProperty.all<Size>(
-                                      const  Size(270, 55)),
+                                        const Size(270, 55)),
                                     shape: WidgetStateProperty.all<
                                         RoundedRectangleBorder>(
                                       const RoundedRectangleBorder(
@@ -447,5 +451,3 @@ class OtpScreenState extends State<OtpScreen>
         ));
   }
 }
-
-

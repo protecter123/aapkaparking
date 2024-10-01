@@ -137,16 +137,17 @@ class _ReceiptState extends State<Receipt> {
     printer.printCustom(dateTime, 1, 1);
     printer.printNewLine();
 
-    printer.printCustom('Vehicle No.: ${widget.vehicleNumber}', 2, 1);
-    printer.printCustom('Amount: Rs :${widget.price}', 2, 1);
+    printer.printCustom('Vehicle No.:${widget.vehicleNumber}', 2, 1);
+    printer.printNewLine();
+    printer.printCustom('Amount: Rs:${widget.price}', 2, 1);
     printer.printNewLine();
 
-    printer.printQRcode(widget.vehicleNumber, 4, 4, 1);
+    printer.printQRcode(widget.vehicleNumber, 220, 220, 1);
     printer.printNewLine();
-    //final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
+    // final qrFilePath = await _saveQrCodeToFile(widget.vehicleNumber);
 
-    // Print the QR code image from the file path
-    //printer.printImage(qrFilePath);
+   // Print the QR code image from the file path
+    // printer.printImage(qrFilePath);
     printer.printNewLine();
     printer.printCustom('Thank you, Lucky Road!', 1, 1);
     printer.printNewLine();

@@ -10,18 +10,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:path/path.dart' as path;
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AddVehicle extends StatefulWidget {
-  const AddVehicle({super.key});
+class EditAdmin extends StatefulWidget {
+  final String? imgUrl;
+  final String? Name;
+  const EditAdmin({super.key, required this.imgUrl, required this.Name});
 
   @override
-  State<AddVehicle> createState() => _AddVehicleState();
+  State<EditAdmin> createState() => _AddVehicleState();
 }
 
-class _AddVehicleState extends State<AddVehicle> {
+class _AddVehicleState extends State<EditAdmin> {
   final TextEditingController vehicleNameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? _image;
+  @override
+  void initState() {
+    super.initState();
+   
+  }
 
   void _getImage() async {
     await showModalBottomSheet(
@@ -107,32 +115,44 @@ class _AddVehicleState extends State<AddVehicle> {
     );
   }
 
-  Future<void> _saveVehicleDetails() async {
+  Future<void> _removeParkingDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('cachedParkingLogo'); // Removes the ParkingLogo key
+    await prefs.remove('cachedParkingName'); // Removes the ParkingName key
+  }
+
+  Future<void> _saveAdminDetails() async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
     if (_image == null && vehicleNameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please provide Vehicle name and Image.'),
-            duration: const Duration(milliseconds: 300)),
+          content: Text('Please provide Admin name and Image.'),
+          duration: Duration(milliseconds: 300),
+        ),
       );
       return;
     }
+
     if (_image == null) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please provide Vehicle Image.'),
-            duration: const Duration(milliseconds: 300)),
+          content: Text('Please provide Parking Logo'),
+          duration: Duration(milliseconds: 300),
+        ),
       );
       return;
     }
+
     if (vehicleNameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please provide Vehicle name.'),
-            duration: const Duration(milliseconds: 300)),
+          content: Text('Please provide Parking name.'),
+          duration: Duration(milliseconds: 300),
+        ),
       );
       return;
     }
@@ -164,41 +184,26 @@ class _AddVehicleState extends State<AddVehicle> {
         return;
       }
 
-      // Check if the vehicle name already exists
-      final firestoreRef = FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(phoneNumber)
-          .collection('Vehicles');
-
-      final querySnapshot = await firestoreRef
-          .where('vehicleName', isEqualTo: vehicleNameController.text.trim())
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        // Close loader
-        Navigator.of(context).pop(); // Close loader dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vehicle already added')),
-        );
-        return;
-      }
-
       // Upload the image to Firebase Storage
       final fileName = path.basename(_image!.path);
       final storageRef = FirebaseStorage.instance
           .ref()
-          .child('vehicles/$phoneNumber/$fileName');
+          .child('Admins/$phoneNumber/ParkingLogo/$fileName');
       final uploadTask = await storageRef.putFile(File(_image!.path));
 
       // Get the download URL of the uploaded image
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
-      // Save the vehicle details in Firestore
-      await firestoreRef.doc().set({
-        'vehicleName': vehicleNameController.text.trim(),
-        'vehicleImage': downloadUrl,
-        'pricingdone': false
-      });
+      // Merge ParkingLogo and ParkingName into the existing document
+      final firestoreRef =
+          FirebaseFirestore.instance.collection('AllUsers').doc(phoneNumber);
+
+      await firestoreRef.update(
+        {
+          'ParkingLogo': downloadUrl,
+          'ParkingName': vehicleNameController.text.trim(),
+        },
+      );
 
       // Close the loader
       Navigator.of(context).pop(); // Close loader dialog
@@ -214,11 +219,10 @@ class _AddVehicleState extends State<AddVehicle> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Lottie.asset(
-                    'assets/animations/complete.json'), // Replace with your Lottie file URL
+                Lottie.asset('assets/animations/complete.json'),
                 const SizedBox(height: 20),
                 const Text(
-                  'Vehicle added successfully!',
+                  'Parking details saved successfully!',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
@@ -259,7 +263,7 @@ class _AddVehicleState extends State<AddVehicle> {
       Navigator.of(context).pop(); // Close loader dialog
       // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save vehicle details: $e')),
+        SnackBar(content: Text('Failed to save admin details: $e')),
       );
     }
   }
@@ -347,7 +351,7 @@ class _AddVehicleState extends State<AddVehicle> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
-                                'Add Vehicle',
+                                'Edit Admin',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize:
                                       constraints.maxWidth > 600 ? 50 : 40,
@@ -365,7 +369,7 @@ class _AddVehicleState extends State<AddVehicle> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
-                                'Name',
+                                'Details',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize:
                                       constraints.maxWidth > 600 ? 50 : 40,
@@ -399,10 +403,10 @@ class _AddVehicleState extends State<AddVehicle> {
                                       ? FileImage(_image!)
                                       : null,
                                   child: _image == null
-                                      ? const Icon(
-                                          Icons.person,
-                                          color: Color.fromARGB(255, 5, 5, 5),
-                                          size: 60,
+                                      ? Image.network(
+                                          widget.imgUrl!,
+                                          width: 100,
+                                          height: 100,
                                         )
                                       : null,
                                 ),
@@ -437,7 +441,7 @@ class _AddVehicleState extends State<AddVehicle> {
                         children: [
                           Container(
                               child: Text(
-                            'Add vehicle name',
+                            'Add New Parking name',
                             style: GoogleFonts.notoSansHanunoo(
                                 color: Color.fromARGB(255, 29, 29, 29)),
                           )),
@@ -472,7 +476,7 @@ class _AddVehicleState extends State<AddVehicle> {
                                       color: Colors.black,
                                       width: 2), // 2 px black border
                                 ),
-                                hintText: 'Vehicle name',
+                                hintText: widget.Name!,
                                 hintStyle: GoogleFonts.notoSansHanunoo(
                                   color: Colors.grey,
                                   fontSize: 19,
@@ -492,7 +496,10 @@ class _AddVehicleState extends State<AddVehicle> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _saveVehicleDetails,
+                          onPressed: () {
+                            _removeParkingDetails();
+                            _saveAdminDetails();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black, // Full black color
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -505,7 +512,7 @@ class _AddVehicleState extends State<AddVehicle> {
                                 .withOpacity(0.5), // Shadow for 3D effect
                           ),
                           child: const Text(
-                            'SAVE VEHICLE DETAILS', // Updated button text
+                            'EDIT ADMIN DETAILS', // Updated button text
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18), // White text color

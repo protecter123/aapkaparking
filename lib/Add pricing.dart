@@ -49,24 +49,25 @@ class _AddPriceState extends State<AddPrice> {
   }
 
   Future<void> _savePricingData() async {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     if (_pricing30MinController.text.isEmpty ||
         _pricing1HourController.text.isEmpty ||
         _pricing120MinController.text.isEmpty ||
         _passPriceController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please provide pricing.'),
-          backgroundColor: Color.fromARGB(255, 10, 10, 10),
-        ),
+            content: Text('Please provide pricing.'),
+            backgroundColor: Color.fromARGB(255, 10, 10, 10),
+            duration: const Duration(milliseconds: 300)),
       );
       return; // Exit the method if validation fails
     }
-    if (_selectedVehicleName==null) {
-       ScaffoldMessenger.of(context).showSnackBar(
+    if (_selectedVehicleName == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select vehicle name'),
-          backgroundColor: Color.fromARGB(255, 10, 10, 10),
-        ),
+            content: Text('Please select vehicle name'),
+            backgroundColor: Color.fromARGB(255, 10, 10, 10),
+            duration: const Duration(milliseconds: 300)),
       );
       return; //
     }
@@ -137,7 +138,7 @@ class _AddPriceState extends State<AddPrice> {
                     child: TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        _selectedVehicleName=null;
+                        _selectedVehicleName = null;
                         _pricing30MinController.clear();
                         _passPriceController.clear();
                         _pricing120MinController.clear();
@@ -353,7 +354,7 @@ class _AddPriceState extends State<AddPrice> {
             color: const Color.fromARGB(255, 29, 29, 29),
           ),
         ),
-      const  SizedBox(
+        const SizedBox(
           height: 4,
         ),
         GestureDetector(
@@ -495,10 +496,11 @@ class _AddPriceState extends State<AddPrice> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-                  hinttext,
-                  style: GoogleFonts.nunitoSans(color:const Color.fromARGB(255, 29, 29, 29)),
-                ),
-      const  SizedBox(
+          hinttext,
+          style: GoogleFonts.nunitoSans(
+              color: const Color.fromARGB(255, 29, 29, 29)),
+        ),
+        const SizedBox(
           height: 4,
         ),
         TextField(

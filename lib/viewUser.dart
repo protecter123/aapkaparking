@@ -43,11 +43,15 @@ class _ViewuserState extends State<Viewuser> {
           .delete();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User deleted successfully')),
+        const SnackBar(
+            content: Text('User deleted successfully'),
+            duration: const Duration(milliseconds: 200)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete user')),
+        const SnackBar(
+            content: Text('Failed to delete user'),
+            duration: const Duration(milliseconds: 200)),
       );
     }
   }
