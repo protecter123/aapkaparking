@@ -149,12 +149,12 @@ class VerifyState extends State<Verify> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.error, color: Colors.red, size: 30),
-             const SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 'Error occurred: $e',
                 style: const TextStyle(color: Colors.black, fontSize: 16),
               ),
-            const  SizedBox(height: 16),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -171,13 +171,13 @@ class VerifyState extends State<Verify> {
         statusBarBrightness: Brightness.light, // For iOS
       ),
       child: Scaffold(
-        backgroundColor:const Color.fromARGB(255, 247, 249, 229),
+        backgroundColor: const Color.fromARGB(255, 247, 249, 229),
         appBar: AnimatedAppBar(title: 'Sign In'),
         body: SingleChildScrollView(
           child: Stack(
             children: [
               Padding(
-                padding:const EdgeInsets.only(top: 30.0),
+                padding: const EdgeInsets.only(top: 30.0),
                 child: SizedBox(
                     height: 400,
                     width: 400,
@@ -193,12 +193,21 @@ class VerifyState extends State<Verify> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     //ImageSlider(),
-                 const   SizedBox(
+                    const SizedBox(
                       height: 90,
                     ),
-                  const  SizedBox(height: 330, child: Text("")),
+                    const SizedBox(height: 330, child: Text("")),
                     const SizedBox(
                       height: 20,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 34.0),
+                      child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text('Provide valid no. below for SignIN')),
+                    ),
+                    const SizedBox(
+                      height: 5,
                     ),
                     SizedBox(
                       width: 340,
@@ -216,9 +225,11 @@ class VerifyState extends State<Verify> {
                                 decoration: BoxDecoration(
                                   border: Border.all(
                                     color: _iscompleted
-                                        ?const Color.fromARGB(255, 206, 181, 136)
+                                        ? const Color.fromARGB(
+                                            255, 206, 181, 136)
                                         : _isValid
-                                            ? const Color.fromARGB(255, 108, 95, 42)
+                                            ? const Color.fromARGB(
+                                                255, 108, 95, 42)
                                             : Colors.red,
                                     width: 2,
                                   ),
@@ -344,7 +355,7 @@ class VerifyState extends State<Verify> {
                                             ? const Color.fromARGB(
                                                 255, 250, 20, 4)
                                             : _iscompleted
-                                                ?const Color.fromARGB(
+                                                ? const Color.fromARGB(
                                                     255, 27, 130, 1)
                                                 : const Color.fromARGB(
                                                     255, 207, 206, 206)
@@ -421,7 +432,7 @@ class VerifyState extends State<Verify> {
 class AnimatedAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
 
- const AnimatedAppBar({required this.title, Key? key}) : super(key: key);
+  const AnimatedAppBar({required this.title, Key? key}) : super(key: key);
 
   @override
   _AnimatedAppBarState createState() => _AnimatedAppBarState();
@@ -465,7 +476,7 @@ class _AnimatedAppBarState extends State<AnimatedAppBar>
     ).animate(_controller);
 
     _colorAnimation3 = ColorTween(
-      begin:const Color.fromARGB(255, 247, 247, 104),
+      begin: const Color.fromARGB(255, 247, 247, 104),
       end: Colors.yellowAccent,
     ).animate(_controller);
   }
@@ -538,7 +549,7 @@ class _AnimatedImageState extends State<AnimatedImage>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration:const Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
     );
 
     _animation = Tween<double>(begin: 1.0, end: 1.05).animate(

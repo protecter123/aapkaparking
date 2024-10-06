@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
 import 'package:lottie/lottie.dart';
 
@@ -183,22 +184,72 @@ class _AddVehicleState extends State<AddVehicle> {
         return;
       }
 
-      // Upload the image to Firebase Storage
-      final fileName = path.basename(_image!.path);
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('vehicles/$phoneNumber/$fileName');
-      final uploadTask = await storageRef.putFile(File(_image!.path));
+      if (_image != null) {
+        // Read the image as bytes
+        Uint8List imageBytes = await _image!.readAsBytes();
+
+        // Decode the image for resizing and compression using the image package
+        img.Image? decodedImage = img.decodeImage(imageBytes);
+
+        if (decodedImage != null) {
+          // Resize the image (e.g., 50% of the original size)
+          img.Image resizedImage = img.copyResize(decodedImage,
+              width: (decodedImage.width * 0.5).toInt());
+
+          // Compress the image with 90% quality (adjust as needed)
+          List<int> compressedImage = img.encodeJpg(resizedImage,
+              quality: 75); // You can change quality percentage
+
+          // Convert the compressed image to Uint8List for Firebase Storage upload
+          Uint8List compressedImageBytes = Uint8List.fromList(compressedImage);
+
+          // Get the file name
+          final fileName = path.basename(_image!.path);
+
+          // Create Firebase Storage reference
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('vehicles/$phoneNumber/$fileName');
+
+          // Upload the compressed image to Firebase Storage
+          UploadTask uploadTask = storageRef.putData(compressedImageBytes);
+
+          // Monitor the upload progress
+          uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+            print(
+                'Progress: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100} %');
+          });
+
+          // Wait for the upload to complete
+          TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
+
+          // Get the download URL
+          String downloadUrl = await snapshot.ref.getDownloadURL();
+
+          // Save the data to Firestore
+          await firestoreRef.doc().set({
+            'vehicleName': vehicleNameController.text.trim(),
+            'vehicleImage': downloadUrl,
+            'pricingdone': false
+          });
+
+          print('Image uploaded successfully! Download URL: $downloadUrl');
+        } else {
+          print('Error: Failed to decode the image.');
+        }
+      } else {
+        print('No image selected');
+      }
 
       // Get the download URL of the uploaded image
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      //  final downloadUrl = await UploadTask.ref.getDownloadURL();
 
       // Save the vehicle details in Firestore
-      await firestoreRef.doc().set({
-        'vehicleName': vehicleNameController.text.trim(),
-        'vehicleImage': downloadUrl,
-        'pricingdone': false
-      });
+      // await firestoreRef.doc().set({
+      //   'vehicleName': vehicleNameController.text.trim(),
+      //   'vehicleImage':downloadUrl,
+      //   'pricingdone': false
+      // });
 
       // Close the loader
       Navigator.of(context).pop(); // Close loader dialog

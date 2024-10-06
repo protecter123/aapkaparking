@@ -254,7 +254,7 @@ class _CollectionState extends State<Collection> {
             Navigator.of(context).pop();
           },
         ),
-        backgroundColor: Color.fromARGB(0, 238, 236, 236),
+        backgroundColor:const Color.fromARGB(0, 238, 236, 236),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.black),

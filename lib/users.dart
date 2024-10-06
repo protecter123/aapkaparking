@@ -1,9 +1,7 @@
 import 'dart:ui'; // For ImageFilter
-import 'package:aapkaparking/Fix.dart';
 import 'package:aapkaparking/bluetoothShowScreen.dart';
-import 'package:aapkaparking/dueIn.dart';
+import 'package:aapkaparking/fdpVehicleList.dart';
 import 'package:aapkaparking/fpList.dart';
-import 'package:aapkaparking/paas.dart';
 import 'package:aapkaparking/qrScanner.dart';
 import 'package:aapkaparking/verify.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +28,52 @@ class _UserDashState extends State<UserDash> {
   void initState() {
     super.initState();
     _loadKeyboardType();
+    findAdminPhoneNumber();
+  }
+
+  Future<void> findAdminPhoneNumber() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    String currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+
+    try {
+      // Reference to the AllUsers collection
+      CollectionReference allUsersRef =
+          FirebaseFirestore.instance.collection('AllUsers');
+
+      // Fetch all admin documents
+      QuerySnapshot adminsSnapshot = await allUsersRef.get();
+
+      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
+        // Reference to the Users subcollection
+        CollectionReference usersRef = adminDoc.reference.collection('Users');
+
+        // Check if the current user's phone number exists in this admin's Users subcollection
+        DocumentSnapshot userDoc =
+            await usersRef.doc(currentUserPhoneNumber).get();
+
+        if (userDoc.exists) {
+          // Save admin phone number to SharedPreferences if AdminNum is null
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          if (prefs.getString('AdminNum') == null) {
+            await prefs.setString('AdminNum', adminDoc.id);
+            setState(() {
+              // adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
+            });
+          }
+          return;
+        }
+      }
+
+      // Handle the case where no admin is found
+      setState(() {
+        // Handle no admin found logic if needed
+      });
+    } catch (e) {
+      print('Error finding admin phone number: $e');
+      setState(() {
+        // Handle error state if needed
+      });
+    }
   }
 
   Future<void> _loadKeyboardType() async {
@@ -198,7 +242,10 @@ class _UserDashState extends State<UserDash> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => Due(keyboardtype: _keyboardType),
+                  builder: (_) => FdpVehicles(
+                    keyboardtype: _keyboardType,
+                    title: 'Due',
+                  ),
                 ),
               );
             },
@@ -643,7 +690,10 @@ class _UserDashState extends State<UserDash> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => Fix(keyboardtype: _keyboardType)),
+                  builder: (context) => FdpVehicles(
+                        keyboardtype: _keyboardType,
+                        title: 'Fix',
+                      )),
             );
           }, '2', 'Tap to Select Fix Timing',
               'https://lottie.host/a72b4eab-f590-48d9-9976-cc73fd3dbedf/pNAOdrM24Z.json'),
@@ -652,7 +702,10 @@ class _UserDashState extends State<UserDash> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => Pass(keyboardtype: _keyboardType)),
+                  builder: (context) => FdpVehicles(
+                        keyboardtype: _keyboardType,
+                        title: 'Pass',
+                      )),
             );
           }, '3', 'Tap to purchase pass',
               'https://lottie.host/5d3bc3a1-945a-4cc1-ad22-527c20b543d1/SoEz4YlIlH.json'),
@@ -697,7 +750,8 @@ class _UserDashState extends State<UserDash> {
                         Text('Keyboard Setting',
                             style: TextStyle(
                                 fontSize: 16,
-                                color: Color.fromARGB(255, 255, 255, 255))), // Label
+                                color: Color.fromARGB(
+                                    255, 255, 255, 255))), // Label
                       ],
                     ),
                   ),
@@ -735,7 +789,8 @@ class _UserDashState extends State<UserDash> {
                         Text('printer Setting',
                             style: TextStyle(
                                 fontSize: 16,
-                                color: Color.fromARGB(255, 255, 255, 255))), // Label
+                                color: Color.fromARGB(
+                                    255, 255, 255, 255))), // Label
                       ],
                     ),
                   ),

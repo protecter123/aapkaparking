@@ -1,7 +1,6 @@
 import 'package:aapkaparking/Admin.dart';
 import 'package:aapkaparking/sliding%20screen.dart';
 import 'package:aapkaparking/users.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,11 +8,13 @@ import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
+  
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor:const Color(0xFFFFD700), // Gold (Yellow) color
+        primaryColor: const Color(0xFFFFD700), // Gold (Yellow) color
       ),
       home: SplashVideoScreen(), // Initial route set to SplashVideoScreen
     );
@@ -46,11 +47,11 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
 
     _textAnimationController = AnimationController(
       vsync: this,
-      duration:const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 00),
     );
 
     _textAnimationController.forward().then((_) {
-      Future.delayed(const Duration(milliseconds: 550), () async {
+      Future.delayed(const Duration(milliseconds: 100), () async {
         await _navigateToNextScreen();
       });
     });
@@ -68,11 +69,11 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
         final userType = await _getUserType(phoneNumber);
         if (userType == 'user') {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) =>const UserDash()),
+            MaterialPageRoute(builder: (context) => const UserDash()),
           );
         } else if (userType == 'admin') {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) =>const AdminPage()),
+            MaterialPageRoute(builder: (context) => const AdminPage()),
           );
         }
       } else {
@@ -111,18 +112,21 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const  Color.fromARGB(255, 225, 215, 206),
+      ),
       body: Stack(
         children: [
           // Animated gradient background
           AnimatedContainer(
-            duration:const Duration(seconds: 1),
+            duration: const Duration(seconds: 1),
             onEnd: () => setState(() {}),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.black,
-                 const Color.fromARGB(255, 45, 44, 44).withOpacity(0.1),
-                  Colors.black,
+                  Color.fromARGB(255, 225, 215, 206),
+                  Color.fromARGB(255, 225, 215, 206),
+                  Color.fromARGB(255, 225, 215, 206),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -133,10 +137,11 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-               const Spacer(flex: 2), // Moves the logo and heading above the center
+                const Spacer(
+                    flex: 2), // Moves the logo and heading above the center
                 // Logo in a square box with animated border
                 AnimatedContainer(
-                  duration:const Duration(milliseconds: 1),
+                  duration: const Duration(milliseconds: 1),
                   height: 170,
                   width: 170,
                   decoration: BoxDecoration(
@@ -157,47 +162,9 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
                     ),
                   ),
                 ),
-               const SizedBox(height: 40),
-                // "Apka Parking" animated text in a row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedTextKit(
-                      animatedTexts: [
-                        TyperAnimatedText(
-                          'Aapka',
-                          textStyle:const TextStyle(
-                            color: Color.fromARGB(255, 252, 248, 33),
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          speed:const Duration(milliseconds: 100),
-                        ),
-                      ],
-                      repeatForever: false,
-                      isRepeatingAnimation: false,
-                      onFinished: () {
-                        parkingenable = true;
-                        setState(() {
-                           parkingenable = true;
-                          // Triggering rebuild after "Aapka" finishes animating to show "Parking"
-                        });
-                      },
-                    ),
-                    if (parkingenable) // Show "Parking" only after "Aapka" completes
-                     const SizedBox(width: 10),
-                    if (parkingenable)
-                    const  Text(
-                        'Parking',
-                        style: TextStyle(
-                          color:  Color.fromARGB(255, 2, 2, 2),
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                  ],
-                ),
-              const  Spacer(
+                const SizedBox(height: 40),
+
+                const Spacer(
                     flex:
                         3), // Spacer to push the footer text towards the bottom
                 // Footer with unique parking-related slogan
@@ -206,7 +173,8 @@ class _SplashVideoScreenState extends State<SplashVideoScreen>
                   child: Text(
                     'Parking Simplified, Spaces Maximized',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: const Color.fromARGB(255, 11, 11, 11)
+                          .withOpacity(0.6),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),

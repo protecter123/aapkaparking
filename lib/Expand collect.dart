@@ -17,6 +17,10 @@ class Expandcollect extends StatefulWidget {
 
 class _ExpandcollectState extends State<Expandcollect> {
   // Function to fetch money collection data from Firestore
+  final TextEditingController _fromDateController = TextEditingController();
+  final TextEditingController _toDateController = TextEditingController();
+  DateTime? fromDate;
+  DateTime? toDate;
   Future<List<Map<String, dynamic>>> _fetchCollectionDetails() async {
     final currentUserPhone = FirebaseAuth.instance.currentUser?.phoneNumber;
     if (currentUserPhone == null) {
@@ -64,6 +68,128 @@ class _ExpandcollectState extends State<Expandcollect> {
     return moneyCollectionList;
   }
 
+  void _showDateFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Select Date Range',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _buildDateField('From Date', _fromDateController, (pickedDate) {
+                  setState(() {
+                    fromDate = pickedDate;
+                  });
+                }),
+                const SizedBox(height: 10),
+                _buildDateField('To Date', _toDateController, (pickedDate) {
+                  setState(() {
+                    toDate = pickedDate;
+                  });
+                }),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _fromDateController.clear();
+                          _toDateController.clear();
+                          fromDate = null;
+                          toDate = null;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: const Text('Clear',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (fromDate != null && toDate != null) {
+                          setState(() {});
+                        }
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: const Text('Apply',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDateField(String label, TextEditingController controller,
+      Function(DateTime) onDatePicked) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: controller,
+          readOnly: true,
+          decoration: InputDecoration(
+            focusColor: Colors.orange,
+            hintText: 'Select Date',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: Colors.black),
+            ),
+          ),
+          onTap: () async {
+            DateTime? pickedDate = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(DateTime.now().year, DateTime.now().month - 3,
+                  DateTime.now().day),
+              lastDate: DateTime.now(),
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: Colors
+                          .orange, // Header background color and selection color
+                      onPrimary: Colors.white, // Text color on the header
+                      onSurface: Colors.black, // Default text color
+                    ),
+                    dialogBackgroundColor:
+                        Colors.white, // Background color of the dialog
+                  ),
+                  child: child!,
+                );
+              },
+            );
+
+            if (pickedDate != null) {
+              controller.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+              onDatePicked(pickedDate);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,6 +205,12 @@ class _ExpandcollectState extends State<Expandcollect> {
           'Collection Details',
           style: GoogleFonts.nunito(fontSize: 25, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.black),
+            onPressed: _showDateFilterDialog,
+          ),
+        ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _fetchCollectionDetails(),

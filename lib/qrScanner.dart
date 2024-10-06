@@ -99,17 +99,18 @@ class _QrscannerState extends State<Qrscanner>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => Duelist()), // Navigate to DueList
+                      builder: (context) =>const Duelist()), // Navigate to DueList
                 );
               }, // Open dialog on button press
               style: ElevatedButton.styleFrom(
                   foregroundColor: const Color.fromARGB(255, 6, 6, 6),
-                  backgroundColor: Colors.yellow // Text color
+                  backgroundColor:
+                      const Color.fromARGB(0, 255, 235, 59) // Text color
                   ),
               child: const FaIcon(
                 FontAwesomeIcons.listUl, // List icon from Font Awesome
                 color: Colors.black, // Icon color
-                size: 17, // Icon size
+                size: 19, // Icon size
               ),
             ),
           ),

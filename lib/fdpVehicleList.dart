@@ -1,23 +1,28 @@
+import 'package:aapkaparking/PassRate.dart';
 import 'package:aapkaparking/dueInRate.dart';
+import 'package:aapkaparking/fixrate.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Due extends StatefulWidget {
+class FdpVehicles extends StatefulWidget {
   final String keyboardtype;
-  const Due({super.key, required this.keyboardtype});
+  final String title;
+  const FdpVehicles({super.key, required this.keyboardtype,required this.title});
 
   @override
-  State<Due> createState() => _DueState();
+  State<FdpVehicles> createState() => _fdpState();
 }
 
-class _DueState extends State<Due> {
+class _fdpState extends State<FdpVehicles> {
   // Replace with the current user's phone number
 
-  String? adminPhoneNumber;
+ // String? adminPhoneNumber;
   CollectionReference? vehiclesCollection;
 
   @override
@@ -26,48 +31,51 @@ class _DueState extends State<Due> {
     findAdminPhoneNumber();
   }
 
-  Future<void> findAdminPhoneNumber() async {
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    String currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
-    try {
-      // Reference to the AllUsers collection
-      CollectionReference allUsersRef =
-          FirebaseFirestore.instance.collection('AllUsers');
+  
 
-      // Fetch all admin documents
-      QuerySnapshot adminsSnapshot = await allUsersRef.get();
+Future<void> findAdminPhoneNumber() async {
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  String currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
-      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
-        // Reference to the Users subcollection
-        CollectionReference usersRef = adminDoc.reference.collection('Users');
+  try {
+    // Retrieve the admin phone number from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? adminPhoneNumber = prefs.getString('AdminNum');
 
-        // Check if the current user's phone number exists in this admin's Users subcollection
-        DocumentSnapshot userDoc =
-            await usersRef.doc(currentUserPhoneNumber).get();
+    if (adminPhoneNumber != null) {
+      // Admin number exists in SharedPreferences, so use it
+      CollectionReference allUsersRef = FirebaseFirestore.instance.collection('AllUsers');
+      DocumentReference adminDocRef = allUsersRef.doc(adminPhoneNumber);
 
-        if (userDoc.exists) {
-          // Set admin phone number and update the vehiclesCollection reference
-          setState(() {
-            adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
-            vehiclesCollection = adminDoc.reference.collection('Vehicles');
-          });
-          return;
-        }
+      // Reference to the Users subcollection
+      CollectionReference usersRef = adminDocRef.collection('Users');
+      DocumentSnapshot userDoc = await usersRef.doc(currentUserPhoneNumber).get();
+
+      if (userDoc.exists) {
+        // Set admin phone number and update the vehiclesCollection reference
+        setState(() {
+          vehiclesCollection = adminDocRef.collection('Vehicles');
+        });
+      } else {
+        // Handle case where user does not exist under the admin's Users subcollection
+        setState(() {
+          vehiclesCollection = null;
+        });
       }
-
-      // Handle the case where no admin is found
+    } else {
+      // Handle case where adminPhoneNumber is not in SharedPreferences
       setState(() {
-        adminPhoneNumber = null;
-        vehiclesCollection = null;
-      });
-    } catch (e) {
-      print('Error finding admin phone number: $e');
-      setState(() {
-        adminPhoneNumber = null;
         vehiclesCollection = null;
       });
     }
+  } catch (e) {
+    print('Error retrieving admin phone number: $e');
+    setState(() {
+      vehiclesCollection = null;
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +100,7 @@ class _DueState extends State<Due> {
         ),
       ),
       body: vehiclesCollection == null
-          ? const Center(child: CircularProgressIndicator(color: Color.fromARGB(255, 10, 10, 10)))
+          ? const Center(child: CircularProgressIndicator(color: Color.fromARGB(255, 9, 9, 9)))
           : StreamBuilder<QuerySnapshot>(
               stream: vehiclesCollection!
                   .where('pricingdone', isEqualTo: true)
@@ -100,7 +108,7 @@ class _DueState extends State<Due> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Color.fromARGB(255, 10, 10, 10)),
+                    child: CircularProgressIndicator(color: Color.fromARGB(255, 5, 5, 5)),
                   );
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -125,6 +133,22 @@ class _DueState extends State<Due> {
 
                     return GestureDetector(
                       onTap: () {
+                        if (widget.title=='Fix') {
+                          
+                        
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Fixirate(
+                              imgUrl: imageUrl,
+                              keyboardtype: widget.keyboardtype,
+                            ),
+                          ),
+                        );
+                         }
+                         if (widget.title=='Due') {
+                          
+                        
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -134,11 +158,25 @@ class _DueState extends State<Due> {
                             ),
                           ),
                         );
+                         }
+                         if (widget.title=='Pass') {
+                          
+                        
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Passrate(
+                              imgUrl: imageUrl,
+                              keyboardtype: widget.keyboardtype,
+                            ),
+                          ),
+                        );
+                         }
                       },
                       child: Card(
                         elevation: 10.0,
-                        color: const Color.fromARGB(255, 225, 215, 206),
-                        borderOnForeground: true, // 3D effect
+                        color: const Color.fromARGB(
+                            255, 225, 215, 206), // 3D effect
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                           side: const BorderSide(
@@ -177,7 +215,7 @@ class _DueState extends State<Due> {
                                         child: const CircularProgressIndicator(
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                                  Color.fromARGB(255, 8, 8, 8)),
+                                                  Colors.yellow),
                                         ),
                                       ),
                                       errorWidget: (context, url, error) =>

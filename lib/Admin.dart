@@ -3,14 +3,12 @@ import 'package:aapkaparking/Add%20vehicle.dart';
 import 'package:aapkaparking/AddAdmin.dart';
 import 'package:aapkaparking/Adduser2.dart';
 import 'package:aapkaparking/Edit%20vehicle.dart';
-import 'package:aapkaparking/EditAdmin.dart';
 import 'package:aapkaparking/colection.dart';
 import 'package:aapkaparking/verify.dart';
 import 'package:aapkaparking/viewUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -346,7 +344,9 @@ class _AdminPageState extends State<AdminPage> {
                         ),
                       ),
                     ),
-
+                    SizedBox(
+                      width: 10,
+                    ),
                     // DUE Container
                     GestureDetector(
                       onTap: () {
@@ -372,7 +372,9 @@ class _AdminPageState extends State<AdminPage> {
                         ),
                       ),
                     ),
-
+                   const SizedBox(
+                      width: 10,
+                    ),
                     // PASS Container
                     GestureDetector(
                       onTap: () {
@@ -536,7 +538,7 @@ class _AdminPageState extends State<AdminPage> {
         drawer: Drawer(
           width: 250,
           surfaceTintColor: const Color.fromARGB(255, 236, 219, 178),
-          shadowColor: const Color.fromARGB(255, 39, 239, 3),
+          shadowColor: Colors.orangeAccent, // Subtle shadow for 3D effect
           elevation: 45,
           child: ListView(
             padding: EdgeInsets.zero,
@@ -544,48 +546,108 @@ class _AdminPageState extends State<AdminPage> {
               // Custom DrawerHeader with parking logo and name
               DrawerHeader(
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 81, 81, 82),
+                  gradient:const LinearGradient(
+                    colors: [
+                      const Color.fromARGB(
+                          255, 103, 99, 99), // Darker grey for depth
+                      const Color.fromARGB(
+                          255, 233, 205, 162), // Orange gradient transition
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (imageUrl != null)
-                      Image.network(
-                        imageUrl!,
-                        width: 100,
-                        height: 100,
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundImage: NetworkImage(imageUrl!),
+                        backgroundColor:
+                            Colors.grey.shade300, // Border around the image
                       )
                     else
-                      CircularProgressIndicator(),
+                      const CircularProgressIndicator(),
+                    const SizedBox(height: 10),
                     if (parkingName != null)
                       Text(
                         parkingName!,
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(
+                          color: Color.fromARGB(
+                              255, 255, 255, 255), // Orange for text contrast
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily:
+                              'GoogleFontName', // Replace with the Google Font you want
+                        ),
                       )
                     else
-                      Text("Loading..."),
+                      const Text(
+                        "Loading...",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
+                      ),
                   ],
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.add),
+                leading: const Icon(Icons.add, color: Colors.green),
                 title: const Text('Add Admin details'),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AddAdmin()),
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AddAdmin(imgUrl: imageUrl, Name: parkingName),
+                    ),
                   );
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Edit Admin details'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  EditAdmin(imgUrl:imageUrl,Name:parkingName)),
-                  );
-                },
+              const SizedBox(
+                height: 500,
               ),
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0, left: 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Container for the image
+                    ColorFiltered(
+                      colorFilter: const ColorFilter.mode(
+                        Colors.grey, // Grey filter for the logo
+                        BlendMode.srcATop, // Blend mode
+                      ),
+                      child: Image.asset(
+                        'assets/aapka logo.webp', // Image asset path
+                        width: 15,
+                        height: 15,
+                      ),
+                    ),
+                    const SizedBox(
+                        width: 10), // Space between the logo and text
+                    const Text(
+                      'Aapka Parking \u00A9',
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 158, 158, 158), // Text color
+                        fontSize: 15, // Font size
+                        fontWeight: FontWeight.bold, // Bold text
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              // Add more ListTiles as needed
             ],
           ),
         ),

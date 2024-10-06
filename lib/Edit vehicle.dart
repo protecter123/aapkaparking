@@ -252,7 +252,7 @@ class _EditVehicleState extends State<EditVehicle> {
                                     child: Image.asset(
                                       'assets/animations/placeholder.png', // Placeholder asset image
                                       fit: BoxFit.cover,
-                                      height: 134,
+                                      height: 144,
                                       width: double.infinity,
                                     ),
                                   ),
@@ -263,7 +263,7 @@ class _EditVehicleState extends State<EditVehicle> {
                                     child: CachedNetworkImage(
                                       imageUrl: vehicleImage,
                                       fit: BoxFit.cover,
-                                      height: 134,
+                                      height: 144,
                                       width: double.infinity,
                                       placeholder: (context, url) => Container(
                                         alignment: Alignment.center,
@@ -306,7 +306,6 @@ class _EditVehicleState extends State<EditVehicle> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                _buildPassPriceRow('Pass', passPrice),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -320,6 +319,7 @@ class _EditVehicleState extends State<EditVehicle> {
                                     Icons.access_time, Colors.blue),
                                 _buildPriceRow('120 min', pricing120Minutes,
                                     Icons.watch_later, Colors.green),
+                                _buildPassPriceRow('Pass', passPrice),
                               ],
                             ),
                           ],

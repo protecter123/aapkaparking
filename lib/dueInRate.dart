@@ -1,4 +1,3 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,68 +21,51 @@ class _DuerateState extends State<Duerate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
-  String adminPhoneNumber = '';
+  String? adminPhoneNumber = '';
   String currentUserPhoneNumber = '';
   Future<void> fetchPricingDetails() async {
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
-    try {
-      // Reference to the AllUsers collection
-      CollectionReference allUsersRef =
-          FirebaseFirestore.instance.collection('AllUsers');
+  try {
+    // Retrieve the admin phone number from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+     adminPhoneNumber = prefs.getString('AdminNum');
 
-      // Fetch all admin documents
-      QuerySnapshot adminsSnapshot = await allUsersRef.get();
+    if (adminPhoneNumber != null) {
+      // Reference to the admin's Vehicles collection
+      CollectionReference vehiclesCollection = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(adminPhoneNumber)
+          .collection('Vehicles');
 
-      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
-        // Reference to the Users subcollection
-        CollectionReference usersRef = adminDoc.reference.collection('Users');
+      // Fetch pricing details based on the vehicle image URL
+      var snapshot = await vehiclesCollection
+          .where('vehicleImage', isEqualTo: widget.imgUrl)
+          .get();
 
-        // Check if the current user's phone number exists in this admin's Users subcollection
-        DocumentSnapshot userDoc =
-            await usersRef.doc(currentUserPhoneNumber).get();
-
-        if (userDoc.exists) {
-          // Set admin phone number and update the vehiclesCollection reference
-          adminPhoneNumber = adminDoc.id;
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('AdminNum',
-              adminPhoneNumber); // Admin phone number or document ID
-          CollectionReference vehiclesCollection =
-              adminDoc.reference.collection('Vehicles');
-
-          // Fetch pricing details based on the vehicle image URL
-          var snapshot = await vehiclesCollection
-              .where('vehicleImage', isEqualTo: widget.imgUrl)
-              .get();
-
-          if (snapshot.docs.isNotEmpty) {
-            setState(() {
-              pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
-            });
-          }
-          return; // Exit the loop once the correct admin is found
-        }
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
+        });
+      } else {
+        setState(() {
+          pricingData = null; // Handle no matching vehicle
+        });
       }
-
-      // Handle the case where no matching admin is found
-      setState(() {
-        pricingData = null;
-      });
-    } catch (e) {
-      print('Error fetching pricing details: $e');
+    } else {
+      // Handle case where adminPhoneNumber is not in SharedPreferences
       setState(() {
         pricingData = null;
       });
     }
+  } catch (e) {
+    print('Error fetching pricing details: $e');
+    setState(() {
+      pricingData = null;
+    });
   }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchPricingDetails();
-  }
+}
 
   void _generateReceipt() async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -283,13 +265,13 @@ class _DuerateState extends State<Duerate> {
                             : TextInputType.text,
                         decoration: const InputDecoration(
                           hintText: 'Add vehicle number',
-                          enabledBorder: const OutlineInputBorder(
+                          enabledBorder:  OutlineInputBorder(
                             borderSide: BorderSide(
                               width: 2,
                               color: Colors.black, // Default black border
                             ),
                           ),
-                          focusedBorder: const OutlineInputBorder(
+                          focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               width: 2,
                               color: Color.fromARGB(255, 207, 239,
@@ -297,7 +279,7 @@ class _DuerateState extends State<Duerate> {
                             ),
                           ),
                           border:
-                              const OutlineInputBorder(), // This acts as a fallback border if others are not defined
+                               OutlineInputBorder(), // This acts as a fallback border if others are not defined
                         ),
                       ),
                     ),
@@ -364,7 +346,7 @@ class _DuerateState extends State<Duerate> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? Color.fromARGB(255, 207, 239, 1)
+                ? const Color.fromARGB(255, 207, 239, 1)
                 : Colors.transparent,
             width: 2,
           ),

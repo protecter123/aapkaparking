@@ -1,4 +1,3 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,57 +21,44 @@ class _PassrateState extends State<Passrate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
-  String adminPhoneNumber = '';
+  String? adminPhoneNumber = '';
   String currentUserPhoneNumber = '';
   Future<void> fetchPricingDetails() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
     try {
-      // Reference to the AllUsers collection
-      CollectionReference allUsersRef =
-          FirebaseFirestore.instance.collection('AllUsers');
+      // Retrieve the admin phone number from SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      adminPhoneNumber = prefs.getString('AdminNum');
 
-      // Fetch all admin documents
-      QuerySnapshot adminsSnapshot = await allUsersRef.get();
+      if (adminPhoneNumber != null) {
+        // Reference to the admin's Vehicles collection
+        CollectionReference vehiclesCollection = FirebaseFirestore.instance
+            .collection('AllUsers')
+            .doc(adminPhoneNumber)
+            .collection('Vehicles');
 
-      for (QueryDocumentSnapshot adminDoc in adminsSnapshot.docs) {
-        // Reference to the Users subcollection
-        CollectionReference usersRef = adminDoc.reference.collection('Users');
+        // Fetch pricing details based on the vehicle image URL
+        var snapshot = await vehiclesCollection
+            .where('vehicleImage', isEqualTo: widget.imgUrl)
+            .get();
 
-        // Check if the current user's phone number exists in this admin's Users subcollection
-        DocumentSnapshot userDoc =
-            await usersRef.doc(currentUserPhoneNumber).get();
-
-        if (userDoc.exists) {
-          // Set admin phone number and update the vehiclesCollection reference
-          adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
-
-          // Save adminPhoneNumber to SharedPreferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('AdminNum', adminPhoneNumber);
-
-          CollectionReference vehiclesCollection =
-              adminDoc.reference.collection('Vehicles');
-
-          // Fetch pricing details based on the vehicle image URL
-          var snapshot = await vehiclesCollection
-              .where('vehicleImage', isEqualTo: widget.imgUrl)
-              .get();
-
-          if (snapshot.docs.isNotEmpty) {
-            setState(() {
-              pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
-            });
-          }
-          return; // Exit the loop once the correct admin is found
+        if (snapshot.docs.isNotEmpty) {
+          setState(() {
+            pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
+          });
+        } else {
+          setState(() {
+            pricingData = null; // Handle no matching vehicle
+          });
         }
+      } else {
+        // Handle case where adminPhoneNumber is not in SharedPreferences
+        setState(() {
+          pricingData = null;
+        });
       }
-
-      // Handle the case where no matching admin is found
-      setState(() {
-        pricingData = null;
-      });
     } catch (e) {
       print('Error fetching pricing details: $e');
       setState(() {
@@ -210,7 +196,7 @@ class _PassrateState extends State<Passrate> {
         );
       }
     }
-   if (_selectedContainerIndex == null || _controller.text.isEmpty) {
+    if (_selectedContainerIndex == null || _controller.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select price and Enter num.'),
@@ -229,15 +215,14 @@ class _PassrateState extends State<Passrate> {
       backgroundColor: const Color.fromARGB(255, 225, 215, 206),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 225, 215, 206),
-        title:Text(
-              'Parking Rates',
-              style: GoogleFonts.nunito(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-             
-            ),
+        title: Text(
+          'Parking Rates',
+          style: GoogleFonts.nunito(
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
       body: pricingData == null
@@ -302,7 +287,8 @@ class _PassrateState extends State<Passrate> {
                           focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide(
                               width: 2,
-                              color: Color.fromARGB(255, 207, 239, 1), // Green border when focused
+                              color: Color.fromARGB(255, 207, 239,
+                                  1), // Green border when focused
                             ),
                           ),
                           border:
@@ -325,9 +311,9 @@ class _PassrateState extends State<Passrate> {
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
-                              Color.fromARGB(255, 207, 239, 1), 
+                              Color.fromARGB(255, 207, 239, 1),
                               Color.fromARGB(255, 1, 1, 1),
-                              Color.fromARGB(255, 207, 239, 1), 
+                              Color.fromARGB(255, 207, 239, 1),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
