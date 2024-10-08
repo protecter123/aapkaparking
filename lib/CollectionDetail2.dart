@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class CollectionDetail2 extends StatefulWidget {
   final String title;
@@ -89,7 +90,9 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No entries found'));
+          return Center(
+                child: Lottie.asset('assets/animations/notfound2.json',
+                    height: 300, width: 300));
         }
 
         // List of vehicle entries

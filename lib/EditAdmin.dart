@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:aapkaparking/Admin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,7 +8,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:path/path.dart' as path;
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +28,6 @@ class _AddVehicleState extends State<EditAdmin> {
   @override
   void initState() {
     super.initState();
-   
   }
 
   void _getImage() async {
@@ -239,8 +238,16 @@ class _AddVehicleState extends State<EditAdmin> {
                   ),
                   child: TextButton(
                     onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AdminPage()),
+                      );
                       vehicleNameController.clear();
                       _image = null;
+
                       Navigator.of(context).pop(); // Close the dialog
                     },
                     child: const Text(
@@ -527,7 +534,11 @@ class _AddVehicleState extends State<EditAdmin> {
                     left: -10,
                     child: IconButton(
                         onPressed: () {
-                          Navigator.of(context).pop();
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const AdminPage(),
+                            ),
+                          );
                         },
                         icon: const Icon(
                           Icons.chevron_left,

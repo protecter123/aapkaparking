@@ -6,66 +6,119 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-class Expandcollect extends StatefulWidget {
+class Expandcollect2 extends StatefulWidget {
   final String userNo; // Pass userNo as argument
 
-  const Expandcollect({super.key, required this.userNo});
+  const Expandcollect2({super.key, required this.userNo});
 
   @override
-  State<Expandcollect> createState() => _ExpandcollectState();
+  State<Expandcollect2> createState() => _ExpandcollectState();
 }
 
-class _ExpandcollectState extends State<Expandcollect> {
-  // Function to fetch money collection data from Firestore
+class _ExpandcollectState extends State<Expandcollect2> {
   final TextEditingController _fromDateController = TextEditingController();
   final TextEditingController _toDateController = TextEditingController();
   DateTime? fromDate;
   DateTime? toDate;
-  Future<List<Map<String, dynamic>>> _fetchCollectionDetails() async {
+  List<Map<String, dynamic>> moneyCollectionList = [];
+  DocumentSnapshot? lastDocument;
+  bool isLoading = false;
+  bool hasMore = true;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCollectionDetails(); // Fetch initial set of data
+    _scrollController.addListener(_scrollListener); // Add scroll listener
+  }
+
+  // Scroll listener for pagination
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      if (!isLoading && hasMore) {
+        _fetchCollectionDetails(); // Load more documents when scrolled to the bottom
+      }
+    }
+  }
+
+  // Function to fetch money collection data with pagination and optional date filtering
+  Future<List<Map<String, dynamic>>> _fetchCollectionDetails(
+      {bool isFiltering = false}) async {
+    if (isLoading) return []; // Return an empty list when already loading
+    setState(() => isLoading = true);
+
     final currentUserPhone = FirebaseAuth.instance.currentUser?.phoneNumber;
     if (currentUserPhone == null) {
-      return [];
+      setState(() => isLoading = false);
+      return []; // Return an empty list if currentUserPhone is null
     }
 
-    List<Map<String, dynamic>> moneyCollectionList = [];
-
     try {
-      // Accessing the Firestore data based on the path described
-      final usersDoc = FirebaseFirestore.instance
+      Query query = FirebaseFirestore.instance
           .collection('AllUsers')
           .doc(currentUserPhone)
           .collection('Users')
           .doc(widget.userNo)
-          .collection('MoneyCollection');
+          .collection('MoneyCollection')
+          .orderBy(FieldPath.documentId, descending: true)
+          .limit(10);
 
-      // Fetch all documents without any restrictions
-      final querySnapshot = await usersDoc.get();
-
-      // Reverse the order of the documents
-      final reversedDocs = querySnapshot.docs.reversed;
-
-      // Extract data from each document
-      for (var doc in reversedDocs) {
-        print('Fetched Document ID: ${doc.id}, Data: ${doc.data()}');
-
-        // Assign default value of 0 if any of the fields are missing
-        moneyCollectionList.add({
-          'date': doc.id,
-          'dueMoney': doc.data().containsKey('dueMoney') ? doc['dueMoney'] : 0,
-          'fixMoney': doc.data().containsKey('fixMoney') ? doc['fixMoney'] : 0,
-          'passMoney':
-              doc.data().containsKey('passMoney') ? doc['passMoney'] : 0,
-        });
+      // Apply date filtering if dates are provided
+      if (fromDate != null && toDate != null) {
+        query = query
+            .where(FieldPath.documentId,
+                isGreaterThanOrEqualTo:
+                    DateFormat('yyyy-MM-dd').format(fromDate!))
+            .where(FieldPath.documentId,
+                isLessThanOrEqualTo: DateFormat('yyyy-MM-dd').format(toDate!));
       }
 
-      // Log the total number of documents fetched
-      print('Total documents fetched: ${moneyCollectionList.length}');
-    } catch (e) {
-      // Catching and logging any potential error
-      print('Error fetching data: $e');
-    }
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument!);
+      }
 
-    return moneyCollectionList;
+      final querySnapshot = await query.get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        lastDocument =
+            querySnapshot.docs.last; // Update the last document for pagination
+
+        final fetchedData = querySnapshot.docs.map((doc) {
+          final data = doc.data()
+              as Map<String, dynamic>?; // Ensure the data is cast correctly
+
+          return {
+            'date': doc.id,
+            'dueMoney':
+                data?.containsKey('dueMoney') == true ? data!['dueMoney'] : 0,
+            'fixMoney':
+                data?.containsKey('fixMoney') == true ? data!['fixMoney'] : 0,
+            'passMoney':
+                data?.containsKey('passMoney') == true ? data!['passMoney'] : 0,
+          };
+        }).toList();
+
+        setState(() {
+          moneyCollectionList.addAll(fetchedData);
+        });
+
+        if (querySnapshot.docs.length < 10) {
+          setState(() => hasMore = false); // No more documents to fetch
+        }
+
+        return fetchedData; // Return fetched data
+      } else {
+        setState(() => hasMore = false);
+        return []; // Return empty list if no documents are fetched
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      return []; // Return an empty list in case of an error
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
 
   void _showDateFilterDialog() {
@@ -108,7 +161,11 @@ class _ExpandcollectState extends State<Expandcollect> {
                           _toDateController.clear();
                           fromDate = null;
                           toDate = null;
+                          moneyCollectionList.clear();
+                          lastDocument = null;
+                          hasMore = true;
                         });
+                        _fetchCollectionDetails(); // Clear filter and fetch all documents
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -119,7 +176,13 @@ class _ExpandcollectState extends State<Expandcollect> {
                     ElevatedButton(
                       onPressed: () {
                         if (fromDate != null && toDate != null) {
-                          setState(() {});
+                          setState(() {
+                            moneyCollectionList.clear();
+                            lastDocument = null;
+                            hasMore = true;
+                          });
+                          _fetchCollectionDetails(
+                              isFiltering: true); // Apply date filter
                         }
                         Navigator.pop(context);
                       },
@@ -193,34 +256,44 @@ class _ExpandcollectState extends State<Expandcollect> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+      backgroundColor:
+          const Color.fromARGB(255, 225, 215, 206), // Light background color
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: const Color.fromARGB(0, 255, 255, 255),
+        backgroundColor: Colors.transparent, // Transparent AppBar background
+        elevation: 0, // Remove AppBar shadow
         centerTitle: true,
         title: Text(
-          'Collection Detailss',
-          style: GoogleFonts.nunito(fontSize: 25, fontWeight: FontWeight.bold),
+          'Collection Details', // Fixed typo in title
+          style: GoogleFonts.nunito(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            color: Colors
+                .black, // Text color to make it visible on a transparent background
+          ),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.black),
-            onPressed: _showDateFilterDialog,
+            onPressed: _showDateFilterDialog, // Assuming this method is defined
           ),
         ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _fetchCollectionDetails(),
+        future: _fetchCollectionDetails(), // Assuming you have this method
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator()); // Loading state
           } else if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching data'));
+            return const Center(
+                child: Text('Error fetching data')); // Error state
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No collections found'));
+            return const Center(
+                child: Text('No collections found')); // Empty data state
           }
 
           final collectionDetails = snapshot.data!;
@@ -229,7 +302,8 @@ class _ExpandcollectState extends State<Expandcollect> {
             itemCount: collectionDetails.length,
             itemBuilder: (context, index) {
               final collection = collectionDetails[index];
-              return _buildCollectionTile(collection);
+              return _buildCollectionTile(
+                  collection); // Custom widget for each item
             },
           );
         },
@@ -241,7 +315,7 @@ class _ExpandcollectState extends State<Expandcollect> {
   Widget _buildCollectionTile(Map<String, dynamic> collection) {
     // Parse the date from the 'collection' map and format it
     final DateTime parsedDate = DateTime.parse(collection['date']);
-    final String formattedDate = DateFormat('d MMM yyyy').format(parsedDate);
+    final String formattedDate = DateFormat('dd MMM yyyy').format(parsedDate);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

@@ -1,9 +1,10 @@
-import 'package:aapkaparking/Expand%20collect.dart';
+import 'package:aapkaparking/ExpandCollection2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class Collection extends StatefulWidget {
   const Collection({super.key});
@@ -254,7 +255,7 @@ class _CollectionState extends State<Collection> {
             Navigator.of(context).pop();
           },
         ),
-        backgroundColor:const Color.fromARGB(0, 238, 236, 236),
+        backgroundColor: const Color.fromARGB(0, 238, 236, 236),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.black),
@@ -271,7 +272,9 @@ class _CollectionState extends State<Collection> {
                     color: Color.fromARGB(255, 2, 2, 2)));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No money collections found.'));
+            return Center(
+                child: Lottie.asset('assets/animations/notfound2.json',
+                    height: 300, width: 300));
           }
 
           var usersMoneyData = snapshot.data!;
@@ -297,7 +300,7 @@ class _CollectionState extends State<Collection> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => Expandcollect(
+                              builder: (context) => Expandcollect2(
                                     userNo: userUID.toString(),
                                   )),
                         );

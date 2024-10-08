@@ -952,9 +952,9 @@ class _UserDashState extends State<UserDash> {
         return await _showExitDialog(context); // Show exit dialog on back press
       },
       child: Scaffold(
-        backgroundColor: Color.fromARGB(255, 0, 12, 55),
+        backgroundColor: const Color.fromARGB(255, 0, 12, 55),
         appBar: AppBar(
-          backgroundColor: Color.fromARGB(0, 212, 123, 123),
+          backgroundColor:const Color.fromARGB(0, 212, 123, 123),
           toolbarHeight: -0,
         ),
         body: Column(

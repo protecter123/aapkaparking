@@ -301,128 +301,140 @@ class _AdminPageState extends State<AdminPage> {
           ),
           child: Container(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Top Text for Today's Detailed Revenue
-                const Text(
-                  'Today\'s Detailed Revenue',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+            child: SingleChildScrollView(
+              // Ensures content is scrollable on very small screens
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Top Text for Today's Detailed Revenue
+                  const Text(
+                    'Today\'s Detailed Revenue',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center, // Centers the text
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // Row containing the three small containers
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // FIX Container
-                    GestureDetector(
-                      onTap: () {
-                        print('FIX tapped');
+                  // Row containing the three small containers
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // FIX Container
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            print('FIX tapped');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 5),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black, width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('FIX',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 5),
+                                Text(fixmoney ?? '0',
+                                    style: const TextStyle(fontSize: 14)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      // DUE Container
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            print('DUE tapped');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 5),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black, width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('DUE',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 5),
+                                Text(duemoney ?? '0',
+                                    style: const TextStyle(fontSize: 14)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      // PASS Container
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            print('PASS tapped');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 5),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black, width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('PASS',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 5),
+                                Text(passmoney ?? '0',
+                                    style: const TextStyle(fontSize: 14)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Close Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
                       },
-                      child: Container(
-                        width: 80, // Fixed width
-                        height: 80, // Fixed height
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black, width: 2),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black, // Black background
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('FIX',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 5),
-                            Text(fixmoney ?? '0',
-                                style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    // DUE Container
-                    GestureDetector(
-                      onTap: () {
-                        print('DUE tapped');
-                      },
-                      child: Container(
-                        width: 80, // Fixed width
-                        height: 80, // Fixed height
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black, width: 2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('DUE',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 5),
-                            Text(duemoney ?? '0',
-                                style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(color: Colors.white), // White text
                       ),
-                    ),
-                   const SizedBox(
-                      width: 10,
-                    ),
-                    // PASS Container
-                    GestureDetector(
-                      onTap: () {
-                        print('PASS tapped');
-                      },
-                      child: Container(
-                        width: 80, // Fixed width
-                        height: 80, // Fixed height
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black, width: 2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('PASS',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 5),
-                            Text(passmoney ?? '0',
-                                style: TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Close Button
-                Container(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black, // Black background
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Close',
-                      style: TextStyle(color: Colors.white), // White text
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -487,386 +499,434 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
+  Future<void> _handleRefresh() async {
+    await _loadCachedData();
+    await _fetchTotalAmount(); // Call your second function here
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
         return await _showExitDialog(context); // Show exit dialog on back press
       },
-      child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 223, 221, 221),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(70.0),
-          child: AppBar(
-            shadowColor: const Color.fromARGB(255, 190, 190, 190),
-            backgroundColor: Colors.white,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(00),
-                bottomRight: Radius.circular(00),
-              ),
-            ),
-            elevation: 1,
-            //leading: const SizedBox(), // Empty widget to keep title centered
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: _logout,
-                color: Colors.green,
-              ),
-            ],
-            title: Text(
-              'Admin Dashboard',
-              style: GoogleFonts.ubuntu(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            centerTitle: true,
-            leading: Builder(
-              builder: (context) {
-                return IconButton(
-                  icon: Icon(Icons.menu), // Drawer icon
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                );
-              },
-            ),
-          ),
-        ),
-        drawer: Drawer(
-          width: 250,
-          surfaceTintColor: const Color.fromARGB(255, 236, 219, 178),
-          shadowColor: Colors.orangeAccent, // Subtle shadow for 3D effect
-          elevation: 45,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // Custom DrawerHeader with parking logo and name
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient:const LinearGradient(
-                    colors: [
-                      const Color.fromARGB(
-                          255, 103, 99, 99), // Darker grey for depth
-                      const Color.fromARGB(
-                          255, 233, 205, 162), // Orange gradient transition
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (imageUrl != null)
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: NetworkImage(imageUrl!),
-                        backgroundColor:
-                            Colors.grey.shade300, // Border around the image
-                      )
-                    else
-                      const CircularProgressIndicator(),
-                    const SizedBox(height: 10),
-                    if (parkingName != null)
-                      Text(
-                        parkingName!,
-                        style: const TextStyle(
-                          color: Color.fromARGB(
-                              255, 255, 255, 255), // Orange for text contrast
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily:
-                              'GoogleFontName', // Replace with the Google Font you want
-                        ),
-                      )
-                    else
-                      const Text(
-                        "Loading...",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                        ),
-                      ),
-                  ],
+      child: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        color: Colors.black,
+        backgroundColor: const Color.fromARGB(255, 231, 202, 159),
+        child: Scaffold(
+          backgroundColor: Color.fromARGB(255, 0, 12, 55),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(70.0),
+            child: AppBar(
+              shadowColor: const Color.fromARGB(255, 190, 190, 190),
+              backgroundColor: Color.fromARGB(255, 0, 12, 55),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(00),
+                  bottomRight: Radius.circular(00),
                 ),
               ),
-              ListTile(
-                leading: const Icon(Icons.add, color: Colors.green),
-                title: const Text('Add Admin details'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          AddAdmin(imgUrl: imageUrl, Name: parkingName),
-                    ),
+              elevation: 1,
+              //leading: const SizedBox(), // Empty widget to keep title centered
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: _logout,
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                ),
+              ],
+              title: Text(
+                'Admin Dashboard',
+                style: GoogleFonts.ubuntu(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              centerTitle: true,
+              leading: Builder(
+                builder: (context) {
+                  return IconButton(
+                    icon: Icon(Icons.menu),
+                    color: Colors.white, // Drawer icon
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
                   );
                 },
               ),
-              const SizedBox(
-                height: 500,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0, left: 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Container for the image
-                    ColorFiltered(
-                      colorFilter: const ColorFilter.mode(
-                        Colors.grey, // Grey filter for the logo
-                        BlendMode.srcATop, // Blend mode
-                      ),
-                      child: Image.asset(
-                        'assets/aapka logo.webp', // Image asset path
-                        width: 15,
-                        height: 15,
-                      ),
-                    ),
-                    const SizedBox(
-                        width: 10), // Space between the logo and text
-                    const Text(
-                      'Aapka Parking \u00A9',
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 158, 158, 158), // Text color
-                        fontSize: 15, // Font size
-                        fontWeight: FontWeight.bold, // Bold text
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              // Add more ListTiles as needed
-            ],
+            ),
           ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  showTodayCollectionDialog(
-                      context, fixmoney, duemoney, passmoney);
-                },
-                child: Container(
-                  height: 150,
-                  width: double.infinity, // Ensures it takes the full width
+          drawer: Drawer(
+            width: 250,
+            surfaceTintColor: const Color.fromARGB(255, 236, 219, 178),
+            shadowColor: Colors.orangeAccent, // Subtle shadow for 3D effect
+            elevation: 45,
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                // Custom DrawerHeader with parking logo and name
+                DrawerHeader(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(2),
-                    color: Colors.yellow[50], // Light yellow background color
+                    gradient: const LinearGradient(
+                      colors: [
+                        const Color.fromARGB(
+                            255, 103, 99, 99), // Darker grey for depth
+                        const Color.fromARGB(
+                            255, 233, 205, 162), // Orange gradient transition
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 3,
-                        blurRadius: 7,
-                        offset:
-                            const Offset(0, 3), // Changes position of shadow
+                        color: Colors.black.withOpacity(0.3),
+                        spreadRadius: 2,
+                        blurRadius: 8,
+                        offset: const Offset(0, 5),
                       ),
                     ],
-                    image: const DecorationImage(
-                      image: AssetImage(
-                          'assets/animations/Adminback.jpg'), // Background image asset
-                      fit: BoxFit.cover,
-                    ),
                   ),
-                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Today\'s Revenue',
-                            style: GoogleFonts.libreBaskerville(
-                              fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                              color: const Color.fromARGB(255, 2, 2,
-                                  2), // Adjust color based on background
-                            ),
-                            overflow:
-                                TextOverflow.ellipsis, // Prevents overflow
+                      if (imageUrl != null)
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage: NetworkImage(imageUrl!),
+                          backgroundColor:
+                              Colors.grey.shade300, // Border around the image
+                        )
+                      else
+                        const CircularProgressIndicator(),
+                      const SizedBox(height: 10),
+                      if (parkingName != null)
+                        Text(
+                          parkingName!,
+                          style: const TextStyle(
+                            color: Color.fromARGB(
+                                255, 255, 255, 255), // Orange for text contrast
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            fontFamily:
+                                'GoogleFontName', // Replace with the Google Font you want
                           ),
-                          const CircleAvatar(
-                            radius: 24,
-                            backgroundColor: Colors.transparent,
-                            backgroundImage: AssetImage(
-                                'assets/animations/Rupee-Sign-Money-PNG.png'), // Circle avatar with image
+                        )
+                      else
+                        const Text(
+                          "Loading...",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
                           ),
-                        ],
+                        ),
+                    ],
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.add, color: Colors.green),
+                  title: const Text('Add Admin details'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AddAdmin(imgUrl: imageUrl, Name: parkingName),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(
+                  height: 500,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0, left: 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Container for the image
+                      ColorFiltered(
+                        colorFilter: const ColorFilter.mode(
+                          Colors.grey, // Grey filter for the logo
+                          BlendMode.srcATop, // Blend mode
+                        ),
+                        child: Image.asset(
+                          'assets/aapka logo.webp', // Image asset path
+                          width: 15,
+                          height: 15,
+                        ),
                       ),
                       const SizedBox(
-                          height: 25), // Pushes content to the bottom
-                      Container(
-                        width:
-                            double.infinity, // Ensures it takes the full width
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color.fromARGB(140, 255, 255, 255),
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '₹ ${_totalAmount.toStringAsFixed(1)}',
-                                style: const TextStyle(
-                                  fontSize: 28, // Larger font size for emphasis
-                                  fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 8, 8,
-                                      8), // Colorful text for total amount
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_month, // Colorful icon
-                                    color: Color.fromARGB(255, 7, 7, 7),
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    DateFormat('dd-MMM').format(DateTime
-                                        .now()), // Formats the date as dd-MMM
-                                    style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color.fromARGB(255, 1, 1, 1),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                          width: 10), // Space between the logo and text
+                      const Text(
+                        'Aapka Parking \u00A9',
+                        style: TextStyle(
+                          color:
+                              Color.fromARGB(255, 158, 158, 158), // Text color
+                          fontSize: 15, // Font size
+                          fontWeight: FontWeight.bold, // Bold text
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-
-              const SizedBox(
-                height: 10,
-              ),
-              const Divider(
-                color: Colors.black, // Color of the divider
-                thickness: 1,
-                indent: 0,
-                endIndent: 0, // Thickness of the divider
-                height: 1, // Space above and below the divider
-              ),
-
-              const SizedBox(
-                height: 10,
-              ), // Add spacing between the container and grid
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.all(1.0),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 20.0,
-                    mainAxisSpacing: 20.0,
-                    childAspectRatio: 1, // Adjust to make the cards taller
-                    children: [
-                      _buildCard(
-                          title: 'Add User',
-                          imagePath: 'assets/animations/wp2722623.png',
-                          animationUrl:
-                              'https://lottie.host/c5ea2a75-47eb-4000-805f-6c0708125ab7/rBQrP2Y1ea.json',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Adduser2()),
-                            );
-                          },
-                          backgroundColor: Color.fromARGB(255, 254, 171, 167)),
-                      _buildCard(
-                          title: 'Add Vehicle',
-                          imagePath: 'assets/animations/OIP (3).jpeg',
-                          animationUrl:
-                              'https://lottie.host/142ea5df-9cc2-4a58-ad4d-ecc235a58c40/wrjztJKkxO.json',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const AddVehicle()),
-                            );
-                          },
-                          backgroundColor: Color.fromARGB(255, 251, 241, 153)),
-                      _buildCard(
-                          title: 'Add Pricing',
-                          imagePath: 'assets/animations/1353554.webp',
-                          animationUrl:
-                              'https://lottie.host/98de12b2-ac8e-45c7-9097-8215c4ed6e8e/lOrOs3Tnye.json',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const AddPrice()),
-                            );
-                          },
-                          backgroundColor: Color.fromARGB(255, 151, 253, 156)),
-                      _buildCard(
-                          title: 'View Vehicles',
-                          imagePath:
-                              'assets/animations/pngtree-best-silk-wallpaper-any-one-can-loved-it-image_590012.jpg',
-                          animationUrl:
-                              'https://lottie.host/c024d909-3db9-4bc2-8aff-b3b4be0c6c5c/iUF7xCnkzl.json',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const EditVehicle()),
-                            );
-                          },
-                          backgroundColor: Color.fromARGB(255, 144, 205, 255)),
-                      _buildCard(
-                          title: 'Edit Users',
-                          imagePath: 'assets/animations/R.jpeg',
-                          animationUrl:
-                              'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Viewuser()),
-                            );
-                          },
-                          backgroundColor: Color.fromARGB(255, 168, 141, 249)),
-                      _buildCard(
-                          title: 'Collection',
-                          imagePath: 'assets/animations/wp2722623.png',
-                          animationUrl:
-                              'https://lottie.host/464e74ce-b867-41f5-8035-7904f651eb79/unGc97LCpv.json',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Collection()),
-                            );
-                          },
-                          backgroundColor: Color.fromARGB(255, 253, 178, 132)),
-                    ],
+                )
+                // Add more ListTiles as needed
+              ],
+            ),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    showTodayCollectionDialog(
+                        context, fixmoney, duemoney, passmoney);
+                  },
+                  child: Container(
+                    height: 150,
+                    width: double.infinity, // Ensures it takes the full width
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(2),
+                      color: Colors.yellow[50], // Light yellow background color
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 3,
+                          blurRadius: 7,
+                          offset:
+                              const Offset(0, 3), // Changes position of shadow
+                        ),
+                      ],
+                      image: const DecorationImage(
+                        image: AssetImage(
+                            'assets/animations/OIP (3).jpeg'), // Background image asset
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Today\'s Revenue',
+                              style: GoogleFonts.libreBaskerville(
+                                fontSize: 23,
+                                fontWeight: FontWeight.bold,
+                                color: const Color.fromARGB(255, 2, 2,
+                                    2), // Adjust color based on background
+                              ),
+                              overflow:
+                                  TextOverflow.ellipsis, // Prevents overflow
+                            ),
+                            const CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.transparent,
+                              backgroundImage: AssetImage(
+                                  'assets/animations/Rupee-Sign-Money-PNG.png'), // Circle avatar with image
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                            height: 25), // Pushes content to the bottom
+                        Container(
+                          width: double
+                              .infinity, // Ensures it takes the full width
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Color.fromARGB(140, 255, 255, 255),
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 18.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '₹ ${_totalAmount.toStringAsFixed(1)}',
+                                  style: const TextStyle(
+                                    fontSize:
+                                        28, // Larger font size for emphasis
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 8, 8,
+                                        8), // Colorful text for total amount
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.calendar_month, // Colorful icon
+                                      color: Color.fromARGB(255, 7, 7, 7),
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      DateFormat('dd-MMM').format(DateTime
+                                          .now()), // Formats the date as dd-MMM
+                                      style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color.fromARGB(255, 1, 1, 1),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(
+                  height: 10,
+                ),
+                const Divider(
+                  color: Colors.black, // Color of the divider
+                  thickness: 1,
+                  indent: 0,
+                  endIndent: 0, // Thickness of the divider
+                  height: 1, // Space above and below the divider
+                ),
+
+                const SizedBox(
+                  height: 10,
+                ), // Add spacing between the container and grid
+                Flexible(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      // Uncomment the image line if you want to add the background image later
+                      // image: const DecorationImage(
+                      //   image: AssetImage('assets/animations/OIP (4)4.jpeg'), // Background image path
+                      //   fit: BoxFit.cover, // Cover the entire container with the image
+                      // ),
+                      border: Border.all(
+                        color: Colors.black, // Border color
+                        width: 1.0, // Border width (1px)
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(0), // Rounded top-left corner
+                        topRight:
+                            Radius.circular(0), // Rounded top-right corner
+                      ),
+                      // Adding the green shadow
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(255, 25, 239, 1)
+                              .withOpacity(
+                                  0.9), // Slight green shadow with opacity
+                          blurRadius: 15, // How blurred the shadow will be
+                          offset: const Offset(0,
+                              1), // Horizontal and vertical offsets of the shadow
+                        ),
+                      ],
+                    ),
+
+                    height: 600, // Example height, can be adjusted
+                    width: MediaQuery.of(context).size.width - 30,
+                    child: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: GridView.count(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10.0,
+                        mainAxisSpacing: 10.0,
+                        childAspectRatio:
+                            2 / 3, // Adjust to make the cards taller
+                        children: [
+                          _buildCard(
+                              title: 'Add User',
+                              animationUrl:
+                                  'https://lottie.host/c5ea2a75-47eb-4000-805f-6c0708125ab7/rBQrP2Y1ea.json',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const Adduser2()),
+                                );
+                              },
+                              backgroundColor:
+                                  Color.fromARGB(218, 232, 73, 67)),
+                          _buildCard(
+                              title: 'Add Vehicle',
+                              animationUrl:
+                                  'https://lottie.host/142ea5df-9cc2-4a58-ad4d-ecc235a58c40/wrjztJKkxO.json',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const AddVehicle()),
+                                );
+                              },
+                              backgroundColor:
+                                  Color.fromARGB(207, 236, 218, 62)),
+                          _buildCard(
+                              title: 'Add Pricing',
+                              animationUrl:
+                                  'https://lottie.host/98de12b2-ac8e-45c7-9097-8215c4ed6e8e/lOrOs3Tnye.json',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const AddPrice()),
+                                );
+                              },
+                              backgroundColor:
+                                  Color.fromARGB(222, 233, 55, 203)),
+                          _buildCard(
+                              title: 'View Vehicles',
+                              animationUrl:
+                                  'https://lottie.host/c024d909-3db9-4bc2-8aff-b3b4be0c6c5c/iUF7xCnkzl.json',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const EditVehicle()),
+                                );
+                              },
+                              backgroundColor:
+                                  Color.fromARGB(214, 59, 160, 243)),
+                          _buildCard(
+                              title: 'Edit Users',
+                              animationUrl:
+                                  'https://lottie.host/a03f56ad-8193-4fc2-bda6-59dda8bae766/rxGhb8W3Vw.json',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const Viewuser()),
+                                );
+                              },
+                              backgroundColor:
+                                  Color.fromARGB(222, 109, 64, 244)),
+                          _buildCard(
+                              title: 'Collection',
+                              animationUrl:
+                                  'https://lottie.host/464e74ce-b867-41f5-8035-7904f651eb79/unGc97LCpv.json',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const Collection()),
+                                );
+                              },
+                              backgroundColor:
+                                  Color.fromARGB(222, 243, 127, 60)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -878,7 +938,7 @@ class _AdminPageState extends State<AdminPage> {
     required String animationUrl,
     required VoidCallback onTap,
     required Color backgroundColor,
-    required String imagePath, // Image path argument
+    // Image path argument
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -886,33 +946,15 @@ class _AdminPageState extends State<AdminPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
           color: backgroundColor, // Custom background color
-          image: DecorationImage(
-            image: AssetImage(imagePath), // Set image as background
-            fit: BoxFit.cover, // Ensure the image covers the entire container
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              offset: Offset(4, 4), // Position of the shadow
-              blurRadius: 10, // Blur effect
-              spreadRadius: 1, // How much the shadow spreads
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.8),
-              offset: Offset(-4, -4), // Light effect for 3D look
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-          ],
         ),
         child: Stack(
           children: [
             Positioned(
               top: 10,
-              left: 43,
+              left: 5,
               child: Container(
-                height: 90, // Smaller size for the animation
-                width: 90,
+                height: 150, // Smaller size for the animation
+                width: 150,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -921,7 +963,7 @@ class _AdminPageState extends State<AdminPage> {
                 ),
                 child: ClipOval(
                   child: Lottie.network(animationUrl,
-                      fit: BoxFit.cover, repeat: false),
+                      fit: BoxFit.cover, repeat: true),
                 ),
               ),
             ),

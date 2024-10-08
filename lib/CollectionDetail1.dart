@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart'; // For date formatting
 
 class CollectionDetails1 extends StatefulWidget {
   final String title;
@@ -89,7 +90,9 @@ class _CollectionDetails1State extends State<CollectionDetails1> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No entries found'));
+         return Center(
+                child: Lottie.asset('assets/animations/notfound2.json',
+                    height: 300, width: 300));
         }
 
         // List of vehicle entries
