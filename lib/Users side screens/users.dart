@@ -1,9 +1,12 @@
 import 'dart:ui'; // For ImageFilter
-import 'package:aapkaparking/bluetoothShowScreen.dart';
-import 'package:aapkaparking/fdpVehicleList.dart';
-import 'package:aapkaparking/fpList.dart';
-import 'package:aapkaparking/qrScanner.dart';
+
+import 'package:aapkaparking/Users%20side%20screens/PassScan.dart';
+import 'package:aapkaparking/Users%20side%20screens/bluetooth%20manager/bluetoothShowScreen.dart';
+import 'package:aapkaparking/Users%20side%20screens/fdpVehicleList.dart';
+import 'package:aapkaparking/Users%20side%20screens/fpList.dart';
+import 'package:aapkaparking/Users%20side%20screens/qrScanner.dart';
 import 'package:aapkaparking/verify.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,7 +26,7 @@ class UserDash extends StatefulWidget {
 
 class _UserDashState extends State<UserDash> {
   String _keyboardType = 'numeric'; // Default value
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     super.initState();
@@ -56,9 +59,9 @@ class _UserDashState extends State<UserDash> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           if (prefs.getString('AdminNum') == null) {
             await prefs.setString('AdminNum', adminDoc.id);
-            setState(() {
-              // adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
-            });
+            // setState(() {
+            //   // adminPhoneNumber = adminDoc.id; // Admin phone number or document ID
+            // });
           }
           return;
         }
@@ -185,7 +188,7 @@ class _UserDashState extends State<UserDash> {
                         Navigator.of(context).pop(); // Close the dialog
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 6, 2, 133),
+                        backgroundColor: const Color.fromARGB(255, 6, 2, 133),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -196,7 +199,7 @@ class _UserDashState extends State<UserDash> {
                         style: GoogleFonts.nunito(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Color.fromARGB(255, 250, 251, 251),
+                          color: const Color.fromARGB(255, 250, 251, 251),
                         ),
                       ),
                     ),
@@ -364,6 +367,12 @@ class _UserDashState extends State<UserDash> {
                   children: [
                     ElevatedButton(
                       onPressed: () async {
+                        SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        await prefs.remove('AdminNum');
+                        await prefs.remove('vehicleData');
+                        await prefs.remove('ParkingName');
+                        await prefs.remove('ParkingLogo');
                         await FirebaseAuth.instance.signOut();
                         Navigator.of(context).pop();
                         Navigator.pushReplacement(
@@ -474,17 +483,18 @@ class _UserDashState extends State<UserDash> {
                           size: 15,
                         ),
                         const SizedBox(width: 10),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Phone no.: ${userData['uid'] ?? ''}',
-                            style: GoogleFonts.poppins(
-                              color: const Color.fromARGB(196, 248, 248, 248),
-                              fontSize: 15,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        AutoSizeText(
+                          'Phone no.: ${userData['uid'] ?? ''}',
+                          style: GoogleFonts.poppins(
+                            color: const Color.fromARGB(196, 248, 248, 248),
+                            fontSize: 13,
                           ),
+                          maxLines: 1, // Limits the text to one line
+                          minFontSize: 10,
+                          maxFontSize:
+                              15, // Set a minimum font size to prevent text from becoming too small
+                          overflow: TextOverflow
+                              .ellipsis, // Adds '...' if text still overflows
                         ),
                       ],
                     ),
@@ -506,7 +516,7 @@ class _UserDashState extends State<UserDash> {
                             'Joined: ${DateFormat('dd MMM yyyy').format((userData['CreatedAt'] as Timestamp).toDate())}',
                             style: GoogleFonts.poppins(
                               color: const Color.fromARGB(195, 247, 246, 246),
-                              fontSize: 15,
+                              fontSize: 13,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -641,7 +651,7 @@ class _UserDashState extends State<UserDash> {
                             style: GoogleFonts.inconsolata(
                               color: Color.fromARGB(255, 248, 247, 247),
                               fontSize: fontSize < 10
-                                  ? 10
+                                  ? 8
                                   : fontSize, // Ensure minimum font size
                             ),
                             textAlign: TextAlign.center,
@@ -822,10 +832,15 @@ class _UserDashState extends State<UserDash> {
             child: Row(
               children: [
                 // The image asset
-                Image.asset(
-                  'assets/aapka logo.webp', // Replace with your actual image path
-                  width: 32,
-                  height: 32,
+                GestureDetector(
+                  onTap: () {
+                    _scaffoldKey.currentState!.openDrawer();
+                  },
+                  child: const Icon(
+                    Icons.list,
+                    color: Colors.white,
+                    size: 33,
+                  ),
                 ),
               ],
             ),
@@ -833,13 +848,17 @@ class _UserDashState extends State<UserDash> {
           Positioned(
             right: 110,
             top: 10,
-            child: Text(
+            child: AutoSizeText(
               'User Dashboard',
               style: GoogleFonts.lora(
                 color: const Color.fromARGB(255, 246, 245, 245),
-                fontSize: 25,
+                fontSize: 20, // Default font size
                 fontWeight: FontWeight.bold,
               ),
+              maxLines: 1, // Limits the text to one line
+              minFontSize: 18, // Minimum font size to ensure readability
+              maxFontSize: 25, // Ensures the font doesn't go beyond 25
+              overflow: TextOverflow.ellipsis, // Adds '...' if necessary
             ),
           ),
           Positioned(
@@ -850,7 +869,7 @@ class _UserDashState extends State<UserDash> {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Color.fromARGB(
+                  color: const Color.fromARGB(
                       0, 247, 247, 247), // Transparent background
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -952,10 +971,123 @@ class _UserDashState extends State<UserDash> {
         return await _showExitDialog(context); // Show exit dialog on back press
       },
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: const Color.fromARGB(255, 0, 12, 55),
         appBar: AppBar(
-          backgroundColor:const Color.fromARGB(0, 212, 123, 123),
+          backgroundColor: const Color.fromARGB(0, 212, 123, 123),
           toolbarHeight: -0,
+        ),
+        drawer: Drawer(
+          width: 250,
+          surfaceTintColor: const Color.fromARGB(255, 236, 219, 178),
+          shadowColor: Colors.orangeAccent, // Subtle shadow for 3D effect
+          elevation: 45,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              // Custom DrawerHeader with parking logo and name
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 10, 62, 232),
+                      Color.fromARGB(
+                          255, 229, 139, 166), // Darker grey for depth
+                      Color.fromARGB(
+                          255, 165, 222, 149), // Orange gradient transition
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor:
+                          Colors.grey.shade300, // Border around the image
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/aapka logo.webp', // Path to the asset image
+                          // fit: BoxFit.contain,
+                          width:
+                              80, // Set width and height to match the CircleAvatar radius
+                          height: 80,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons
+                                .error_outline); // Display error icon if asset fails to load
+                          },
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'Aapka Parking',
+                      style: const TextStyle(
+                        color: Color.fromARGB(
+                            255, 10, 10, 10), // Orange for text contrast
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontFamily:
+                            'GoogleFontName', // Replace with the Google Font you want
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.qr_code_scanner_outlined,
+                    color: Colors.red),
+                title: const Text('Scan for pass '),
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => const Passcan()));
+                },
+              ),
+              const SizedBox(
+                height: 500,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0, left: 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Container for the image
+                    ColorFiltered(
+                      colorFilter: const ColorFilter.mode(
+                        Colors.grey, // Grey filter for the logo
+                        BlendMode.srcATop, // Blend mode
+                      ),
+                      child: Image.asset(
+                        'assets/aapka logo.webp', // Image asset path
+                        width: 15,
+                        height: 15,
+                      ),
+                    ),
+                    const SizedBox(
+                        width: 10), // Space between the logo and text
+                    const Text(
+                      'Aapka Parking \u00A9',
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 158, 158, 158), // Text color
+                        fontSize: 15, // Font size
+                        fontWeight: FontWeight.bold, // Bold text
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              // Add more ListTiles as needed
+            ],
+          ),
         ),
         body: Column(
           children: [
@@ -1002,20 +1134,11 @@ class _UserDashState extends State<UserDash> {
               },
             ),
 
-            // Image.asset(
-            //   'assets/animations/tesla_car_PNG30.png', // Replace with your actual image asset path
-            //   width: 400,
-            //   height: 160,
-            // ),
-            // const Spacer(),
+            
             Container(
               decoration: BoxDecoration(
                 color: Colors.black,
-                // Uncomment the image line if you want to add the background image later
-                // image: const DecorationImage(
-                //   image: AssetImage('assets/animations/OIP (4)4.jpeg'), // Background image path
-                //   fit: BoxFit.cover, // Cover the entire container with the image
-                // ),
+               
                 border: Border.all(
                   color: Colors.black, // Border color
                   width: 1.0, // Border width (1px)

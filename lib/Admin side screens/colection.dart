@@ -1,4 +1,5 @@
-import 'package:aapkaparking/ExpandCollection2.dart';
+import 'package:aapkaparking/Admin%20side%20screens/ExpandCollection2.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

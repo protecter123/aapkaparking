@@ -1,4 +1,5 @@
-import 'package:aapkaparking/AfterScan.dart';
+
+import 'package:aapkaparking/Users%20side%20screens/AfterScan.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -179,7 +180,7 @@ class _DuelistState extends State<Duelist> {
               controller: _searchController,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Color.fromARGB(255, 255, 255, 255),
+                fillColor:const Color.fromARGB(255, 255, 255, 255),
                 labelText: 'Search by vehicle number',
                 labelStyle: const TextStyle(
                   color: Colors.grey,

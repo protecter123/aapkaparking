@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,23 +9,48 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'reciept.dart';
 
-class Passrate extends StatefulWidget {
+class Fixirate extends StatefulWidget {
   final String imgUrl;
   final String keyboardtype;
 
-  const Passrate({super.key, required this.imgUrl, required this.keyboardtype});
+  const Fixirate({super.key, required this.imgUrl, required this.keyboardtype});
 
   @override
-  _PassrateState createState() => _PassrateState();
+  _FixirateState createState() => _FixirateState();
 }
 
-class _PassrateState extends State<Passrate> {
+class _FixirateState extends State<Fixirate> {
   int? _selectedContainerIndex;
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? pricingData;
   String? adminPhoneNumber = '';
   String currentUserPhoneNumber = '';
-  Future<void> fetchPricingDetails() async {
+
+  @override
+  void initState() {
+    super.initState();
+    loadPricingData(); // Load data when the screen loads
+  }
+
+  Future<void> loadPricingData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    adminPhoneNumber = prefs.getString('AdminNum');
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
+    String? cachedPricingData = prefs.getString('pricingData_${widget.imgUrl}');
+
+    if (cachedPricingData != null) {
+      // Data exists in SharedPreferences, decode it and use it
+      setState(() {
+        pricingData = jsonDecode(cachedPricingData);
+      });
+    } else {
+      // Data not in SharedPreferences, fetch it from Firestore
+      await fetchPricingDetailsFromFirestore();
+    }
+  }
+
+  Future<void> fetchPricingDetailsFromFirestore() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     currentUserPhoneNumber = currentUser?.phoneNumber ?? 'unknown';
 
@@ -45,9 +72,14 @@ class _PassrateState extends State<Passrate> {
             .get();
 
         if (snapshot.docs.isNotEmpty) {
-          setState(() {
-            pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
-          });
+          pricingData = snapshot.docs.first.data() as Map<String, dynamic>;
+
+          // Save fetched data to SharedPreferences for future use
+          await prefs.setString(
+              'pricingData_${widget.imgUrl}', jsonEncode(pricingData!));
+
+          // Update UI
+          setState(() {});
         } else {
           setState(() {
             pricingData = null; // Handle no matching vehicle
@@ -67,44 +99,47 @@ class _PassrateState extends State<Passrate> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchPricingDetails();
-  }
-
   void _generateReceipt() async {
+    FocusScope.of(context).unfocus();
+
+    // Check if the container is selected and input is provided
     if (_selectedContainerIndex != null &&
         _controller.text.isNotEmpty &&
         pricingData != null) {
-      var selectedRate = _selectedContainerIndex == 0
-          ? '1 Month Pass'
-          : _selectedContainerIndex == 1
-              ? '2 Month Pass'
-              : '3 Month Pass';
-
-      // Calculate the price based on the selected option
-      var price = _selectedContainerIndex == 0
-          ? pricingData!['PassPrice']
-          : _selectedContainerIndex == 1
-              ? (int.tryParse(pricingData!['PassPrice'])! * 2).toString()
-              : (int.tryParse(pricingData!['PassPrice'])! * 3).toString();
-
-      // Convert price to integer
-      int priceAsInt = int.tryParse(price) ?? 0;
+      // Show loading after validation
       showDialog(
         context: context,
-        barrierDismissible: false, // Prevent dismissing the dialog
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return const Center(
             child: CircularProgressIndicator(
               backgroundColor: Color.fromARGB(255, 206, 200, 200),
               color: Colors.black,
-            ), // Show loader
+            ),
           );
         },
       );
+
+      // Define selected rate and price based on index
+      var selectedRate = _selectedContainerIndex == 0
+          ? '30 Minutes'
+          : _selectedContainerIndex == 1
+              ? '60 Minutes'
+              : '120 Minutes';
+
+      var price = _selectedContainerIndex == 0
+          ? pricingData!['Pricing30Minutes']
+          : _selectedContainerIndex == 1
+              ? pricingData!['Pricing1Hour']
+              : pricingData!['Pricing120Minutes'];
+
+      num priceAsDouble = num.tryParse(price.toString()) ?? 0.0;
+
+      // Firestore update logic with batch for efficiency
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+
       try {
+        // Reference to the user's money collection document
         CollectionReference usersRef = FirebaseFirestore.instance
             .collection('AllUsers')
             .doc(adminPhoneNumber)
@@ -112,70 +147,43 @@ class _PassrateState extends State<Passrate> {
             .doc(currentUserPhoneNumber)
             .collection('MoneyCollection');
 
-        DocumentReference passDocRef =
+        DocumentReference fixDocRef =
             usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
-        // Run a transaction to safely update the passMoney field and create vehicleEntry sub-collection
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          DocumentSnapshot snapshot = await transaction.get(passDocRef);
+        // Fetch document to check existing fixMoney
+        DocumentSnapshot snapshot = await fixDocRef.get();
+        num newTotal = priceAsDouble;
 
-          if (snapshot.exists) {
-            // Cast data to Map<String, dynamic>
-            Map<String, dynamic>? data =
-                snapshot.data() as Map<String, dynamic>?;
-
-            if (data != null && data.containsKey('passMoney')) {
-              // Convert the existing passMoney from string to integer
-              int existingTotal = int.tryParse(data['passMoney'] ?? '0') ?? 0;
-              int newTotal = existingTotal + priceAsInt;
-
-              print('Existing Total: $existingTotal, New Total: $newTotal');
-
-              // Update only the 'passMoney' field without disturbing other fields
-              transaction
-                  .update(passDocRef, {'passMoney': newTotal.toString()});
-            } else {
-              // If passMoney field does not exist, create it or update it with the initial amount
-              print('Creating document with initial total: $price');
-              transaction.set(
-                  passDocRef, {'passMoney': price}, SetOptions(merge: true));
-            }
-          } else {
-            // If the document doesn't exist, create it with the initial amount
-            print('Creating document with initial total: $price');
-            transaction.set(passDocRef, {'passMoney': price});
+        if (snapshot.exists) {
+          // If document exists, update the fixMoney field
+          Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+          if (data != null && data.containsKey('fixMoney')) {
+            num existingTotal = num.tryParse(data['fixMoney'] ?? '0.0') ?? 0.0;
+            newTotal = existingTotal + priceAsDouble;
           }
+        }
 
-          // Now we handle the vehicleEntry sub-collection
-          CollectionReference vehicleEntryRef =
-              passDocRef.collection('vehicleEntry');
+        // Batch update or set the fixMoney field
+        batch.set(fixDocRef, {'fixMoney': newTotal.toString()},
+            SetOptions(merge: true));
 
-          // Check if a document for the vehicle number exists
-          QuerySnapshot existingVehicleEntry = await vehicleEntryRef
-              .where('vehicleNumber', isEqualTo: _controller.text)
-              .get();
-
-          if (existingVehicleEntry.docs.isEmpty) {
-            // If no document exists for this vehicle, create a new one
-            vehicleEntryRef.add({
-              'vehicleNumber': _controller.text,
-              'entryTime': DateTime.now(),
-              'entryType': 'Pass',
-              'selectedTime': selectedRate,
-              'selectedRate': price
-            });
-          } else {
-            // If document exists, create a new document with the vehicle details
-            vehicleEntryRef.add({
-              'vehicleNumber': _controller.text,
-              'entryTime': DateTime.now(),
-              'entryType': 'Pass',
-              'selectedTime': selectedRate,
-              'selectedRate': price,
-            });
-          }
+        // Add a new vehicle entry to the sub-collection
+        CollectionReference vehicleEntryRef =
+            fixDocRef.collection('vehicleEntry');
+        batch.set(vehicleEntryRef.doc(), {
+          'vehicleNumber': _controller.text,
+          'entryTime': DateTime.now(),
+          'entryType': 'Fix',
+          'selectedTime': selectedRate,
+          'selectedRate': price,
         });
+
+        // Commit the batch write
+        await batch.commit();
+
+        // Close the loader
         Navigator.of(context).pop();
+
         // Navigate to the receipt screen
         Navigator.push(
           context,
@@ -183,27 +191,32 @@ class _PassrateState extends State<Passrate> {
             builder: (context) => Receipt(
               vehicleNumber: _controller.text,
               rateType: selectedRate,
-              price: price,
-              page: 'Pass',
+              price: priceAsDouble.toString(),
+              page: 'Fix',
             ),
           ),
         );
       } catch (e) {
+        // Close the loader
+        Navigator.of(context).pop();
+
+        // Handle the error
         print('Error updating total money: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Failed to update total money. Please try again.')),
+            content: Text('Failed to update total money. Please try again.'),
+          ),
         );
       }
-    }
-    if (_selectedContainerIndex == null || _controller.text.isEmpty) {
+    } else {
+      // Show validation error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select price and Enter num.'),
+          content: Text('Please select price and enter vehicle number.'),
           showCloseIcon: true,
           closeIconColor: Colors.white,
           backgroundColor: Color.fromARGB(255, 10, 10, 10),
-          duration: const Duration(milliseconds: 300),
+          duration: Duration(milliseconds: 300),
         ),
       );
     }
@@ -228,7 +241,7 @@ class _PassrateState extends State<Passrate> {
       body: pricingData == null
           ? const Center(
               child: CircularProgressIndicator(
-                  color: Color.fromARGB(255, 3, 3, 3)))
+                  color: Color.fromARGB(255, 6, 6, 6)))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -237,65 +250,64 @@ class _PassrateState extends State<Passrate> {
                     Container(
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 7, 7, 7),
+                        color: const Color.fromARGB(255, 3, 3, 3),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
                         children: [
                           _buildPricingContainer(
                             context,
-                            '1 Month Pass',
-                            pricingData!['PassPrice'],
+                            '30 Minutes',
+                            int.tryParse(
+                                pricingData!['Pricing30Minutes'] ?? '0'),
                             0,
                           ),
                           const SizedBox(height: 16),
                           _buildPricingContainer(
                             context,
-                            '2 Month Pass',
-                            (int.tryParse(pricingData!['PassPrice'])! * 2)
-                                .toString(),
+                            '60 Minutes',
+                            int.tryParse(pricingData!['Pricing1Hour'] ?? '0'),
                             1,
                           ),
                           const SizedBox(height: 16),
                           _buildPricingContainer(
                             context,
-                            '3 Month Pass',
-                            (int.tryParse(pricingData!['PassPrice'])! * 3)
-                                .toString(),
+                            '120 Minutes',
+                            int.tryParse(
+                                pricingData!['Pricing120Minutes'] ?? '0'),
                             2,
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width -
-                          48, // Decreases the width by 10 pixels
-                      child: TextField(
-                        controller: _controller,
-                        keyboardType: widget.keyboardtype == 'numeric'
-                            ? TextInputType.number
-                            : TextInputType.text,
-                        decoration: const InputDecoration(
-                          hintText: 'Add vehicle number',
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: Colors.black, // Default black border
+                    Container(
+                        width: MediaQuery.of(context).size.width -
+                            48, // Decreases the width by 10 pixels
+                        child: TextField(
+                          controller: _controller,
+                          keyboardType: widget.keyboardtype == 'numeric'
+                              ? TextInputType.number
+                              : TextInputType.text,
+                          decoration: const InputDecoration(
+                            hintText: 'Add vehicle number',
+                            enabledBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Colors.black, // Default black border
+                              ),
                             ),
-                          ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: Color.fromARGB(255, 207, 239,
-                                  1), // Green border when focused
+                            focusedBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 2,
+                                color: Color.fromARGB(255, 207, 239,
+                                    1), // Green border when focused
+                              ),
                             ),
+                            border:
+                                const OutlineInputBorder(), // This acts as a fallback border if others are not defined
                           ),
-                          border:
-                              const OutlineInputBorder(), // This acts as a fallback border if others are not defined
-                        ),
-                      ),
-                    ),
+                        )),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _generateReceipt,
@@ -343,7 +355,7 @@ class _PassrateState extends State<Passrate> {
   }
 
   Widget _buildPricingContainer(
-      BuildContext context, String timing, String? price, int index) {
+      BuildContext context, String timing, int? price, int index) {
     bool isSelected = _selectedContainerIndex == index;
 
     return GestureDetector(
@@ -365,7 +377,7 @@ class _PassrateState extends State<Passrate> {
           ),
           boxShadow: const [
             BoxShadow(
-              color: Colors.black26,
+              color: Color.fromARGB(66, 247, 252, 226),
               blurRadius: 10,
               offset: Offset(0, 5),
             ),
@@ -379,9 +391,9 @@ class _PassrateState extends State<Passrate> {
                 padding: const EdgeInsets.all(5.0),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color.fromARGB(255, 207, 239, 1)
-                      : const Color.fromARGB(165, 250, 249, 248),
-                  borderRadius: const BorderRadius.only(
+                      ? Color.fromARGB(255, 207, 239, 1)
+                      : Color.fromARGB(165, 250, 249, 248),
+                  borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(0),
                       topRight: Radius.circular(10),
                       bottomLeft: Radius.circular(10)),
@@ -408,7 +420,7 @@ class _PassrateState extends State<Passrate> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 50.0),
+              padding: EdgeInsets.only(top: 50.0),
               child: Lottie.asset('assets/animations/line.json', repeat: false),
             ),
           ],

@@ -60,8 +60,9 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
       ),
       body: adminPhoneNumber == null
           ? const Center(
-              child:
-                  CircularProgressIndicator()) // Show loading while phone number is being fetched
+              child: CircularProgressIndicator(
+              color: Colors.black,
+            )) // Show loading while phone number is being fetched
           : _buildBody(), // Build the body with Firestore data
     );
   }
@@ -86,13 +87,14 @@ class _CollectionDetail2State extends State<CollectionDetail2> {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+              child: CircularProgressIndicator(color: Colors.black));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
-                child: Lottie.asset('assets/animations/notfound2.json',
-                    height: 300, width: 300));
+              child: Lottie.asset('assets/animations/notfound2.json',
+                  height: 300, width: 300));
         }
 
         // List of vehicle entries

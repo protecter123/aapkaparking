@@ -264,7 +264,7 @@ class _AdduserState extends State<Adduser2> {
                       children: [
                         // Title and Name
                         const SizedBox(
-                          height: 250,
+                          height: 130,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,

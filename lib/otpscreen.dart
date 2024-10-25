@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'package:aapkaparking/Admin.dart';
-import 'package:aapkaparking/users.dart';
+import 'package:aapkaparking/Admin%20side%20screens/Admin.dart';
+
+import 'package:aapkaparking/Users%20side%20screens/users.dart';
+
 import 'package:aapkaparking/verify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

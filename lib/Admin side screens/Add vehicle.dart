@@ -1,34 +1,28 @@
 import 'dart:io';
 import 'dart:ui';
-import 'package:aapkaparking/Admin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
 import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class EditAdmin extends StatefulWidget {
-  final String? imgUrl;
-  final String? Name;
-  const EditAdmin({super.key, required this.imgUrl, required this.Name});
+class AddVehicle extends StatefulWidget {
+  const AddVehicle({super.key});
 
   @override
-  State<EditAdmin> createState() => _AddVehicleState();
+  State<AddVehicle> createState() => _AddVehicleState();
 }
 
-class _AddVehicleState extends State<EditAdmin> {
+class _AddVehicleState extends State<AddVehicle> {
   final TextEditingController vehicleNameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? _image;
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void _getImage() async {
     await showModalBottomSheet(
@@ -114,44 +108,32 @@ class _AddVehicleState extends State<EditAdmin> {
     );
   }
 
-  Future<void> _removeParkingDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('cachedParkingLogo'); // Removes the ParkingLogo key
-    await prefs.remove('cachedParkingName'); // Removes the ParkingName key
-  }
-
-  Future<void> _saveAdminDetails() async {
+  Future<void> _saveVehicleDetails() async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
     if (_image == null && vehicleNameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please provide Admin name and Image.'),
-          duration: Duration(milliseconds: 300),
-        ),
+            content: Text('Please provide Vehicle name and Image.'),
+            duration: const Duration(milliseconds: 300)),
       );
       return;
     }
-
     if (_image == null) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please provide Parking Logo'),
-          duration: Duration(milliseconds: 300),
-        ),
+            content: Text('Please provide Vehicle Image.'),
+            duration: const Duration(milliseconds: 300)),
       );
       return;
     }
-
     if (vehicleNameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please provide Parking name.'),
-          duration: Duration(milliseconds: 300),
-        ),
+            content: Text('Please provide Vehicle name.'),
+            duration: const Duration(milliseconds: 300)),
       );
       return;
     }
@@ -183,26 +165,91 @@ class _AddVehicleState extends State<EditAdmin> {
         return;
       }
 
-      // Upload the image to Firebase Storage
-      final fileName = path.basename(_image!.path);
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('Admins/$phoneNumber/ParkingLogo/$fileName');
-      final uploadTask = await storageRef.putFile(File(_image!.path));
+      // Check if the vehicle name already exists
+      final firestoreRef = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(phoneNumber)
+          .collection('Vehicles');
+
+      final querySnapshot = await firestoreRef
+          .where('vehicleName', isEqualTo: vehicleNameController.text.trim())
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Close loader
+        Navigator.of(context).pop(); // Close loader dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vehicle already added')),
+        );
+        return;
+      }
+
+      if (_image != null) {
+        // Read the image as bytes
+        Uint8List imageBytes = await _image!.readAsBytes();
+
+        // Decode the image for resizing and compression using the image package
+        img.Image? decodedImage = img.decodeImage(imageBytes);
+
+        if (decodedImage != null) {
+          // Resize the image (e.g., 50% of the original size)
+          img.Image resizedImage = img.copyResize(decodedImage,
+              width: (decodedImage.width * 0.5).toInt());
+
+          // Compress the image with 90% quality (adjust as needed)
+          List<int> compressedImage = img.encodeJpg(resizedImage,
+              quality: 75); // You can change quality percentage
+
+          // Convert the compressed image to Uint8List for Firebase Storage upload
+          Uint8List compressedImageBytes = Uint8List.fromList(compressedImage);
+
+          // Get the file name
+          final fileName = path.basename(_image!.path);
+
+          // Create Firebase Storage reference
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('vehicles/$phoneNumber/$fileName');
+
+          // Upload the compressed image to Firebase Storage
+          UploadTask uploadTask = storageRef.putData(compressedImageBytes);
+
+          // Monitor the upload progress
+          uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+            print(
+                'Progress: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100} %');
+          });
+
+          // Wait for the upload to complete
+          TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
+
+          // Get the download URL
+          String downloadUrl = await snapshot.ref.getDownloadURL();
+
+          // Save the data to Firestore
+          await firestoreRef.doc().set({
+            'vehicleName': vehicleNameController.text.trim(),
+            'vehicleImage': downloadUrl,
+            'pricingdone': false
+          });
+
+          print('Image uploaded successfully! Download URL: $downloadUrl');
+        } else {
+          print('Error: Failed to decode the image.');
+        }
+      } else {
+        print('No image selected');
+      }
 
       // Get the download URL of the uploaded image
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      //  final downloadUrl = await UploadTask.ref.getDownloadURL();
 
-      // Merge ParkingLogo and ParkingName into the existing document
-      final firestoreRef =
-          FirebaseFirestore.instance.collection('AllUsers').doc(phoneNumber);
-
-      await firestoreRef.update(
-        {
-          'ParkingLogo': downloadUrl,
-          'ParkingName': vehicleNameController.text.trim(),
-        },
-      );
+      // Save the vehicle details in Firestore
+      // await firestoreRef.doc().set({
+      //   'vehicleName': vehicleNameController.text.trim(),
+      //   'vehicleImage':downloadUrl,
+      //   'pricingdone': false
+      // });
 
       // Close the loader
       Navigator.of(context).pop(); // Close loader dialog
@@ -218,10 +265,11 @@ class _AddVehicleState extends State<EditAdmin> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Lottie.asset('assets/animations/complete.json'),
+                Lottie.asset(
+                    'assets/animations/complete.json'), // Replace with your Lottie file URL
                 const SizedBox(height: 20),
                 const Text(
-                  'Parking details saved successfully!',
+                  'Vehicle added successfully!',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
@@ -238,16 +286,8 @@ class _AddVehicleState extends State<EditAdmin> {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const AdminPage()),
-                      );
                       vehicleNameController.clear();
                       _image = null;
-
                       Navigator.of(context).pop(); // Close the dialog
                     },
                     child: const Text(
@@ -270,7 +310,7 @@ class _AddVehicleState extends State<EditAdmin> {
       Navigator.of(context).pop(); // Close loader dialog
       // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save admin details: $e')),
+        SnackBar(content: Text('Failed to save vehicle details: $e')),
       );
     }
   }
@@ -349,7 +389,7 @@ class _AddVehicleState extends State<EditAdmin> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(
-                        height: 250,
+                        height: 130,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -358,7 +398,7 @@ class _AddVehicleState extends State<EditAdmin> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
-                                'Edit Admin',
+                                'Add Vehicle',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize:
                                       constraints.maxWidth > 600 ? 50 : 40,
@@ -376,7 +416,7 @@ class _AddVehicleState extends State<EditAdmin> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
-                                'Details',
+                                'Name',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize:
                                       constraints.maxWidth > 600 ? 50 : 40,
@@ -410,10 +450,23 @@ class _AddVehicleState extends State<EditAdmin> {
                                       ? FileImage(_image!)
                                       : null,
                                   child: _image == null
-                                      ? Image.network(
-                                          widget.imgUrl!,
-                                          width: 100,
-                                          height: 100,
+                                      ? const Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'Tap to Add pic',
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 10),
+                                            ),
+                                            const Icon(
+                                              Icons.person,
+                                              color:
+                                                  Color.fromARGB(255, 5, 5, 5),
+                                              size: 60,
+                                            )
+                                          ],
                                         )
                                       : null,
                                 ),
@@ -448,7 +501,7 @@ class _AddVehicleState extends State<EditAdmin> {
                         children: [
                           Container(
                               child: Text(
-                            'Add New Parking name',
+                            'Add vehicle name',
                             style: GoogleFonts.notoSansHanunoo(
                                 color: Color.fromARGB(255, 29, 29, 29)),
                           )),
@@ -483,7 +536,7 @@ class _AddVehicleState extends State<EditAdmin> {
                                       color: Colors.black,
                                       width: 2), // 2 px black border
                                 ),
-                                hintText: widget.Name!,
+                                hintText: 'Vehicle name',
                                 hintStyle: GoogleFonts.notoSansHanunoo(
                                   color: Colors.grey,
                                   fontSize: 19,
@@ -503,10 +556,7 @@ class _AddVehicleState extends State<EditAdmin> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: () {
-                            _removeParkingDetails();
-                            _saveAdminDetails();
-                          },
+                          onPressed: _saveVehicleDetails,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black, // Full black color
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -519,7 +569,7 @@ class _AddVehicleState extends State<EditAdmin> {
                                 .withOpacity(0.5), // Shadow for 3D effect
                           ),
                           child: const Text(
-                            'EDIT ADMIN DETAILS', // Updated button text
+                            'SAVE VEHICLE DETAILS', // Updated button text
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18), // White text color
@@ -534,11 +584,7 @@ class _AddVehicleState extends State<EditAdmin> {
                     left: -10,
                     child: IconButton(
                         onPressed: () {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => const AdminPage(),
-                            ),
-                          );
+                          Navigator.of(context).pop();
                         },
                         icon: const Icon(
                           Icons.chevron_left,

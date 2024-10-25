@@ -1,9 +1,16 @@
 import 'dart:async';
+import 'dart:io';
+
+import 'package:aapkaparking/Users%20side%20screens/AfterPassScan.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class FpList extends StatefulWidget {
   final String label;
@@ -32,11 +39,13 @@ class _FpListState extends State<FpList> {
   final TextEditingController _toDateController = TextEditingController();
   DateTime? fromDate;
   DateTime? toDate;
+  String ParkingName = '';
   @override
   void initState() {
     super.initState();
     _getUserPhoneNumber();
     _getAdminNum();
+    fetchParkingNameFromSharedPreferences();
     _scrollController.addListener(_onScroll); // Listen for scroll to bottom
   }
 
@@ -45,6 +54,20 @@ class _FpListState extends State<FpList> {
     _scrollController.dispose();
     _searchController.dispose(); // Dispose search controller when done
     super.dispose();
+  }
+
+  Future<void> fetchParkingNameFromSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedParkingName = prefs.getString('ParkingName');
+
+    // Check if the value exists and assign it to parkingName
+    if (storedParkingName != null && storedParkingName.isNotEmpty) {
+      setState(() {
+        ParkingName = storedParkingName;
+      });
+    } else {
+      print('Parking name not found in SharedPreferences');
+    }
   }
 
   void _onSearchChanged(String query) {
@@ -258,6 +281,162 @@ class _FpListState extends State<FpList> {
     );
   }
 
+  Future<void> _generateAndSharePDF(
+      String Vehiclenum, String Rate, String time) async {
+    final pdf = pw.Document();
+
+    // Generate the PDF layout
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Center(
+                child: pw.Text(
+                  ParkingName.toUpperCase(),
+                  style: pw.TextStyle(
+                    fontSize: 28,
+                    fontWeight: pw.FontWeight.bold,
+                    decoration: pw.TextDecoration.underline,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 50),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    'Parking Type: Pass',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                  pw.Text(
+                    'Vehicle No.: ${Vehiclenum}',
+                    style: pw.TextStyle(
+                      fontSize: 18,
+                      fontWeight: pw.FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 50),
+              pw.Center(
+                child: pw.Text(
+                  'Amount Paid: Rs. ${Rate}',
+                  style: pw.TextStyle(
+                    fontSize: 24,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 40),
+              pw.Center(
+                child: pw.Container(
+                  width: 300,
+                  height: 300,
+                  child: pw.BarcodeWidget(
+                    barcode: pw.Barcode.qrCode(),
+                    data: Vehiclenum,
+                    width: 300,
+                    height: 300,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Convert PDF to bytes and share directly
+    final pdfBytes = await pdf.save();
+    final tempDir = Directory.systemTemp;
+    final file = File('${tempDir.path}/Pass_qr_code_${Vehiclenum}.pdf');
+    await file.writeAsBytes(pdfBytes);
+
+    // Show dialog to share
+    _showShareDialog(file.path, Vehiclenum);
+  }
+
+  void _showShareDialog(String pdfFilePath, String Vehiclenum) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'PDF Generated',
+            style: GoogleFonts.nunito(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: const Text(
+            'The Pass PDF has been generated successfully. Do you want to share it on WhatsApp?',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0), // Square shape
+                  side: const BorderSide(color: Colors.black), // Black border
+                ),
+                backgroundColor: Colors.white, // White background
+              ),
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  color: Colors.black, // Black text
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0), // Square shape
+                ),
+                backgroundColor: Colors.black, // Black background
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _shareOnWhatsApp(pdfFilePath, Vehiclenum);
+              },
+              child: const Text(
+                'Share PDF',
+                style: TextStyle(
+                  color: Colors.white, // White text
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _shareOnWhatsApp(String pdfFilePath, String Vehiclenum) async {
+    try {
+      // Use share_plus to share the PDF file via WhatsApp or any other app
+      await Share.shareXFiles(
+        [XFile(pdfFilePath)],
+        text: 'Here is your parking receipt for vehicle ${Vehiclenum}.',
+      );
+    } catch (e) {
+      print("Error sharing PDF on WhatsApp: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error sharing PDF: $e'),
+        ),
+      );
+    }
+  }
+
   Widget _buildDateField(String label, TextEditingController controller,
       Function(DateTime) onDatePicked) {
     return Column(
@@ -405,14 +584,24 @@ class _FpListState extends State<FpList> {
           adminNum == null || userPhoneNumber == null
               ? const Center(
                   child: CircularProgressIndicator(
-                  color: Colors.black,
+                  color: Color.fromARGB(255, 0, 0, 0),
                 ))
               : Expanded(
-                  child: filteredEntries.isEmpty && isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                          color: Colors.black,
-                        ))
+                  child: filteredEntries.isEmpty && !isLoading
+                      ? Center(
+                        child: Lottie.asset(
+                          'assets/animations/notfound2.json', // Path to the Lottie file
+                          width: 300,
+                          height: 300,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                      : filteredEntries.isEmpty && isLoading
+                      ?const Center(
+                        child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 0, 0, 0),
+                )
+                      )
                       : ListView.builder(
                           controller:
                               _scrollController, // Attach scroll controller
@@ -424,11 +613,20 @@ class _FpListState extends State<FpList> {
                                 padding: EdgeInsets.all(8.0),
                                 child: Center(
                                     child: CircularProgressIndicator(
-                                  color: Colors.black,
+                                  color: Color.fromARGB(0, 0, 0, 0),
                                 )),
                               ); // Loading indicator at the end
                             }
-
+                            if (filteredEntries.isEmpty) {
+                              return Center(
+                                child: Lottie.asset(
+                                  'assets/animations/animation.json', // Path to the Lottie file
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            }
                             final doc = filteredEntries[index];
                             final vehicleNumber =
                                 doc['vehicleNumber'] ?? 'No Vehicle Number';
@@ -439,7 +637,16 @@ class _FpListState extends State<FpList> {
 
                             return GestureDetector(
                               onTap: () {
-                                // Handle tap if needed
+                              if (widget.label=='Pass') {
+                                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AfterPassScan(
+                        vehicleNumber: vehicleNumber,
+                      ),
+                    ),
+                  );
+                              }
                               },
                               child: Container(
                                 margin: const EdgeInsets.all(8.0),
@@ -460,17 +667,35 @@ class _FpListState extends State<FpList> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .spaceBetween, // Ensures spacing between elements
                                       children: [
-                                        const Icon(Icons.directions_car,
-                                            color: Colors.yellow),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          vehicleNumber,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.directions_car,
+                                                color: Colors.yellow),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              vehicleNumber,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                        if (widget.label == 'Pass')
+                                          IconButton(
+                                            icon: const Icon(Icons.share,
+                                                color: Colors.black),
+                                            onPressed: () {
+                                              // Call the function to generate and share the PDF
+                                              _generateAndSharePDF(
+                                                  vehicleNumber,
+                                                  doc['selectedRate'],
+                                                  selectedTime);
+                                            },
+                                          ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),

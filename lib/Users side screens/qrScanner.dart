@@ -1,6 +1,7 @@
 import 'dart:typed_data';
-import 'package:aapkaparking/AfterScan.dart';
-import 'package:aapkaparking/duelist.dart';
+
+import 'package:aapkaparking/Users%20side%20screens/AfterScan.dart';
+import 'package:aapkaparking/Users%20side%20screens/duelist.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';

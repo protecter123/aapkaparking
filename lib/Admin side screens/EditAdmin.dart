@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:aapkaparking/Admin%20side%20screens/Admin.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,25 +9,27 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
-
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AddAdmin extends StatefulWidget {
+class EditAdmin extends StatefulWidget {
   final String? imgUrl;
   final String? Name;
-  const AddAdmin({super.key, required this.imgUrl, required this.Name});
+  const EditAdmin({super.key, required this.imgUrl, required this.Name});
 
   @override
-  State<AddAdmin> createState() => _AddVehicleState();
+  State<EditAdmin> createState() => _AddVehicleState();
 }
 
-class _AddVehicleState extends State<AddAdmin> {
+class _AddVehicleState extends State<EditAdmin> {
   final TextEditingController vehicleNameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? _image;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _getImage() async {
     await showModalBottomSheet(
@@ -180,66 +183,27 @@ class _AddVehicleState extends State<AddAdmin> {
         );
         return;
       }
-      if (_image != null) {
-        // Read the image as bytes
-        Uint8List imageBytes = await _image!.readAsBytes();
-
-        // Decode the image for resizing and compression using the image package
-        img.Image? decodedImage = img.decodeImage(imageBytes);
-
-        if (decodedImage != null) {
-          // Resize the image (e.g., 50% of the original size)
-          img.Image resizedImage = img.copyResize(decodedImage,
-              width: (decodedImage.width * 0.6).toInt());
-
-          // Compress the image with 90% quality (adjust as needed)
-          List<int> compressedImage = img.encodeJpg(resizedImage,
-              quality: 70); // You can change quality percentage
-
-          // Convert the compressed image to Uint8List for Firebase Storage upload
-          Uint8List compressedImageBytes = Uint8List.fromList(compressedImage);
-
-          // Get the file name
-          final fileName = path.basename(_image!.path);
-
-          // Create Firebase Storage reference
-          final storageRef = FirebaseStorage.instance
-              .ref()
-              .child('Admins/$phoneNumber/ParkingLogo/AdminFile');
-
-          // Upload the compressed image to Firebase Storage
-          UploadTask uploadTask = storageRef.putData(compressedImageBytes);
-
-          // Monitor the upload progress
-          uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-            print(
-                'Progress: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100} %');
-          });
-
-          // Wait for the upload to complete
-          TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
-
-          // Get the download URL
-          String downloadUrl = await snapshot.ref.getDownloadURL();
-
-          final firestoreRef = FirebaseFirestore.instance
-              .collection('AllUsers')
-              .doc(phoneNumber);
-
-          await firestoreRef.set({
-            'ParkingLogo': downloadUrl,
-            'ParkingName': vehicleNameController.text.trim(),
-          }, SetOptions(merge: true));
-
-          print('Image uploaded successfully! Download URL: $downloadUrl');
-        } else {
-          print('Error: Failed to decode the image.');
-        }
-      } else {
-        print('No image selected');
-      }
 
       // Upload the image to Firebase Storage
+      final fileName = path.basename(_image!.path);
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('Admins/$phoneNumber/ParkingLogo/$fileName');
+      final uploadTask = await storageRef.putFile(File(_image!.path));
+
+      // Get the download URL of the uploaded image
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      // Merge ParkingLogo and ParkingName into the existing document
+      final firestoreRef =
+          FirebaseFirestore.instance.collection('AllUsers').doc(phoneNumber);
+
+      await firestoreRef.update(
+        {
+          'ParkingLogo': downloadUrl,
+          'ParkingName': vehicleNameController.text.trim(),
+        },
+      );
 
       // Close the loader
       Navigator.of(context).pop(); // Close loader dialog
@@ -275,11 +239,16 @@ class _AddVehicleState extends State<AddAdmin> {
                   ),
                   child: TextButton(
                     onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AdminPage()),
+                      );
                       vehicleNameController.clear();
-                      setState(() {
-                        _image = null;
-                      });
                       _image = null;
+
                       Navigator.of(context).pop(); // Close the dialog
                     },
                     child: const Text(
@@ -390,7 +359,7 @@ class _AddVehicleState extends State<AddAdmin> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
-                                'Add Business',
+                                'Edit Admin',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize:
                                       constraints.maxWidth > 600 ? 50 : 40,
@@ -435,21 +404,20 @@ class _AddVehicleState extends State<AddAdmin> {
                                   _getImage(); // Add parentheses to call the function
                                 },
                                 child: CircleAvatar(
-                                    backgroundColor: const Color.fromARGB(
-                                        255, 225, 215, 206),
-                                    radius: 55,
-                                    backgroundImage: _image != null
-                                        ? FileImage(_image!)
-                                        : widget.imgUrl != null
-                                            ? NetworkImage(widget.imgUrl!)
-                                            : null,
-                                    child: widget.imgUrl == null
-                                        ? const Icon(
-                                            Icons.person,
-                                            color: Color.fromARGB(255, 5, 5, 5),
-                                            size: 60,
-                                          )
-                                        : null),
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 225, 215, 206),
+                                  radius: 55,
+                                  backgroundImage: _image != null
+                                      ? FileImage(_image!)
+                                      : null,
+                                  child: _image == null
+                                      ? Image.network(
+                                          widget.imgUrl!,
+                                          width: 100,
+                                          height: 100,
+                                        )
+                                      : null,
+                                ),
                               ),
                             ),
                             Positioned(
@@ -481,7 +449,7 @@ class _AddVehicleState extends State<AddAdmin> {
                         children: [
                           Container(
                               child: Text(
-                            'Add Parking name',
+                            'Add New Parking name',
                             style: GoogleFonts.notoSansHanunoo(
                                 color: Color.fromARGB(255, 29, 29, 29)),
                           )),
@@ -516,7 +484,7 @@ class _AddVehicleState extends State<AddAdmin> {
                                       color: Colors.black,
                                       width: 2), // 2 px black border
                                 ),
-                                hintText: widget.Name ?? 'Parking Name',
+                                hintText: widget.Name!,
                                 hintStyle: GoogleFonts.notoSansHanunoo(
                                   color: Colors.grey,
                                   fontSize: 19,
@@ -552,7 +520,7 @@ class _AddVehicleState extends State<AddAdmin> {
                                 .withOpacity(0.5), // Shadow for 3D effect
                           ),
                           child: const Text(
-                            'SAVE ADMIN DETAILS', // Updated button text
+                            'EDIT ADMIN DETAILS', // Updated button text
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18), // White text color
@@ -567,7 +535,11 @@ class _AddVehicleState extends State<AddAdmin> {
                     left: -10,
                     child: IconButton(
                         onPressed: () {
-                          Navigator.of(context).pop();
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const AdminPage(),
+                            ),
+                          );
                         },
                         icon: const Icon(
                           Icons.chevron_left,

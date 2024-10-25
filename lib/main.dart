@@ -1,6 +1,8 @@
-import 'package:aapkaparking/Admin.dart';
+import 'package:aapkaparking/Admin%20side%20screens/Admin.dart';
+
+import 'package:aapkaparking/Users%20side%20screens/users.dart';
 import 'package:aapkaparking/sliding%20screen.dart';
-import 'package:aapkaparking/users.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,9 +17,9 @@ void main() async {
   );
   runApp(const MyApp());
 
-}
+  }
 
-class MyApp extends StatelessWidget {
+ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override

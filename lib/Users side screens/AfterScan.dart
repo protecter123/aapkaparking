@@ -1,6 +1,7 @@
 import 'dart:math';
 
-import 'package:aapkaparking/bluetoothManager.dart';
+import 'package:aapkaparking/Users%20side%20screens/bluetooth%20manager/bluetoothManager.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -112,7 +113,38 @@ class _AfterScanState extends State<AfterScan> {
       };
 
       // Save the data to the vehicleEntry subcollection
-      await vehicleEntryRef.doc(docId).set(dataToSave);
+     // Initialize Firestore batch
+WriteBatch batch = FirebaseFirestore.instance.batch();
+
+await vehicleEntryRef.doc(docId).set(dataToSave);
+
+CollectionReference usersRef = FirebaseFirestore.instance
+    .collection('AllUsers')
+    .doc(adminPhoneNumber)
+    .collection('Users')
+    .doc(currentUserPhoneNumber)
+    .collection('MoneyCollection');
+
+DocumentReference passDocRef = usersRef.doc(DateFormat('yyyy-MM-dd').format(DateTime.now()));
+
+// Get the passDocRef document and update/add to dueMoney
+DocumentSnapshot snapshot = await passDocRef.get();
+int newTotal = int.tryParse(finalAmount) ?? 0;
+
+if (snapshot.exists) {
+  // If the document exists, update the dueMoney field
+  Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+  if (data != null && data.containsKey('dueMoney')) {
+    int existingTotal = int.tryParse(data['dueMoney'] ?? '0') ?? 0;
+    newTotal = existingTotal + int.tryParse(finalAmount)!;
+  }
+}
+
+// Update or set the dueMoney field in batch
+batch.set(passDocRef, {'dueMoney': newTotal.toString()}, SetOptions(merge: true));
+
+// Commit all changes in a single batch
+await batch.commit();
 
       print('Data saved successfully to Firestore');
     } catch (e) {

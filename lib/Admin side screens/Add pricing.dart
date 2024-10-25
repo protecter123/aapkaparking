@@ -254,7 +254,7 @@ class _AddPriceState extends State<AddPrice> {
                     child: Column(
                       children: [
                         const SizedBox(
-                          height: 180,
+                          height: 100,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,

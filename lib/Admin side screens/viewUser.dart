@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart'; // Add lottie package for animations
 
 class Viewuser extends StatefulWidget {
   const Viewuser({super.key});
@@ -34,26 +35,119 @@ class _ViewuserState extends State<Viewuser> {
   }
 
   void _deleteUser(String docId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(currentUserPhoneNumber)
-          .collection('Users')
-          .doc(docId)
-          .delete();
+    // Create a batch instance
+    WriteBatch batch = FirebaseFirestore.instance.batch();
 
+    try {
+      // Reference to the document in the 'AllUsers' collection
+      DocumentReference allUsersRef = FirebaseFirestore.instance
+          .collection('AllUsers')
+          .doc(
+              currentUserPhoneNumber) // Assuming currentUserPhoneNumber is available
+          .collection('Users')
+          .doc(docId);
+
+      // Reference to the document in the 'LoginUsers' collection
+      DocumentReference loginUsersRef =
+          FirebaseFirestore.instance.collection('LoginUsers').doc(docId);
+
+      // Add the update operation for 'AllUsers' collection to the batch
+      batch.update(allUsersRef, {'isdeleted': true});
+
+      // Add the update operation for 'LoginUsers' collection to the batch
+      batch.update(loginUsersRef, {'isdeleted': true});
+
+      // Commit the batch
+      await batch.commit();
+
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('User deleted successfully'),
-            duration: const Duration(milliseconds: 200)),
+          content: Text('User marked as deleted successfully'),
+          duration: Duration(milliseconds: 200),
+        ),
       );
     } catch (e) {
+      // Show failure message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Failed to delete user'),
-            duration: const Duration(milliseconds: 200)),
+          content: Text('Failed to mark user as deleted'),
+          duration: Duration(milliseconds: 200),
+        ),
       );
     }
+  }
+
+  Future<void> _updateUser(String docId, String currentName) async {
+    final TextEditingController _nameController =
+        TextEditingController(text: currentName);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color.fromARGB(255, 225, 215, 206),
+          title: const Text(
+            'Edit User',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  hintText: 'Enter new name',
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog without updating
+              },
+              child: const Text('Close', style: TextStyle(color: Colors.black)),
+            ),
+            TextButton(
+              onPressed: () async {
+                String newName = _nameController.text.trim();
+                if (newName.isNotEmpty) {
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('AllUsers')
+                        .doc(currentUserPhoneNumber)
+                        .collection('Users')
+                        .doc(docId)
+                        .update({'userName': newName});
+                    await FirebaseFirestore.instance
+                        .collection('LoginUsers')
+                        .doc(docId)
+                        .update({'userName': newName});
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('User updated successfully'),
+                        duration: Duration(milliseconds: 200),
+                      ),
+                    );
+                    Navigator.of(context).pop(); // Close dialog after update
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to update user'),
+                        duration: Duration(milliseconds: 200),
+                      ),
+                    );
+                  }
+                }
+              },
+              child:
+                  const Text('Update', style: TextStyle(color: Colors.green)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String _formatTimestamp(Timestamp timestamp) {
@@ -155,7 +249,6 @@ class _ViewuserState extends State<Viewuser> {
                         icon: const Icon(Icons.keyboard),
                         onPressed: () {
                           _searchController.clear();
-
                           FocusScope.of(context).unfocus();
                         },
                       )
@@ -182,6 +275,9 @@ class _ViewuserState extends State<Viewuser> {
                   .collection('AllUsers')
                   .doc(currentUserPhoneNumber)
                   .collection('Users')
+                  .where('isdeleted',
+                      isEqualTo:
+                          false) // Add condition to filter isDeleted field
                   .orderBy('CreatedAt', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -211,6 +307,17 @@ class _ViewuserState extends State<Viewuser> {
                             .every((word) => userName.contains(word));
                       }).toList();
 
+                // Check if any users matched the search query
+                if (searchQuery.isNotEmpty && displayedUsers.isEmpty) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/not_found.json', // Ensure you have the right path for your Lottie file
+                      height: 200,
+                      width: 200,
+                    ),
+                  );
+                }
+
                 return ListView.builder(
                   itemCount: displayedUsers.length,
                   itemBuilder: (context, index) {
@@ -239,21 +346,54 @@ class _ViewuserState extends State<Viewuser> {
                             borderRadius: BorderRadius.circular(0),
                           ),
                           child: ListTile(
-                            contentPadding: const EdgeInsets.all(10),
+                            contentPadding: const EdgeInsets.all(0),
                             title: Row(
                               children: [
-                                const Icon(Icons.person, color: Colors.black),
-                                const SizedBox(width: 5),
-                                Flexible(
-                                  child: Text(
-                                    userName.toUpperCase(),
-                                    style: GoogleFonts.nunito(
-                                      textStyle: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                // User details (name, icons, etc.)
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.person,
+                                          color: Colors.black),
+                                      const SizedBox(width: 5),
+                                      Flexible(
+                                        child: Text(
+                                          userName.toUpperCase(),
+                                          style: GoogleFonts.nunito(
+                                            textStyle: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                ),
+                                // Edit and Delete buttons on the right
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        color: Colors.green,
+                                      ),
+                                      onPressed: () {
+                                        _updateUser(userDoc.id, userName);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        _showDeleteDialog(context, userDoc.id);
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -269,9 +409,10 @@ class _ViewuserState extends State<Viewuser> {
                                       'Phone no.: $uid',
                                       style: GoogleFonts.nunito(
                                         textStyle: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color.fromARGB(
-                                                255, 57, 57, 57)),
+                                          fontSize: 14,
+                                          color:
+                                              Color.fromARGB(255, 57, 57, 57),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -285,20 +426,15 @@ class _ViewuserState extends State<Viewuser> {
                                       'Joined At: ${_formatTimestamp(createdAt)}',
                                       style: GoogleFonts.nunito(
                                         textStyle: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color.fromARGB(
-                                                255, 57, 57, 57)),
+                                          fontSize: 14,
+                                          color:
+                                              Color.fromARGB(255, 57, 57, 57),
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ],
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                _showDeleteDialog(context, userDoc.id);
-                              },
                             ),
                           ),
                         ),

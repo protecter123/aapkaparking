@@ -1,11 +1,13 @@
-import 'package:aapkaparking/Add%20pricing.dart';
-import 'package:aapkaparking/Add%20vehicle.dart';
-import 'package:aapkaparking/AddAdmin.dart';
-import 'package:aapkaparking/Adduser2.dart';
-import 'package:aapkaparking/Edit%20vehicle.dart';
-import 'package:aapkaparking/colection.dart';
+
+import 'package:aapkaparking/Admin%20side%20screens/Add%20pricing.dart';
+import 'package:aapkaparking/Admin%20side%20screens/Add%20vehicle.dart';
+import 'package:aapkaparking/Admin%20side%20screens/AddAdmin.dart';
+import 'package:aapkaparking/Admin%20side%20screens/Adduser2.dart';
+import 'package:aapkaparking/Admin%20side%20screens/Edit%20vehicle.dart';
+import 'package:aapkaparking/Admin%20side%20screens/colection.dart';
+import 'package:aapkaparking/Admin%20side%20screens/viewUser.dart';
 import 'package:aapkaparking/verify.dart';
-import 'package:aapkaparking/viewUser.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,7 @@ class _AdminPageState extends State<AdminPage> {
 
   String? imageUrl;
   String? parkingName;
+  String? parkingAddress;
   String? duemoney;
   String? fixmoney;
   String? passmoney;
@@ -461,11 +464,12 @@ class _AdminPageState extends State<AdminPage> {
         // Extract 'ParkingName' and 'ParkingLogo' fields
         String parkingName = snapshot['ParkingName'];
         String parkingLogo = snapshot['ParkingLogo'];
-
+        String parkingAddress =snapshot['ParkingAddress'];
         // Save the fetched data in SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('cachedParkingName', parkingName);
         await prefs.setString('cachedParkingLogo', parkingLogo);
+        await prefs.setString('cachedParkingAddress', parkingAddress);
       } else {
         print('Document does not exist');
       }
@@ -483,17 +487,23 @@ class _AdminPageState extends State<AdminPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('cachedParkingName');
   }
+  Future<String?> getCachedParkingAddress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('cachedParkingAddress');
+  }
 
   Future<void> _loadCachedData() async {
     String? cachedUrl = await getCachedImageUrl();
     String? cachedName = await getCachedParkingName();
+    String? cachedAddress = await getCachedParkingAddress();
     setState(() {
       imageUrl = cachedUrl;
       parkingName = cachedName;
+      parkingAddress=cachedAddress;
     });
 
     // If image URL or name is not cached, fetch from Firebase
-    if (cachedUrl == null || cachedName == null) {
+    if (cachedUrl == null || cachedName == null||cachedAddress==null) {
       await fetchAndSaveParkingDetails();
       _loadCachedData(); // Reload cached data after fetching
     }
@@ -517,7 +527,7 @@ class _AdminPageState extends State<AdminPage> {
         child: Scaffold(
           backgroundColor: Color.fromARGB(255, 0, 12, 55),
           appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(70.0),
+            preferredSize: const Size.fromHeight(50.0),
             child: AppBar(
               shadowColor: const Color.fromARGB(255, 190, 190, 190),
               backgroundColor: Color.fromARGB(255, 0, 12, 55),
@@ -527,6 +537,7 @@ class _AdminPageState extends State<AdminPage> {
                   bottomRight: Radius.circular(00),
                 ),
               ),
+              toolbarHeight: 70,
               elevation: 1,
               //leading: const SizedBox(), // Empty widget to keep title centered
               actions: [
@@ -570,10 +581,11 @@ class _AdminPageState extends State<AdminPage> {
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [
+                        Color.fromARGB(255, 10, 62, 232),
                         const Color.fromARGB(
-                            255, 103, 99, 99), // Darker grey for depth
-                        const Color.fromARGB(
-                            255, 233, 205, 162), // Orange gradient transition
+                            255, 229, 202, 139), // Darker grey for depth
+                        Color.fromARGB(
+                            255, 149, 187, 222), // Orange gradient transition
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -593,9 +605,23 @@ class _AdminPageState extends State<AdminPage> {
                       if (imageUrl != null)
                         CircleAvatar(
                           radius: 40,
-                          backgroundImage: NetworkImage(imageUrl!),
                           backgroundColor:
                               Colors.grey.shade300, // Border around the image
+                          child: ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) =>
+                                const  CircularProgressIndicator(
+                                color: Colors.green,
+                              ), // Placeholder while loading
+                              errorWidget: (context, url, error) =>const Icon(Icons
+                                  .error), // Error icon if image fails to load
+                              width:
+                                  80, // Set width and height to match the CircleAvatar radius
+                              height: 80,
+                            ),
+                          ),
                         )
                       else
                         const CircularProgressIndicator(),
@@ -605,7 +631,7 @@ class _AdminPageState extends State<AdminPage> {
                           parkingName!,
                           style: const TextStyle(
                             color: Color.fromARGB(
-                                255, 255, 255, 255), // Orange for text contrast
+                                255, 10, 10, 10), // Orange for text contrast
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             fontFamily:
@@ -631,7 +657,7 @@ class _AdminPageState extends State<AdminPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            AddAdmin(imgUrl: imageUrl, Name: parkingName),
+                            AddAdmin(imgUrl: imageUrl, Name: parkingName,address:parkingAddress),
                       ),
                     );
                   },
@@ -675,7 +701,7 @@ class _AdminPageState extends State<AdminPage> {
             ),
           ),
           body: Padding(
-            padding: const EdgeInsets.all(18.0),
+            padding: const EdgeInsets.all(15.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -689,21 +715,7 @@ class _AdminPageState extends State<AdminPage> {
                     width: double.infinity, // Ensures it takes the full width
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(2),
-                      color: Colors.yellow[50], // Light yellow background color
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 3,
-                          blurRadius: 7,
-                          offset:
-                              const Offset(0, 3), // Changes position of shadow
-                        ),
-                      ],
-                      image: const DecorationImage(
-                        image: AssetImage(
-                            'assets/animations/OIP (3).jpeg'), // Background image asset
-                        fit: BoxFit.cover,
-                      ),
+                      color:const Color.fromARGB(46, 255, 253, 231), // Light yellow background color
                     ),
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -717,8 +729,8 @@ class _AdminPageState extends State<AdminPage> {
                               style: GoogleFonts.libreBaskerville(
                                 fontSize: 23,
                                 fontWeight: FontWeight.bold,
-                                color: const Color.fromARGB(255, 2, 2,
-                                    2), // Adjust color based on background
+                                color:const Color.fromARGB(255, 255, 255,
+                                    255), // Adjust color based on background
                               ),
                               overflow:
                                   TextOverflow.ellipsis, // Prevents overflow
@@ -732,7 +744,7 @@ class _AdminPageState extends State<AdminPage> {
                           ],
                         ),
                         const SizedBox(
-                            height: 25), // Pushes content to the bottom
+                            height: 10), // Pushes content to the bottom
                         Container(
                           width: double
                               .infinity, // Ensures it takes the full width
@@ -747,21 +759,33 @@ class _AdminPageState extends State<AdminPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  '₹ ${_totalAmount.toStringAsFixed(1)}',
-                                  style: const TextStyle(
-                                    fontSize:
-                                        28, // Larger font size for emphasis
-                                    fontWeight: FontWeight.bold,
-                                    color: Color.fromARGB(255, 8, 8,
-                                        8), // Colorful text for total amount
-                                  ),
-                                ),
                                 Row(
                                   children: [
+                                    const Text(
+                                      '₹ ',
+                                      style: const TextStyle(
+                                        fontSize:
+                                            28, // Larger font size for emphasis
+                                        fontWeight: FontWeight.bold,
+                                        color: Color.fromARGB(255, 1, 177,
+                                            4), // Colorful text for total amount
+                                      ),
+                                    ),
+                                    Text('${_totalAmount.toStringAsFixed(1)}',
+                                        style: const TextStyle(
+                                          fontSize:
+                                              28, // Larger font size for emphasis
+                                          fontWeight: FontWeight.bold,
+                                          color: Color.fromARGB(255, 13, 14,
+                                              13), // Colorful text for total amount
+                                        ))
+                                  ],
+                                ),
+                                Row(
+                                   children: [
                                     const Icon(
                                       Icons.calendar_month, // Colorful icon
-                                      color: Color.fromARGB(255, 7, 7, 7),
+                                      color: Color.fromARGB(255, 250, 237, 0),
                                       size: 16,
                                     ),
                                     const SizedBox(width: 8),
@@ -771,7 +795,7 @@ class _AdminPageState extends State<AdminPage> {
                                       style: const TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.bold,
-                                        color: Color.fromARGB(255, 1, 1, 1),
+                                        color: Color.fromARGB(255, 9, 9, 9),
                                       ),
                                     ),
                                   ],
@@ -786,7 +810,7 @@ class _AdminPageState extends State<AdminPage> {
                 ),
 
                 const SizedBox(
-                  height: 10,
+                  height: 0,
                 ),
                 const Divider(
                   color: Colors.black, // Color of the divider
@@ -839,7 +863,7 @@ class _AdminPageState extends State<AdminPage> {
                         crossAxisSpacing: 10.0,
                         mainAxisSpacing: 10.0,
                         childAspectRatio:
-                            2 / 3, // Adjust to make the cards taller
+                            2 / 2.25, // Adjust to make the cards taller
                         children: [
                           _buildCard(
                               title: 'Add User',
@@ -853,7 +877,7 @@ class _AdminPageState extends State<AdminPage> {
                                 );
                               },
                               backgroundColor:
-                                  Color.fromARGB(218, 232, 73, 67)),
+                                  Color.fromARGB(255, 229, 202, 139)),
                           _buildCard(
                               title: 'Add Vehicle',
                               animationUrl:
@@ -866,7 +890,7 @@ class _AdminPageState extends State<AdminPage> {
                                 );
                               },
                               backgroundColor:
-                                  Color.fromARGB(207, 236, 218, 62)),
+                                  Color.fromARGB(255, 189, 205, 220)),
                           _buildCard(
                               title: 'Add Pricing',
                               animationUrl:
@@ -879,7 +903,7 @@ class _AdminPageState extends State<AdminPage> {
                                 );
                               },
                               backgroundColor:
-                                  Color.fromARGB(222, 233, 55, 203)),
+                                  Color.fromARGB(255, 189, 205, 220)),
                           _buildCard(
                               title: 'View Vehicles',
                               animationUrl:
@@ -893,7 +917,7 @@ class _AdminPageState extends State<AdminPage> {
                                 );
                               },
                               backgroundColor:
-                                  Color.fromARGB(214, 59, 160, 243)),
+                                  Color.fromARGB(255, 229, 202, 139)),
                           _buildCard(
                               title: 'Edit Users',
                               animationUrl:
@@ -906,7 +930,7 @@ class _AdminPageState extends State<AdminPage> {
                                 );
                               },
                               backgroundColor:
-                                  Color.fromARGB(222, 109, 64, 244)),
+                                  Color.fromARGB(255, 229, 202, 139)),
                           _buildCard(
                               title: 'Collection',
                               animationUrl:
@@ -919,7 +943,7 @@ class _AdminPageState extends State<AdminPage> {
                                 );
                               },
                               backgroundColor:
-                                  Color.fromARGB(222, 243, 127, 60)),
+                                  Color.fromARGB(255, 189, 205, 220)),
                         ],
                       ),
                     ),
@@ -944,17 +968,21 @@ class _AdminPageState extends State<AdminPage> {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: const BorderRadius.only(
+              topLeft: Radius.zero,
+              bottomRight: Radius.zero,
+              bottomLeft: Radius.circular(10),
+              topRight: Radius.circular(10)),
           color: backgroundColor, // Custom background color
         ),
         child: Stack(
           children: [
             Positioned(
               top: 10,
-              left: 5,
+              left: 25,
               child: Container(
-                height: 150, // Smaller size for the animation
-                width: 150,
+                height: 100, // Smaller size for the animation
+                width: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -984,9 +1012,14 @@ class _AdminPageState extends State<AdminPage> {
                       child: Container(
                         width: 140,
                         height: 30,
-                        decoration: BoxDecoration(
-                            color: Color.fromARGB(140, 255, 255, 255),
-                            borderRadius: BorderRadius.all(Radius.circular(7))),
+                        decoration: const BoxDecoration(
+                          color: Color.fromARGB(140, 255, 255, 255),
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.zero,
+                              bottomRight: Radius.zero,
+                              bottomLeft: Radius.circular(10),
+                              topRight: Radius.circular(10)),
+                        ),
                         child: Center(
                           child: Text(
                             title,

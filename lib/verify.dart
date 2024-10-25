@@ -48,17 +48,26 @@ class VerifyState extends State<Verify> {
     print('Attempting to verify phone number: $phoneNumber');
 
     try {
-      // Check if the phone number is already in the 'users' collection
+      // Check if the phone number is in 'LoginUsers' collection
       final userDoc = await FirebaseFirestore.instance
           .collection('LoginUsers')
           .doc(phoneNumber)
           .get();
+
+      // Check if the phone number is in 'AllUsers' collection
       final userDoc2 = await FirebaseFirestore.instance
           .collection('AllUsers')
           .doc(phoneNumber)
           .get();
 
-      if (userDoc.exists || userDoc2.exists) {
+      bool isDeletedInLoginUsers =
+          userDoc.exists && userDoc.data()?['isdeleted'] == true;
+      bool isDeletedInAllUsers =
+          userDoc2.exists && userDoc2.data()?['isdeleted'] == true;
+
+      // Check if phone number exists and is not deleted in both collections
+      if ((userDoc.exists && !isDeletedInLoginUsers) ||
+          (userDoc2.exists && !isDeletedInAllUsers)) {
         await FirebaseAuth.instance.verifyPhoneNumber(
           phoneNumber: phoneNumber,
           verificationCompleted: (PhoneAuthCredential credential) {
@@ -70,7 +79,6 @@ class VerifyState extends State<Verify> {
               _isloading = false;
             });
             print('Verification failed: ${e.message}');
-            // Display error message to the user or handle it accordingly
           },
           codeSent: (String verificationId, int? resendToken) {
             setState(() {
@@ -98,8 +106,7 @@ class VerifyState extends State<Verify> {
         setState(() {
           _isloading = false;
         });
-        // Show custom bottom sheet
-        print('Showing BottomSheet for invalid phone number');
+        print('Showing BottomSheet for deleted account');
         showModalBottomSheet(
           context: context,
           isScrollControlled: true,
@@ -118,7 +125,7 @@ class VerifyState extends State<Verify> {
                 Icon(Icons.error, color: Colors.red, size: 30),
                 SizedBox(height: 8),
                 Text(
-                  'Admin doesn\'t allow this number',
+                  'Admin has deleted your account',
                   style: TextStyle(color: Colors.black, fontSize: 16),
                 ),
                 SizedBox(height: 16),

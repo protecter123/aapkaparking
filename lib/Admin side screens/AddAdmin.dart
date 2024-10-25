@@ -10,17 +10,28 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
-import 'package:lottie/lottie.dart';
 
-class AddVehicle extends StatefulWidget {
-  const AddVehicle({super.key});
+import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AddAdmin extends StatefulWidget {
+  final String? imgUrl;
+  final String? Name;
+  final String? address;
+  const AddAdmin(
+      {super.key,
+      required this.imgUrl,
+      required this.Name,
+      required this.address});
 
   @override
-  State<AddVehicle> createState() => _AddVehicleState();
+  State<AddAdmin> createState() => _AddVehicleState();
 }
 
-class _AddVehicleState extends State<AddVehicle> {
+class _AddVehicleState extends State<AddAdmin> {
   final TextEditingController vehicleNameController = TextEditingController();
+  final TextEditingController vehicleAddressController =
+      TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? _image;
 
@@ -108,32 +119,57 @@ class _AddVehicleState extends State<AddVehicle> {
     );
   }
 
-  Future<void> _saveVehicleDetails() async {
+  Future<void> _removeParkingDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('cachedParkingLogo'); // Removes the ParkingLogo key
+    await prefs.remove('cachedParkingName');
+    await prefs.remove('cachedParkingAddress'); // Removes the ParkingName key
+  }
+
+  Future<void> _saveAdminDetails() async {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    if (_image == null && vehicleNameController.text.isEmpty) {
+
+    if (_image == null &&
+        vehicleNameController.text.isEmpty &&
+        vehicleAddressController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please provide Vehicle name and Image.'),
-            duration: const Duration(milliseconds: 300)),
+          content: Text('Please provide Admin name,Address and Image.'),
+          duration: Duration(milliseconds: 300),
+        ),
       );
       return;
     }
+
     if (_image == null) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please provide Vehicle Image.'),
-            duration: const Duration(milliseconds: 300)),
+          content: Text('Please provide Parking Logo'),
+          duration: Duration(milliseconds: 300),
+        ),
       );
       return;
     }
+
     if (vehicleNameController.text.isEmpty) {
       // Handle validation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please provide Vehicle name.'),
-            duration: const Duration(milliseconds: 300)),
+          content: Text('Please provide Parking name.'),
+          duration: Duration(milliseconds: 300),
+        ),
+      );
+      return;
+    }
+    if (vehicleAddressController.text.isEmpty) {
+      // Handle validation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please provide Parking Address.'),
+          duration: Duration(milliseconds: 300),
+        ),
       );
       return;
     }
@@ -164,26 +200,6 @@ class _AddVehicleState extends State<AddVehicle> {
         );
         return;
       }
-
-      // Check if the vehicle name already exists
-      final firestoreRef = FirebaseFirestore.instance
-          .collection('AllUsers')
-          .doc(phoneNumber)
-          .collection('Vehicles');
-
-      final querySnapshot = await firestoreRef
-          .where('vehicleName', isEqualTo: vehicleNameController.text.trim())
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        // Close loader
-        Navigator.of(context).pop(); // Close loader dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vehicle already added')),
-        );
-        return;
-      }
-
       if (_image != null) {
         // Read the image as bytes
         Uint8List imageBytes = await _image!.readAsBytes();
@@ -194,11 +210,11 @@ class _AddVehicleState extends State<AddVehicle> {
         if (decodedImage != null) {
           // Resize the image (e.g., 50% of the original size)
           img.Image resizedImage = img.copyResize(decodedImage,
-              width: (decodedImage.width * 0.5).toInt());
+              width: (decodedImage.width * 0.6).toInt());
 
           // Compress the image with 90% quality (adjust as needed)
           List<int> compressedImage = img.encodeJpg(resizedImage,
-              quality: 75); // You can change quality percentage
+              quality: 70); // You can change quality percentage
 
           // Convert the compressed image to Uint8List for Firebase Storage upload
           Uint8List compressedImageBytes = Uint8List.fromList(compressedImage);
@@ -209,7 +225,7 @@ class _AddVehicleState extends State<AddVehicle> {
           // Create Firebase Storage reference
           final storageRef = FirebaseStorage.instance
               .ref()
-              .child('vehicles/$phoneNumber/$fileName');
+              .child('Admins/$phoneNumber/ParkingLogo/AdminFile');
 
           // Upload the compressed image to Firebase Storage
           UploadTask uploadTask = storageRef.putData(compressedImageBytes);
@@ -226,12 +242,15 @@ class _AddVehicleState extends State<AddVehicle> {
           // Get the download URL
           String downloadUrl = await snapshot.ref.getDownloadURL();
 
-          // Save the data to Firestore
-          await firestoreRef.doc().set({
-            'vehicleName': vehicleNameController.text.trim(),
-            'vehicleImage': downloadUrl,
-            'pricingdone': false
-          });
+          final firestoreRef = FirebaseFirestore.instance
+              .collection('AllUsers')
+              .doc(phoneNumber);
+
+          await firestoreRef.set({
+            'ParkingLogo': downloadUrl,
+            'ParkingName': vehicleNameController.text.trim(),
+            'ParkingAddress': vehicleAddressController.text.trim(),
+          }, SetOptions(merge: true));
 
           print('Image uploaded successfully! Download URL: $downloadUrl');
         } else {
@@ -241,15 +260,7 @@ class _AddVehicleState extends State<AddVehicle> {
         print('No image selected');
       }
 
-      // Get the download URL of the uploaded image
-      //  final downloadUrl = await UploadTask.ref.getDownloadURL();
-
-      // Save the vehicle details in Firestore
-      // await firestoreRef.doc().set({
-      //   'vehicleName': vehicleNameController.text.trim(),
-      //   'vehicleImage':downloadUrl,
-      //   'pricingdone': false
-      // });
+      // Upload the image to Firebase Storage
 
       // Close the loader
       Navigator.of(context).pop(); // Close loader dialog
@@ -265,11 +276,10 @@ class _AddVehicleState extends State<AddVehicle> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Lottie.asset(
-                    'assets/animations/complete.json'), // Replace with your Lottie file URL
+                Lottie.asset('assets/animations/complete.json'),
                 const SizedBox(height: 20),
                 const Text(
-                  'Vehicle added successfully!',
+                  'Parking details saved successfully!',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
@@ -286,8 +296,11 @@ class _AddVehicleState extends State<AddVehicle> {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      vehicleNameController.clear();
-                      _image = null;
+                      // vehicleNameController.clear();
+                      // setState(() {
+                      //   _image = null;
+                      // });
+                      // _image = null;
                       Navigator.of(context).pop(); // Close the dialog
                     },
                     child: const Text(
@@ -310,7 +323,7 @@ class _AddVehicleState extends State<AddVehicle> {
       Navigator.of(context).pop(); // Close loader dialog
       // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save vehicle details: $e')),
+        SnackBar(content: Text('Failed to save admin details: $e')),
       );
     }
   }
@@ -389,7 +402,7 @@ class _AddVehicleState extends State<AddVehicle> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(
-                        height: 250,
+                        height: 130,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -398,7 +411,7 @@ class _AddVehicleState extends State<AddVehicle> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
-                                'Add Vehicle',
+                                'Add Business',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize:
                                       constraints.maxWidth > 600 ? 50 : 40,
@@ -416,7 +429,7 @@ class _AddVehicleState extends State<AddVehicle> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),
                               child: Text(
-                                'Name',
+                                'Details',
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize:
                                       constraints.maxWidth > 600 ? 50 : 40,
@@ -443,20 +456,21 @@ class _AddVehicleState extends State<AddVehicle> {
                                   _getImage(); // Add parentheses to call the function
                                 },
                                 child: CircleAvatar(
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 225, 215, 206),
-                                  radius: 55,
-                                  backgroundImage: _image != null
-                                      ? FileImage(_image!)
-                                      : null,
-                                  child: _image == null
-                                      ? const Icon(
-                                          Icons.person,
-                                          color: Color.fromARGB(255, 5, 5, 5),
-                                          size: 60,
-                                        )
-                                      : null,
-                                ),
+                                    backgroundColor: const Color.fromARGB(
+                                        255, 225, 215, 206),
+                                    radius: 55,
+                                    backgroundImage: _image != null
+                                        ? FileImage(_image!)
+                                        : widget.imgUrl != null
+                                            ? NetworkImage(widget.imgUrl!)
+                                            : null,
+                                    child: widget.imgUrl == null
+                                        ? const Icon(
+                                            Icons.person,
+                                            color: Color.fromARGB(255, 5, 5, 5),
+                                            size: 60,
+                                          )
+                                        : null),
                               ),
                             ),
                             Positioned(
@@ -488,7 +502,7 @@ class _AddVehicleState extends State<AddVehicle> {
                         children: [
                           Container(
                               child: Text(
-                            'Add vehicle name',
+                            'Add Parking name',
                             style: GoogleFonts.notoSansHanunoo(
                                 color: Color.fromARGB(255, 29, 29, 29)),
                           )),
@@ -523,7 +537,7 @@ class _AddVehicleState extends State<AddVehicle> {
                                       color: Colors.black,
                                       width: 2), // 2 px black border
                                 ),
-                                hintText: 'Vehicle name',
+                                hintText: widget.Name ?? 'Parking Name',
                                 hintStyle: GoogleFonts.notoSansHanunoo(
                                   color: Colors.grey,
                                   fontSize: 19,
@@ -537,13 +551,72 @@ class _AddVehicleState extends State<AddVehicle> {
                           ),
                         ],
                       ),
-
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                              child: Text(
+                            'Add Parking Address',
+                            style: GoogleFonts.notoSansHanunoo(
+                                color: Color.fromARGB(255, 29, 29, 29)),
+                          )),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          SizedBox(
+                            height: 52,
+                            child: TextField(
+                              controller: vehicleAddressController,
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 20),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(0), // Sharp edges
+                                  borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2), // 2 px black border
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(0), // Sharp edges
+                                  borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2), // 2 px black border
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(0), // Sharp edges
+                                  borderSide: const BorderSide(
+                                      color: Colors.black,
+                                      width: 2), // 2 px black border
+                                ),
+                                hintText: widget.address ?? 'Parking Address',
+                                hintStyle: GoogleFonts.notoSansHanunoo(
+                                  color: Colors.grey,
+                                  fontSize: 19,
+                                ),
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(
+                                    r'[a-zA-Z0-9 ]')), // Allows only letters, numbers, and spaces
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 40),
                       SizedBox(
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _saveVehicleDetails,
+                          onPressed: () {
+                            _removeParkingDetails();
+                            _saveAdminDetails();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black, // Full black color
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -556,7 +629,7 @@ class _AddVehicleState extends State<AddVehicle> {
                                 .withOpacity(0.5), // Shadow for 3D effect
                           ),
                           child: const Text(
-                            'SAVE VEHICLE DETAILS', // Updated button text
+                            'SAVE ADMIN DETAILS', // Updated button text
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18), // White text color
